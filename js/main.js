@@ -306,7 +306,7 @@
       const service = contactForm.querySelector('#service')?.value || '';
       const message = contactForm.querySelector('#message')?.value || '';
       const body    = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nService: ${service}\n\n${message}`);
-      window.open(`mailto:kishorebt11@gmail.com?subject=Enquiry from ${encodeURIComponent(name)}&body=${body}`);
+      window.open(`mailto:csashikgswamy@gmail.com?cc=kishorebt11@gmail.com&subject=Enquiry from ${encodeURIComponent(name)}&body=${body}`);
       if (formSuccess) formSuccess.classList.add('show');
       contactForm.reset();
       if (btn) { btn.disabled = false; btn.textContent = 'Send Enquiry'; }
@@ -327,7 +327,7 @@
       const email = careerForm.querySelector('#cemail')?.value || '';
       const role  = careerForm.querySelector('#crole')?.value || '';
       const body  = encodeURIComponent(`Name: ${name}\nEmail: ${email}\nApplying for: ${role}`);
-      window.open(`mailto:kishorebt11@gmail.com?subject=Job Application - ${encodeURIComponent(role)}&body=${body}`);
+      window.open(`mailto:csashikgswamy@gmail.com?cc=kishorebt11@gmail.com&subject=Job Application - ${encodeURIComponent(role)}&body=${body}`);
       if (careerSuccess) careerSuccess.classList.add('show');
       careerForm.reset();
       if (btn) { btn.disabled = false; btn.textContent = 'Submit Application'; }
