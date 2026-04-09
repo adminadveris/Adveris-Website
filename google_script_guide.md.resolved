@@ -1,0 +1,65 @@
+# Google Apps Script Setup Guide
+
+Follow these 3 simple steps to get your professional, silent background email system working for **Adveris Advisors**.
+
+### Step 1: Create the Script
+1.  Go to [script.google.com](https://script.google.com) and log in with your personal Google account.
+2.  Click **"New Project"**.
+3.  Delete any code in the editor and paste the code below:
+
+```javascript
+/* ADVERIS ADVISORS — GOOGLE APPS SCRIPT FORM HANDLER */
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    
+    // 1. Details for the Primary Email (To: Ashik, CC: Kishore)
+    var to = "csashikgswamy@gmail.com";
+    var cc = "kishorebt11@gmail.com";
+    var subject = "New Website Enquiry: " + (data.name || "Unknown");
+    
+    // 2. Format the email body
+    var body = "You have a new enquiry from the Adveris Advisors website.\n\n" +
+               "Name: " + data.name + "\n" +
+               "Email: " + data.email + "\n" +
+               "Phone: " + (data.phone || "N/A") + "\n" +
+               "Service: " + (data.service || "N/A") + "\n" +
+               "Message: " + (data.message || "No message provided.");
+
+    // 3. Send the email via Google
+    MailApp.sendEmail({
+      to: to,
+      cc: cc,
+      subject: subject,
+      body: body,
+      replyTo: data.email
+    });
+
+    return ContentService.createTextOutput(JSON.stringify({ "result": "success" }))
+                         .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ "result": "error", "error": error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+```
+
+### Step 2: Deploy as Web App
+1.  Click the blue **"Deploy"** button in the top right -> Choose **"New deployment"**.
+2.  Select type: **"Web app"**.
+3.  Set "Description" to: `Adveris Form Handler`.
+4.  Set "Execute as" to: **"Me"** (your email).
+5.  Set "Who has access" to: **"Anyone"**.
+6.  Click **"Deploy"**. 
+7.  Google will ask for permission; click **"Authorize access"** and follow the prompts (if it says "Google hasn't verified this app," click "Advanced" -> "Go to Adveris... (unsafe)").
+
+### Step 3: Copy the URL
+- Once deployed, you will see a **"Web app URL"**. 
+- **Copy that URL and paste it here in our chat.** 
+
+---
+
+> [!IMPORTANT]
+> Once you give me that URL, I will instantly hook it up to your website's code so that your "Send" buttons start working silently in the background!

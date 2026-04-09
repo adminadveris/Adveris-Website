@@ -687,10 +687,12 @@ footer {
 
 /* Phone Input Split Group */
 .phone-input-group {
-  display: flex; gap: 12px;
+  display: grid;
+  grid-template-columns: 0.3fr 0.7fr;
+  gap: 12px;
 }
-.phone-code { width: 80px; text-align: center; font-weight: 500; }
-.phone-number { flex: 1; }
+.phone-code { text-align: center; font-weight: 500; }
+.phone-number { width: 100%; }
 
 textarea.form-control { min-height: 140px; resize: vertical; }
 select.form-control { appearance: none; cursor: pointer; }
