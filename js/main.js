@@ -297,7 +297,7 @@
   const formSuccess = document.getElementById('formSuccess');
   
   // PASTE YOUR GOOGLE SCRIPT URL HERE
-  const SCRIPT_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbCUsJOZAqpahiM6szyraXbVh9E1eTXeCfMGZflEChYiKmT0ttvNgk9Khu65SqVLukIw/exec";
 
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
