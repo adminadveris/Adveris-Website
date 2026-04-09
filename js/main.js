@@ -298,7 +298,7 @@
   
   // PASTE YOUR GOOGLE SCRIPT URL HERE
   // PASTE YOUR GOOGLE SCRIPT URL HERE
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbCUsJOZAqpahiM6szyraXbVh9E1eTXeCfMGZflEChYiKmT0ttvNgk9Khu65SqVLukIw/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqpj3Y6L9X1h6U0o6yA60yrwf4ZxFynMQ-KqEzhfMqh7t1JjnmIiC1d_AK_4YlLKbIew/exec";
 
   // Numeric-only validation helper
   document.querySelectorAll('.numeric-only').forEach(input => {
@@ -318,10 +318,12 @@
       const fullPhone = (code || phone) ? `${code}${phone}` : '';
 
       const data = {
+        formType: 'Contact Enquiry',
         name: contactForm.querySelector('#name')?.value || '',
         email: contactForm.querySelector('#email')?.value || '',
         phone: fullPhone,
-        service: contactForm.querySelector('#service')?.value || '',
+        company: contactForm.querySelector('#company')?.value || 'N/A',
+        service: contactForm.querySelector('#service')?.value || 'N/A',
         message: contactForm.querySelector('#message')?.value || ''
       };
 
@@ -367,11 +369,12 @@
       const fullPhone = (code || phone) ? `${code}${phone}` : '';
 
       const data = {
+        formType: 'Career Application',
         name: careerForm.querySelector('#cname')?.value || '',
         email: careerForm.querySelector('#cemail')?.value || '',
         phone: fullPhone,
-        role: careerForm.querySelector('#crole')?.value || '',
-        message: "Job Application Submission"
+        role: careerForm.querySelector('#crole')?.value || 'N/A',
+        message: careerForm.querySelector('#cmsg')?.value || 'No cover note provided.'
       };
 
       try {

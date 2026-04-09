@@ -8,24 +8,40 @@ Follow these 3 simple steps to get your professional, silent background email sy
 3.  Delete any code in the editor and paste the code below:
 
 ```javascript
-/* ADVERIS ADVISORS — GOOGLE APPS SCRIPT FORM HANDLER */
+/* ADVERIS ADVISORS — SMART FORM HANDLER V2 */
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
+    var type = data.formType || "Website enquiry";
     
     // 1. Details for the Primary Email (To: Ashik, CC: Kishore)
     var to = "csashikgswamy@gmail.com";
     var cc = "kishorebt11@gmail.com";
-    var subject = "New Website Enquiry: " + (data.name || "Unknown");
+    var subject = type + ": " + (data.name || "Unknown");
     
-    // 2. Format the email body
-    var body = "You have a new enquiry from the Adveris Advisors website.\n\n" +
-               "Name: " + data.name + "\n" +
-               "Email: " + data.email + "\n" +
-               "Phone: " + (data.phone || "N/A") + "\n" +
-               "Service: " + (data.service || "N/A") + "\n" +
-               "Message: " + (data.message || "No message provided.");
+    // 2. Format a Beautified Email Body
+    var body = "--------------------------------------------------\n" +
+               "           ADVERIS ADVISORS - " + type.toUpperCase() + "\n" +
+               "--------------------------------------------------\n\n" +
+               "PERSONAL DETAILS:\n" +
+               "• Name:    " + (data.name || "N/A") + "\n" +
+               "• Email:   " + (data.email || "N/A") + "\n" +
+               "• Phone:   " + (data.phone || "N/A") + "\n\n";
+
+    if (type.includes("Contact")) {
+      body += "ENQUIRY DETAILS:\n" +
+              "• Company: " + (data.company || "N/A") + "\n" +
+              "• Service: " + (data.service || "N/A") + "\n\n";
+    } else {
+      body += "APPLICATION DETAILS:\n" +
+              "• Role:    " + (data.role || "N/A") + "\n\n";
+    }
+
+    body += "MESSAGE / COVER NOTE:\n" +
+            (data.message || "No message provided.") + "\n\n" +
+            "--------------------------------------------------\n" +
+            "Sent from: www.adverisadvisors.in";
 
     // 3. Send the email via Google
     MailApp.sendEmail({
