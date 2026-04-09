@@ -684,6 +684,14 @@ footer {
   background: white; transition: var(--t); outline: none;
 }
 .form-control:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px var(--saffron-pale); }
+
+/* Phone Input Split Group */
+.phone-input-group {
+  display: flex; gap: 12px;
+}
+.phone-code { width: 80px; text-align: center; font-weight: 500; }
+.phone-number { flex: 1; }
+
 textarea.form-control { min-height: 140px; resize: vertical; }
 select.form-control { appearance: none; cursor: pointer; }
 

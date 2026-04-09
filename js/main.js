@@ -297,7 +297,15 @@
   const formSuccess = document.getElementById('formSuccess');
   
   // PASTE YOUR GOOGLE SCRIPT URL HERE
+  // PASTE YOUR GOOGLE SCRIPT URL HERE
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbCUsJOZAqpahiM6szyraXbVh9E1eTXeCfMGZflEChYiKmT0ttvNgk9Khu65SqVLukIw/exec";
+
+  // Numeric-only validation helper
+  document.querySelectorAll('.numeric-only').forEach(input => {
+    input.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+    });
+  });
 
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
@@ -305,9 +313,14 @@
       const btn = contactForm.querySelector('button[type="submit"]');
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
 
+      const code  = contactForm.querySelector('#countryCode')?.value || '';
+      const phone = contactForm.querySelector('#phone')?.value || '';
+      const fullPhone = (code || phone) ? `${code}${phone}` : '';
+
       const data = {
         name: contactForm.querySelector('#name')?.value || '',
         email: contactForm.querySelector('#email')?.value || '',
+        phone: fullPhone,
         service: contactForm.querySelector('#service')?.value || '',
         message: contactForm.querySelector('#message')?.value || ''
       };
@@ -349,9 +362,14 @@
       const btn = careerForm.querySelector('button[type="submit"]');
       if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
 
+      const code  = careerForm.querySelector('#cCountryCode')?.value || '';
+      const phone = careerForm.querySelector('#cphone')?.value || '';
+      const fullPhone = (code || phone) ? `${code}${phone}` : '';
+
       const data = {
         name: careerForm.querySelector('#cname')?.value || '',
         email: careerForm.querySelector('#cemail')?.value || '',
+        phone: fullPhone,
         role: careerForm.querySelector('#crole')?.value || '',
         message: "Job Application Submission"
       };
