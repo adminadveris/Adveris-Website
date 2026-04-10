@@ -5,9 +5,16 @@
   'use strict';
 
   const CONSENT_KEY = 'adveris_consent_date';
+  const urlParams = new URLSearchParams(window.location.search);
 
   // Check if consent was already given today
   function hasConsentedToday() {
+    // For testing: if URL has ?reset_consent=1, clear it
+    if (urlParams.get('reset_consent') === '1') {
+      localStorage.removeItem(CONSENT_KEY);
+      return false;
+    }
+
     const consentDate = localStorage.getItem(CONSENT_KEY);
     const today = new Date().toDateString();
     return consentDate === today;

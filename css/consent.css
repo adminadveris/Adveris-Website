@@ -74,6 +74,7 @@
   flex: 1;
   min-height: 0; /* Required for nested flex scrolling */
   overflow-y: auto; /* Allows swiping if text overflows */
+  padding-bottom: 40px; /* IMPORTANT: Ensures the last lines aren't hidden by the button */
   -webkit-overflow-scrolling: touch; /* Fixes missing swipe momentum on iOS / iPhones */
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
@@ -121,7 +122,9 @@
   justify-content: center;
   align-items: center;
   margin-top: auto; /* Pushes button to exactly the bottom */
-  padding-top: 1vh;
+  padding: 2vh 0; /* More consistent padding */
+  background: white; /* Ensure button area is clean */
+  border-top: 1px solid rgba(13, 27, 62, 0.05); /* Subtle separation */
 }
 
 .consent-btn {
@@ -190,7 +193,10 @@
   }
   .consent-actions {
     margin-top: auto;
-    padding-top: 12px;
+    padding: 16px 5vw;
+    background: #fff;
+    width: 100%;
+    border-top: 1px solid rgba(13, 27, 62, 0.1);
   }
   .consent-btn {
     padding: 12px 32px;
