@@ -61,18 +61,18 @@
             <p><strong>The Bar Council of India does not permit advertisement or solicitation by advocates in any form or manner.</strong></p>
             <p>This website is intended solely for the purpose of providing general information and does not constitute advertising or solicitation of any work, whether directly or indirectly. Adveris Advisors LLP operates strictly as an advisory firm, and the information made available herein is limited to general guidance on legal and compliance matters.</p>
             <p>By accessing this website, <a href="https://www.adverisadvisors.in" style="color:inherit;text-decoration:none;font-weight:600;">www.adverisadvisors.in</a>, you acknowledge and confirm that you are seeking information relating to Adveris Advisors LLP on your own accord. The content provided on this website is for informational purposes only and shall not be construed as legal advice or a substitute for professional consultation. The Firm disclaims all liability for any actions taken or not taken based on the content available on this website.</p>
+            <p>By clicking on the “I Accept” button, the user expressly acknowledges that:</p>
+            <p>he/she intends to obtain general information about Adveris Advisors LLP;</p>
           </div>
           <div class="consent-col">
-            <p>By clicking on the “I Accept” button, the user expressly acknowledges that:</p>
-            <ul>
-              <li>he/she intends to obtain general information about Adveris Advisors LLP;</li>
+            <ul style="margin-top: 0;">
               <li>there has been no form of solicitation, advertisement, or inducement by the Firm to secure any work through this website;</li>
               <li>he/she understands that the Firm functions in an advisory capacity; and</li>
               <li>he/she is aware that the website uses cookies to enhance functionality and performance by analysing website traffic and consents to such use.</li>
             </ul>
             <p>For further details on the use of cookies, users are advised to refer to the <a href="privacy.html" class="privacy-link">Privacy Policy</a>.</p>
-            <p style="font-size: 0.75rem; color: rgba(13, 27, 62, 0.6); margin-top: 10px;">The Firm shall not be liable for any consequences arising from reliance on the information or materials available on this website. Users seeking legal or professional assistance are advised to obtain independent advice specific to their facts and circumstances.</p>
-            <p style="font-size: 0.75rem; color: rgba(13, 27, 62, 0.6); border-top: 1px solid rgba(13,27,62,0.1); padding-top: 10px; margin-top: 10px;">All content on this website is the intellectual property of the Firm and shall not be reproduced, distributed, or used without prior written consent of Adveris Advisors LLP.</p>
+            <p>The Firm shall not be liable for any consequences arising from reliance on the information or materials available on this website. Users seeking legal or professional assistance are advised to obtain independent advice specific to their facts and circumstances.</p>
+            <p style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">All content on this website is the intellectual property of the Firm and shall not be reproduced, distributed, or used without prior written consent of Adveris Advisors LLP.</p>
           </div>
         </div>
         
