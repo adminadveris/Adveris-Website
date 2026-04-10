@@ -115,8 +115,20 @@
 
   // Initialize on load
   function init() {
+    console.log("BCI Consent: Initializing...");
+    
+    // Safety check: ensure body exists
+    if (!document.body) {
+      console.log("BCI Consent: Body not found, retrying in 100ms...");
+      setTimeout(init, 100);
+      return;
+    }
+
     if (!hasConsentedToday()) {
+      console.log("BCI Consent: Injecting popup...");
       injectConsentPopup();
+    } else {
+      console.log("BCI Consent: Already consented today.");
     }
   }
 
@@ -124,7 +136,8 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    // Small delay to ensure other UI scripts don't conflict
+    setTimeout(init, 50);
   }
 
 })();
