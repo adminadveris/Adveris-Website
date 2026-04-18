@@ -2129,7 +2129,7 @@ select.form-control {
   }
 
   .logo-tagline {
-    display: none;
+    font-size: 0.55rem;
   }
 
   .menu-circle {
