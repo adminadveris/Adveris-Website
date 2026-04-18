@@ -63,7 +63,7 @@
   gap: 60px; /* Wide gap to maintain separation while filling width */
   flex: 1;
   min-height: 0;
-  overflow: hidden; /* NO SCROLLER */
+  overflow-y: auto; /* ALLOW SCROLLER */
 }
 
 .consent-col p, .consent-col li {

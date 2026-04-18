@@ -56,7 +56,7 @@
       <div class="consent-card">
         <h2>Disclaimer &amp; Consent</h2>
         
-        <div class="consent-body">
+        <div class="consent-body" data-lenis-prevent>
           <div class="consent-col">
             <p><strong>The Bar Council of India does not permit advertisement or solicitation by advocates in any form or manner.</strong></p>
             <p>This website is intended solely for the purpose of providing general information and does not constitute advertising or solicitation of any work, whether directly or indirectly. Adveris Advisors LLP operates strictly as an advisory firm, and the information made available herein is limited to general guidance on legal and compliance matters.</p>
