@@ -2661,96 +2661,166 @@ select.form-control {
 }
 
 /* ============================================================
-   TESTIMONIALS MARQUEE
+   TESTIMONIALS GRID SLIDER
    ============================================================ */
-.testimonials-row {
-  display: flex;
+.t-grid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 24px;
-  padding: 12px 0;
+  margin-top: 48px;
+  transition: all 0.5s ease;
 }
 
-@keyframes scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+@media (min-width: 768px) {
+  .t-grid {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 24px;
+  }
 }
 
-@keyframes scrollReverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+@media (min-width: 1024px) {
+  .t-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-.animate-scroll {
-  animation: scroll 40s linear infinite;
-}
-
-.animate-scroll-reverse {
-  animation: scrollReverse 40s linear infinite;
-}
-
-.testimonial-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 32px;
-  width: 380px;
-  flex-shrink: 0;
-  transition: var(--t);
+.t-card {
+  background: #fafafa;
+  border: 1px solid #e5e5e5;
+  border-radius: 1.5rem;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  height: 100%;
 }
 
-.testimonial-card:hover {
-  border-color: var(--saffron-border);
-  box-shadow: var(--shadow-sm);
+.t-card:hover {
   transform: translateY(-4px);
+  border-color: #d1d5db;
 }
 
-.testimonial-stars {
+.t-header {
   display: flex;
-  gap: 4px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.testimonial-stars svg {
-  fill: var(--saffron);
-  color: var(--saffron);
+.t-stars {
+  display: flex;
+  gap: 2px;
 }
 
-.testimonial-text {
-  font-size: 0.92rem;
-  line-height: 1.75;
-  color: var(--text-grey);
-  margin-bottom: 24px;
+.t-text {
+  font-size: 0.875rem;
+  line-height: 1.62;
+  color: #525252;
   flex-grow: 1;
+  margin: 0;
 }
 
-.testimonial-user {
+.t-user {
   display: flex;
   align-items: center;
-  gap: 14px;
-  border-top: 1px solid var(--border);
-  padding-top: 20px;
+  gap: 16px;
+  margin-top: auto;
 }
 
-.testimonial-user img {
+.t-avatar {
   width: 44px;
   height: 44px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--saffron-pale);
-}
-
-.testimonial-user h4 {
-  font-family: var(--font-serif);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  margin-bottom: 2px;
 }
 
-.testimonial-user p {
-  font-size: 0.72rem;
-  font-weight: 600;
+.t-user-info h4 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #404040;
+  margin: 0;
+}
+
+.t-user-info p {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #737373;
+  margin: 0;
+}
+
+/* Nav Controls */
+.t-nav {
+  display: none;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+@media (min-width: 768px) {
+  .t-nav {
+    display: flex;
+  }
+}
+
+.t-nav-btn {
+  height: 40px;
+  width: 40px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  border: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #737373;
+}
+
+.t-nav-btn:hover {
+  background: #e5e5e5;
+}
+
+/* Dots */
+.t-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .t-dots {
+    display: none;
+  }
+}
+
+.t-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: background 0.3s ease, transform 0.3s ease;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.t-dot.active {
+  background: #262626;
+  transform: scale(1.2);
+}
+
+.t-dot.inactive {
+  background: #d4d4d4;
+}
+;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--saffron);

@@ -505,28 +505,32 @@
 
     <!-- ===================== TESTIMONIALS ===================== -->
     <div class="card-wrap bg-off" id="testimonials" data-section="testimonials" data-theme="light">
-      <section class="section" style="padding-bottom:120px; overflow:hidden;">
+      <style>
+        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+        .testimonials-scope { font-family: "Poppins", sans-serif; }
+        .testimonials-scope h1, .testimonials-scope h2, .testimonials-scope h4, .testimonials-scope p { font-family: "Poppins", sans-serif !important; }
+      </style>
+      
+      <section class="section testimonials-scope" style="padding: 100px 0;">
         <div class="container">
-          <div class="text-center" style="max-width:800px;margin:0 auto 72px;">
-            <!-- <p class="sec-label" style="justify-content:center;">Social Proof</p>-->
-            <h2 class="sec-title">What <em>Our Clients</em> Say</h2>
-            <div class="sec-divider sec-divider-center"></div>
-            <p class="sec-body" style="margin:0 auto;">Trusted by startups, investors, and listed companies across India
-              for professional excellence in legal and compliance advisory.</p>
-          </div>
-        </div>
-
-        <div id="testimonials-container" style="display:flex; flex-direction:column; gap:24px; position:relative;">
-          <!-- Left and Right Gradient Masks for smooth fade -->
-          <div
-            style="position:absolute; left:0; top:0; bottom:0; width:150px; background:linear-gradient(90deg, var(--off-white) 0%, transparent 100%); z-index:10; pointer-events:none;">
-          </div>
-          <div
-            style="position:absolute; right:0; top:0; bottom:0; width:150px; background:linear-gradient(-90deg, var(--off-white) 0%, transparent 100%); z-index:10; pointer-events:none;">
+          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px;">
+            <p class="sec-label" style="justify-content: center; margin-bottom: 12px;">Trusted Advisor</p>
+            <h2 class="sec-title" style="margin-bottom: 16px;">Loved by <em>Leading Businesses</em></h2>
+            <p class="sec-body" style="max-width: 600px; margin: 0 auto;">Every single testimonial is a testament to the profound impact we strive to create every single day through structured legal and compliance support.</p>
           </div>
 
-          <div class="testimonials-row animate-scroll" id="testimonials-row-1"></div>
-          <div class="testimonials-row animate-scroll-reverse" id="testimonials-row-2"></div>
+          <div class="t-nav">
+            <button id="t-prev" class="t-nav-btn" aria-label="Previous Testimonials">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            </button>
+            <button id="t-next" class="t-nav-btn" aria-label="Next Testimonials">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+
+          <div id="t-grid-container" class="t-grid"></div>
+          
+          <div id="t-dots-container" class="t-dots"></div>
         </div>
       </section>
     </div>
@@ -534,49 +538,103 @@
     <script>
       (function () {
         const testimonialsData = [
-          { text: "Adveris Advisors played a critical role in our foundation's compliance roadmap. Their guidance on NGO reporting and MCA transitions was exceptional.", name: "Kishore", role: "BLR Calling Foundation", initial: "K" },
-          { text: "Seamless secretarial support and timely ROC filings. The team at Adveris ensured our compliance framework is robust and penalty-free.", name: "Rahul", role: "4D", initial: "R" },
-          { text: "Expertise in complex advisory and corporate governance. A trusted partner for Keylynk for all our legal and secretarial matters.", name: "Shekar", role: "Keylynk Business Consulting Pvt Ltd", initial: "S" },
-          { text: "Handled our MCA transitions and annual filings with absolute precision. Their proactive approach to compliance is refreshing and efficient.", name: "Arvind", role: "ELEMENTS MANUFACTURING SOLUTIONS PRIVATE LIMITED", initial: "A" },
-          { text: "Efficient partner compliance and LLP management. Adveris is our go-to choice for dependable legal services and structured advisory.", name: "Abhimanyu", role: "DESIGNFLOW SERVICE CONSULTANTS LLP", initial: "A" },
-          { text: "Adveris' expertise in industrial compliance and corporate secretarial services has been a pillar for AU2MEK's operational stability.", name: "Swamy", role: "AU2MEK ENGINEERING SOLUTIONS PRIVATE LIMITED", initial: "S" },
-          { text: "From LLP formation to regular filings, the team at Adveris provides seamless and dependable advisory support for our growing tech venture.", name: "SANTOSH", role: "GENSERVE TECHNOLOGIES LLP", initial: "S" }
+          { date: "Apr 12, 2026", text: "Adveris Advisors played a critical role in our foundation's compliance roadmap. Their guidance on NGO reporting and MCA transitions was exceptional.", name: "Kishore", role: "BLR Calling Foundation", initial: "K" },
+          { date: "Mar 28, 2026", text: "Seamless secretarial support and timely ROC filings. The team at Adveris ensured our compliance framework is robust and penalty-free.", name: "Rahul", role: "4D", initial: "R" },
+          { date: "Mar 15, 2026", text: "Expertise in complex advisory and corporate governance. A trusted partner for Keylynk for all our legal and secretarial matters.", name: "Shekar", role: "Keylynk Business Consulting Pvt Ltd", initial: "S" },
+          { date: "Feb 22, 2026", text: "Handled our MCA transitions and annual filings with absolute precision. Their proactive approach to compliance is refreshing and efficient.", name: "Arvind", role: "ELEMENTS MANUFACTURING SOLUTIONS", initial: "A" },
+          { date: "Feb 10, 2026", text: "Efficient partner compliance and LLP management. Adveris is our go-to choice for dependable legal services and structured advisory.", name: "Abhimanyu", role: "DESIGNFLOW SERVICE CONSULTANTS", initial: "A" },
+          { date: "Jan 18, 2026", text: "Adveris' expertise in industrial compliance and corporate secretarial services has been a pillar for AU2MEK's operational stability.", name: "Swamy", role: "AU2MEK ENGINEERING SOLUTIONS", initial: "S" },
+          { date: "Jan 05, 2026", text: "From LLP formation to regular filings, the team at Adveris provides seamless and dependable advisory support for our tech venture.", name: "SANTOSH", role: "GENSERVE TECHNOLOGIES LLP", initial: "S" }
         ];
 
-        function renderCard(t) {
-          const star = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
-          const stars = Array(5).fill(star).join('');
+        let index = 0;
+        let isMobile = window.innerWidth < 768;
+        let autoTimer;
 
-          // Generate a consistent color based on the initial
-          const colors = ['#0D1B3E', '#FF9933', '#1e293b', '#334155'];
-          const bgColor = colors[t.initial.charCodeAt(0) % colors.length];
+        function render() {
+          const container = document.getElementById('t-grid-container');
+          const dotsContainer = document.getElementById('t-dots-container');
+          const count = isMobile ? 1 : 3;
+          
+          // Determine items to show (circularly if needed, but here we just slice and handle bounds)
+          let items = [];
+          for (let i = 0; i < count; i++) {
+            items.push(testimonialsData[(index + i) % testimonialsData.length]);
+          }
 
-          return `
-            <div class="testimonial-card">
-              <div class="testimonial-stars">${stars}</div>
-              <p class="testimonial-text">"${t.text}"</p>
-              <div class="testimonial-user">
-                <div style="width:44px; height:44px; border-radius:50%; background:${bgColor}; color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.1rem; flex-shrink:0;">${t.initial}</div>
-                <div>
-                  <h4>${t.name}</h4>
-                  <p>${t.role}</p>
+          container.innerHTML = items.map(t => {
+            const star = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FF8F20" stroke="none"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`;
+            const stars = Array(5).fill(star).join('');
+            const colors = ['#0D1B3E', '#FF9933', '#1e293b', '#334155'];
+            const bgColor = colors[t.initial.charCodeAt(0) % colors.length];
+
+            return `
+              <div class="t-card">
+                <div class="t-header">
+                  <div class="t-stars">${stars}</div>
+                  <p class="t-date">${t.date}</p>
+                </div>
+                <p class="t-text">"${t.text}"</p>
+                <div class="t-user">
+                  <div class="t-avatar" style="background:${bgColor}">${t.initial}</div>
+                  <div class="t-user-info">
+                    <h4>${t.name}</h4>
+                    <p>${t.role}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
+            `;
+          }).join('');
+
+          // Render dots for mobile only
+          if (isMobile) {
+            dotsContainer.innerHTML = testimonialsData.map((_, i) => 
+              `<button class="t-dot ${i === index ? 'active' : 'inactive'}" onclick="window.tSlideTo(${i})" aria-label="Slide ${i+1}"></button>`
+            ).join('');
+          } else {
+            dotsContainer.innerHTML = '';
+          }
         }
 
-        const row1 = document.getElementById('testimonials-row-1');
-        const row2 = document.getElementById('testimonials-row-2');
+        window.tSlideTo = (i) => {
+          index = i;
+          render();
+          resetTimer();
+        };
 
-        // Split and duplicate for infinite continuous scroll
-        const half = Math.ceil(testimonialsData.length / 2);
-        const group1 = testimonialsData.slice(0, half);
-        const group2 = testimonialsData.slice(half);
+        document.getElementById('t-prev').onclick = () => {
+          index = (index - 1 + testimonialsData.length) % testimonialsData.length;
+          render();
+          resetTimer();
+        };
 
-        // Multi-duplicate to ensure no gaps on wide screens
-        row1.innerHTML = [...group1, ...group1, ...group1, ...group1].map(renderCard).join('');
-        row2.innerHTML = [...group2, ...group2, ...group2, ...group2].map(renderCard).join('');
+        document.getElementById('t-next').onclick = () => {
+          index = (index + 1) % testimonialsData.length;
+          render();
+          resetTimer();
+        };
+
+        function resetTimer() {
+          clearInterval(autoTimer);
+          if (isMobile) {
+            autoTimer = setInterval(() => {
+              index = (index + 1) % testimonialsData.length;
+              render();
+            }, 4000);
+          }
+        }
+
+        window.addEventListener('resize', () => {
+          const wasMobile = isMobile;
+          isMobile = window.innerWidth < 768;
+          if (isMobile !== wasMobile) {
+            resetTimer();
+            render();
+          }
+        });
+
+        resetTimer();
+        render();
       })();
     </script>
   </main>
