@@ -96,6 +96,7 @@
     document.body.style.overflow = 'hidden';
     menuBtn && menuBtn.setAttribute('aria-expanded', 'true');
     menuBtn && menuBtn.classList.add('menu-open-state');
+    if (window.__lenisStop) window.__lenisStop();
   }
   function closeMenu() {
     if (!menuOverlay) return;
@@ -103,14 +104,15 @@
     document.body.style.overflow = '';
     menuBtn && menuBtn.setAttribute('aria-expanded', 'false');
     menuBtn && menuBtn.classList.remove('menu-open-state');
+    if (window.__lenisStart) window.__lenisStart();
   }
 
-  menuBtn && menuBtn.addEventListener('click', () => { openMenu(); if (window.__lenisStop) window.__lenisStop(); });
-  menuClose && menuClose.addEventListener('click', () => { closeMenu(); if (window.__lenisStart) window.__lenisStart(); });
+  menuBtn && menuBtn.addEventListener('click', () => { openMenu(); });
+  menuClose && menuClose.addEventListener('click', () => { closeMenu(); });
 
   // Close on ESC
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') { closeMenu(); if (window.__lenisStart) window.__lenisStart(); }
+    if (e.key === 'Escape') { closeMenu(); }
   });
 
   // Close when clicking any menu link
@@ -336,7 +338,7 @@
         if (SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
           console.warn("No Google Script URL provided. Still using mailto fallback.");
           const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nService: ${data.service}\n\n${data.message}`);
-          window.open(`mailto:csashikgswamy@gmail.com?cc=kishorebt11@gmail.com&subject=Enquiry from ${encodeURIComponent(data.name)}&body=${body}`);
+          window.open(`mailto:admin@adverisadvisors.com?subject=Enquiry from ${encodeURIComponent(data.name)}&body=${body}`);
         } else {
           // Actual Silent API Call
           await fetch(SCRIPT_URL, {
@@ -386,7 +388,7 @@
       try {
         if (SCRIPT_URL === "YOUR_GOOGLE_SCRIPT_URL_HERE") {
           const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nApplying for: ${data.role}`);
-          window.open(`mailto:csashikgswamy@gmail.com?cc=kishorebt11@gmail.com&subject=Job Application - ${encodeURIComponent(data.role)}&body=${body}`);
+          window.open(`mailto:admin@adverisadvisors.com?subject=Job Application - ${encodeURIComponent(data.role)}&body=${body}`);
         } else {
           await fetch(SCRIPT_URL, {
             method: 'POST',
@@ -415,7 +417,14 @@
     document.querySelectorAll('a[href]').forEach(link => {
       const href = link.getAttribute('href');
       if (!href || href.startsWith('#') || href.startsWith('mailto') || href.startsWith('tel') || href.startsWith('http')) return;
+      
       link.addEventListener('click', (e) => {
+        // Prevent fading out if link is a hash on the current page
+        const url = new URL(link.href, window.location.origin);
+        if (url.pathname === window.location.pathname && url.hash) {
+          return; // Let default anchor jump / smooth-scroll handle it
+        }
+
         e.preventDefault();
         overlay.classList.add('show');
         setTimeout(() => { window.location.href = href; }, 500);

@@ -120,22 +120,28 @@
 /* Mobile: Adaptive stack */
 @media (max-width: 900px) {
   .consent-card {
-    height: 50dvh;
+    height: 75dvh; /* Increased to prevent truncation */
     padding: 24px 20px;
+    border-radius: 20px 20px 0 0;
   }
   
   .consent-body {
     grid-template-columns: 1fr;
     gap: 15px;
     overflow-y: auto;
-    scrollbar-width: none;
+    /* Removed scrollbar-width: none to show it exists */
+    padding-bottom: 20px;
   }
   
-  .consent-body::-webkit-scrollbar { display: none; }
-
-  .consent-card h2 { font-size: 1.25rem; }
+  .consent-card h2 { font-size: 1.2rem; margin-bottom: 10px; }
   .consent-col p, .consent-col li { 
     font-size: 0.8rem;
     text-align: left;
+    margin-bottom: 8px;
+  }
+
+  .consent-btn {
+    padding: 10px 30px; /* Reduced from 80px for better fit */
+    width: 100%; /* Full width on mobile for accessibility */
   }
 }

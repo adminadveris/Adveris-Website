@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Practice Areas | Adveris Advisors LLP — Corporate Law & Compliance Services India</title>
+  <meta name="description"
+    content="Adveris Advisors LLP offers 8 comprehensive practice areas: Corporate Law, M&A, SEBI/RBI/MCA Compliance, Company Secretary, Contract Drafting, Labour Law, GST, and Startup Legal Advisory across India." />
+  <meta name="keywords"
+    content="corporate law India, M&A advisory India, SEBI compliance, RBI compliance, MCA compliance, company secretary services, contract drafting India, labour law compliance, GST compliance, startup legal advisory India" />
+  <link rel="canonical" href="https://www.adverisadvisors.in/services.html" />
+  <meta property="og:title" content="Practice Areas | Adveris Advisors LLP" />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/consent.css" />
+</head>
+
+<body data-page="Practice Areas">
+
+  <div class="page-transition-overlay" id="pageTransition"></div>
+  <div class="scroll-progress" id="scrollProg"></div>
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+  <div class="page-bg" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+  </div>
+
+  <nav class="nav" id="mainNav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo"><span class="logo-name">Adveris</span><span class="logo-tagline">Advisors
+          LLP</span></a>
+      <div class="nav__crumb"><span>Firm</span><span class="sep">—</span><span id="navPage">Practice Areas</span></div>
+      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+        <div class="hamburger"><span></span><span></span><span></span></div><span>Menu</span>
+      </button>
+    </div>
+  </nav>
+  <!-- MENU OVERLAY — NKF-style grid / mobile accordion -->
+  <div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <div class="menu-overlay__top">
+      <a href="index.html" class="menu-logo nav__logo">
+        <span class="logo-name">Adveris</span>
+        <span class="logo-tagline">Advisors LLP</span>
+      </a>
+      <button class="menu-close" id="menuClose" aria-label="Close menu">
+        <span>Close</span>
+        <div class="menu-close-circle" aria-hidden="true">&times;</div>
+      </button>
+    </div>
+    <div class="menu-body">
+      <!-- Col 1: Navigate -->
+      <div class="menu-col" id="mcol-1">
+        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="true" aria-controls="mcol-1-content">
+          Navigate</div>
+        <div class="menu-col-content" id="mcol-1-content">
+          <a href="index.html" class="menu-primary-link">Home</a>
+          <a href="about.html" class="menu-primary-link">About Us</a>
+          <a href="team.html" class="menu-primary-link">Our Team</a>
+          <a href="contact.html" class="menu-primary-link">Contact</a>
+        </div>
+      </div>
+      <!-- Col 2: Practice Areas -->
+      <div class="menu-col" id="mcol-2">
+        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="false" aria-controls="mcol-2-content">
+          Practice Areas</div>
+        <div class="menu-col-content" id="mcol-2-content">
+          <a href="services.html" class="menu-primary-link"><em>Services</em></a>
+          <div class="menu-sub-group">
+            <div class="menu-sub-label">What We Do</div>
+            <a href="services.html#01" class="menu-sub-link">Corporate Advisory</a>
+            <a href="services.html#02" class="menu-sub-link">VC &amp; Private Equity</a>
+            <a href="services.html#03" class="menu-sub-link">Mergers &amp; Acquisitions</a>
+            <a href="services.html#04" class="menu-sub-link">Loans &amp; Debt Financing</a>
+            <a href="services.html#05" class="menu-sub-link">Commercial Contracts</a>
+            <a href="services.html#06" class="menu-sub-link">Employment Law</a>
+            <a href="services.html#07" class="menu-sub-link">Regulatory Compliance</a>
+            <a href="services.html#08" class="menu-sub-link">Due Diligence</a>
+            <a href="services.html#09" class="menu-sub-link">Dispute &amp; Pre-Litigation</a>
+            <a href="services.html#10" class="menu-sub-link">Business Valuation</a>
+            <a href="services.html#11" class="menu-sub-link">Authorities Representation</a>
+            <a href="services.html#12" class="menu-sub-link">Bankruptcy &amp; Insolvency</a>
+          </div>
+        </div>
+      </div>
+      <!-- Col 3: Explore -->
+      <div class="menu-col" id="mcol-3">
+        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="false" aria-controls="mcol-3-content">
+          Explore</div>
+        <div class="menu-col-content" id="mcol-3-content">
+          <a href="insights.html" class="menu-primary-link">Insights</a>
+          <a href="careers.html" class="menu-primary-link">Careers</a>
+          <div class="menu-sub-group">
+            <div class="menu-sub-label">Contact</div>
+            <a href="tel:+919739382704" class="menu-sub-link">+91 97393 82704</a>
+            <a href="mailto:csashikgswamy@gmail.com" class="menu-sub-link">csashikgswamy@gmail.com</a>
+            <a href="contact.html" class="menu-sub-link">Bengaluru, Karnataka</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Bottom bar -->
+    <div class="menu-bottom">
+      <div class="menu-bottom-left">
+        <a href="about.html" class="menu-bottom-link">About the Firm</a>
+        <a href="contact.html" class="menu-bottom-link">Get in Touch</a>
+        <a href="careers.html" class="menu-bottom-link">Careers</a>
+      </div>
+      <div class="menu-bottom-right">
+        <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:0.1em;">Bengaluru · Pan India · Since
+          2024</span>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <section class="page-hero">
+    <div class="page-hero__inner">
+      <p class="page-hero__label">What We Do</p>
+      <h1 class="page-hero__title">Our <em>Practice</em><strong> Areas.</strong></h1>
+    </div>
+  </section>
+
+  <main class="page-z">
+    <div class="card-wrap" style="border-radius:var(--radius) var(--radius) 0 0;">
+      <section class="section">
+        <div class="container">
+          <div class="text-center" style="max-width:650px;margin:0 auto 72px;">
+            <p class="sec-label" style="justify-content:center;">Comprehensive Legal Services</p>
+            <h2 class="sec-title">Twelve Areas of <em>Deep Expertise</em></h2>
+            <div class="sec-divider sec-divider-center"></div>
+            <p class="sec-body" style="margin:0 auto;">From company formation and board governance to regulatory filings
+              and transaction advisory — we are your end-to-end legal partner across India.</p>
+          </div>
+
+          <div class="svc-detail-grid stagger">
+
+            <!-- 01 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">01</div>
+              <h3>Corporate Advisory & Structuring</h3>
+              <ul class="custom-list">
+                <li>Company & LLP Incorporation in India and Entity set-up</li>
+                <li>Entry strategy for foreign businesses and IP Protection</li>
+                <li>Post-incorporation compliances (Record Maintenance, Regulatory/Secretarial/Sectoral)</li>
+                <li>Corporate structuring, capital alteration, joint ventures, and financial restructuring</li>
+                <li>Insider Trading health checks and ongoing corporate governance</li>
+                <li>IPO lifecycle support (virtual data rooms, standard certificates, coordinate with BRLMs, offer
+                  document reviews)</li>
+                <li>Direct and Indirect Taxation advisory</li>
+              </ul>
+            </div>
+
+            <!-- 02 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">02</div>
+              <h3>Venture Capital, Private Equity & Fundraises</h3>
+              <ul class="custom-list">
+                <li>Angel, seed, growth-stage, and late-stage investments</li>
+                <li>Drafting and negotiation of term sheets</li>
+                <li>Share subscription, share purchase, and shareholders’ agreements</li>
+                <li>Founder arrangements and equity structuring</li>
+                <li>FEMA and FDI compliance for inbound and outbound investments</li>
+                <li>Post-closing filings and ongoing regulatory support</li>
+              </ul>
+            </div>
+
+            <!-- 03 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">03</div>
+              <h3>Mergers & Acquisitions</h3>
+              <ul class="custom-list">
+                <li>Acquisitions, divestments, and exit transactions</li>
+                <li>Buy-side and sell-side due diligence</li>
+                <li>Transaction documentation and negotiations</li>
+                <li>Cross-border M&A support with regulatory compliance</li>
+              </ul>
+            </div>
+
+            <!-- 04 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">04</div>
+              <h3>Loans & Debt Financing</h3>
+              <ul class="custom-list">
+                <li>Advisory on secured and unsecured lending arrangements</li>
+                <li>Venture debt, structured debt, and working capital facilities</li>
+                <li>Drafting and negotiating loan agreements, security documents, and guarantees</li>
+                <li>Lender and borrower-side transaction advisory</li>
+                <li>Regulatory and compliance framework relative to debt transactions</li>
+              </ul>
+            </div>
+
+            <!-- 05 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">05</div>
+              <h3>Commercial Contracts</h3>
+              <ul class="custom-list">
+                <li>SaaS and technology agreements</li>
+                <li>Vendor, procurement, supply, and services contracts</li>
+                <li>Distribution, franchise, and licensing agreements</li>
+                <li>Consultancy and non-disclosure / confidentiality agreements</li>
+                <li>Contract risk assessment and complex negotiation support</li>
+                <li>Standardization of recurring agreements for operational efficiency</li>
+              </ul>
+            </div>
+
+            <!-- 06 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">06</div>
+              <h3>Employment Law</h3>
+              <ul class="custom-list">
+                <li>Drafting and review of employment agreements, offer letters, and consultancy arrangements</li>
+                <li>Advisory on employment law compliance, HR policies, and POSH frameworks</li>
+                <li>ESOP structuring, documentation, implementation, and liquidity support</li>
+                <li>Advisory on workforce structuring, exits, terminations, and separation documentation</li>
+              </ul>
+            </div>
+
+            <!-- 07 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">07</div>
+              <h3>Regulatory Compliance & Risk Management</h3>
+              <ul class="custom-list">
+                <li>Advisory on FEMA, FDI Policy, OI Rules, Companies Act, Contract Act, and allied laws</li>
+                <li>Corporate governance, board-level advisory, and compliance reviews</li>
+                <li>Ongoing compliance management, risk assessment, and monitoring</li>
+                <li>Advisory on all statutory and sector-specific regulatory filings</li>
+              </ul>
+            </div>
+
+            <!-- 08 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">08</div>
+              <h3>Due Diligence Report</h3>
+              <ul class="custom-list">
+                <li>Comprehensive Legal, Secretarial, and Financial Due Diligence</li>
+                <li>Transactional due diligence for investments, debt financing, and M&A transactions</li>
+                <li>Contractual and regulatory risk assessment audits</li>
+                <li>Issue-based due diligence reports supported by practical remediation guidance</li>
+              </ul>
+            </div>
+
+            <!-- 09 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">09</div>
+              <h3>Dispute & Pre-Litigation Support</h3>
+              <ul class="custom-list">
+                <li>Advisory on complex contractual and employment-related disputes</li>
+                <li>Drafting and negotiation of settlement and separation agreements</li>
+                <li>Robust pre-litigation strategy to mitigate cost and timeline risks</li>
+                <li>Risk evaluation, assessment, and dispute management support</li>
+              </ul>
+            </div>
+
+            <!-- 10 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">10</div>
+              <h3>Business Valuation</h3>
+              <ul class="custom-list">
+                <li>Business Valuation of Securities or Financial Assets (SFA)</li>
+                <li>Valuation required for share issuance, buybacks, amalgamation, and demergers</li>
+                <li>Statutory valuation services for Insolvency & Bankruptcy Law (IBC)</li>
+                <li>Determination of fair value of investments under Ind As 113</li>
+              </ul>
+            </div>
+
+            <!-- 11 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">11</div>
+              <h3>Representation before Authorities</h3>
+              <ul class="custom-list">
+                <li>Registrar of Companies (ROC) and Regional Director (RD) proceedings</li>
+                <li>National Company Law Tribunal (NCLT) & NCLAT representation</li>
+                <li>Debt Recovery Tribunal (DRT & DRAT) and High Court matters</li>
+                <li>Securities & Exchange Board of India (SEBI) & Economic Offense Court</li>
+                <li>Arbitration representation and strategic litigation guidance</li>
+              </ul>
+            </div>
+
+            <!-- 12 -->
+            <div class="svc-detail-card reveal">
+              <div class="svc-num">12</div>
+              <h3>Bankruptcy and Insolvency</h3>
+              <ul class="custom-list">
+                <li>Advisory on Corporate Insolvency Resolution Process (CIRP) under IBC.</li>
+                <li>Representation for Financial Creditors, Operational Creditors, Resolution Professionals and
+                  Corporate Debtors.</li>
+                <li>Drafting and review of Resolution Plans.</li>
+                <li>Advisory on Voluntary Liquidation and Winding-up proceedings.</li>
+              </ul>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- WHY ADVERIS FOR COMPLIANCE -->
+    <div class="card-wrap bg-off">
+      <section class="section">
+        <div class="container">
+          <div class="grid-2" style="gap:80px;align-items:center;">
+            <div class="reveal-left">
+              <p class="sec-label">Our Process</p>
+              <h2 class="sec-title">How We <em>Work</em> With You</h2>
+              <div class="sec-divider"></div>
+              <div style="display:flex;flex-direction:column;gap:24px;margin-top:8px;">
+                <div style="display:flex;gap:20px;align-items:flex-start;">
+                  <div
+                    style="min-width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);">
+                    1</div>
+                  <div><strong style="display:block;color:var(--navy);margin-bottom:4px;">Initial
+                      Consultation</strong><span style="color:var(--text-grey);font-size:0.95rem;">We understand your
+                      business, objectives, and current compliance posture in a free discovery call.</span></div>
+                </div>
+                <div style="display:flex;gap:20px;align-items:flex-start;">
+                  <div
+                    style="min-width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);">
+                    2</div>
+                  <div><strong style="display:block;color:var(--navy);margin-bottom:4px;">Tailored
+                      Proposal</strong><span style="color:var(--text-grey);font-size:0.95rem;">We design a customised
+                      engagement with clear scope, timelines, and transparent pricing.</span></div>
+                </div>
+                <div style="display:flex;gap:20px;align-items:flex-start;">
+                  <div
+                    style="min-width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);">
+                    3</div>
+                  <div><strong style="display:block;color:var(--navy);margin-bottom:4px;">Expert Execution</strong><span
+                      style="color:var(--text-grey);font-size:0.95rem;">Our certified professionals execute with
+                      precision, keeping you informed at every stage.</span></div>
+                </div>
+                <div style="display:flex;gap:20px;align-items:flex-start;">
+                  <div
+                    style="min-width:40px;height:40px;background:var(--saffron);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--navy);">
+                    4</div>
+                  <div><strong style="display:block;color:var(--navy);margin-bottom:4px;">Ongoing Advisory</strong><span
+                      style="color:var(--text-grey);font-size:0.95rem;">We remain your proactive compliance partner —
+                      monitoring changes and alerting you before deadlines.</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="reveal-right" style="text-align:center;">
+              <div style="background:var(--navy);border-radius:var(--radius-sm);padding:56px 40px;">
+                <div
+                  style="font-family:var(--font-serif);font-size:5rem;font-weight:700;color:var(--saffron);line-height:1;">
+                  12</div>
+                <div
+                  style="font-size:0.8rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:32px;">
+                  Practice Areas</div>
+                <div
+                  style="font-family:var(--font-serif);font-size:5rem;font-weight:700;color:var(--saffron);line-height:1;">
+                  165+</div>
+                <div
+                  style="font-size:0.8rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:32px;">
+                  Clients Served</div>
+                <div
+                  style="font-family:var(--font-serif);font-size:5rem;font-weight:700;color:var(--saffron);line-height:1;">
+                  100%</div>
+                <div
+                  style="font-size:0.8rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(255,255,255,0.5);">
+                  Compliance Accuracy</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="card-wrap">
+      <div class="cta-band">
+        <p class="sec-label" style="justify-content:center;color:var(--saffron);">Get Started</p>
+        <h2>Ready to Talk to Our <em style="color:var(--saffron);">Experts?</em></h2>
+        <p>Book a complimentary discovery call with our team. No obligation, just clarity.</p>
+        <a href="contact.html" class="btn btn-primary">Schedule a Consultation</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-saffron-bar"></div>
+    <div class="container" style="padding-top:72px;">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="nav__logo" style="margin-bottom:16px;"><span class="logo-name"
+              style="font-family:var(--font-serif);font-size:1.8rem;color:white;">Adveris</span><span
+              class="logo-tagline" style="color:rgba(255,255,255,0.45);">Advisors LLP</span></div>
+          <p>Your Trusted Advisory Partner in India.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Practice Areas</h4>
+          <a href="services.html#01">Corporate Advisory</a>
+          <a href="services.html#02">VC &amp; Private Equity</a>
+          <a href="services.html#03">Mergers &amp; Acquisitions</a>
+          <a href="services.html#04">Loans &amp; Debt Financing</a>
+          <a href="services.html#05">Commercial Contracts</a>
+          <a href="services.html#06">Employment Law</a>
+          <a href="services.html#07">Regulatory Compliance</a>
+          <a href="services.html#08">Due Diligence</a>
+          <a href="services.html#09">Dispute &amp; Pre-Litigation</a>
+          <a href="services.html#10">Business Valuation</a>
+          <a href="services.html#11">Authorities Representation</a>
+          <a href="services.html#12">Bankruptcy &amp; Insolvency</a>
+        </div>
+        <div class="footer-col">
+          <h4>Firm</h4><a href="about.html">About Us</a><a href="team.html">Our Team</a><a
+            href="insights.html">Insights</a><a href="careers.html">Careers</a><a href="contact.html">Contact</a>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4><a href="tel:+919739382704">+91 97393 82704</a><a
+            href="mailto:csashikgswamy@gmail.com">csashikgswamy@gmail.com</a><a
+            href="https://www.google.com/maps/search/?api=1&query=Om+Chambers+648/A,+4th+Flr+Binnamangala+1st+stg+Indiranagar+Bengaluru+560038"
+            target="_blank" rel="noopener">Om Chambers 648/A, Indiranagar</a><a
+            href="https://www.google.com/maps/search/?api=1&query=Om+Chambers+648/A,+4th+Flr+Binnamangala+1st+stg+Indiranagar+Bengaluru+560038"
+            target="_blank" rel="noopener">Bengaluru — 560038</a>
+          <div class="footer-socials">
+            <a href="https://linkedin.com/company/placeholder" target="_blank" rel="noopener" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect x="2" y="9" width="4" height="12"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom"><span>© 2026 Adveris Advisors LLP. All rights reserved.</span><span>Bengaluru,
+          India</span></div>
+    </div>
+  </footer>
+  <script src="js/consent.js"></script>
+  <script src="js/lenis.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

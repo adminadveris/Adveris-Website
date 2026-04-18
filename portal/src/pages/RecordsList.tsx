@@ -1,120 +1,131 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import Pagination from '../components/Pagination';
 
 const RecordsList = () => {
   const [records, setRecords] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    mockApi.getRecords().then(setRecords);
+    Promise.all([mockApi.getRecords(), mockApi.getAccounts()]).then(([recs, accs]) => {
+      setRecords(recs);
+      setAccounts(accs);
+    });
   }, []);
 
+  const paginatedRecords = records.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
-    <div className="portal-content-wide">
-      {/* Header */}
-      <div className="portal-page-header">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 'var(--radius-sm)', background: 'var(--saffron-pale)', border: '1px solid var(--saffron-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--saffron)' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-              </div>
-              <h1>Service <em>Portfolio</em></h1>
-            </div>
-            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.5)', fontWeight: 300 }}>
-              Manage and track all active firm mandates.
-            </p>
-          </div>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search ADV-ID or mandate..."
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1.5px solid rgba(255,255,255,0.08)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '11px 18px 11px 40px',
-                color: 'white',
-                fontSize: '0.88rem',
-                outline: 'none',
-                width: 280,
-                fontFamily: 'var(--font-sans)',
-                transition: 'border-color 0.3s ease'
-              }}
-            />
-          </div>
+    <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40 }}>
+      <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div style={{ paddingBottom: 0 }}>
+           <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.45em', opacity: 0.2, textTransform: 'uppercase' }}>
+             {records.length} ACTIVE RECORDS
+           </span>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="portal-panel">
-        <div className="portal-table-wrap">
-          <table className="portal-table">
-            <thead>
-              <tr>
-                <th>Record ID</th>
-                <th>Client Mandate</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {records.length > 0 ? records.map(record => (
-                <tr key={record.id}>
-                  <td>
-                    <span className="portal-record-id">{record.request_number}</span>
+      {/* TABLE SECTION — Standardized High-Density UI */}
+      <div className="portal-panel" style={{ padding: 0, overflow: 'visible' }}>
+        <table className="portal-table-v2">
+          <thead>
+            <tr>
+              <th style={{ paddingLeft: 60, width: 100 }}>Firm ID</th>
+              <th>Account Mandate</th>
+              <th>Account Name</th>
+              <th>Created By</th>
+              <th style={{ width: 90 }}>Priority</th>
+              <th style={{ width: 140 }}>Document Verification Status</th>
+              <th style={{ textAlign: 'right', paddingRight: 60, width: 90 }}>Status</th>
+              <th style={{ textAlign: 'right', paddingRight: 60, width: 100 }}>Created Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedRecords.length > 0 ? paginatedRecords.map(record => {
+              const account = accounts.find(a => a.id === record.account_id);
+              return (
+                <tr 
+                  key={record.id} 
+                  onClick={() => navigate(`/dashboard/records/${record.id}`)} 
+                  style={{ cursor: 'pointer' }}
+                >
+                  <td style={{ paddingLeft: 60 }}>
+                    <span style={{ opacity: 0.4 }}>{record.request_number}</span>
                   </td>
                   <td>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.05rem', color: 'white', marginBottom: 4 }}>
-                      {record.primary_service}
+                    <div style={{ color: 'white', fontWeight: 500 }}>
+                      {record.title || record.primary_service}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>
-                      {record.opted_sub_services?.slice(0, 2).join(' · ')}{record.opted_sub_services?.length > 2 ? ' ...' : ''}
-                    </div>
-                  </td>
-                  <td style={{ fontWeight: 400, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>
-                    {new Date(record.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                   <td>
-                    <span className="portal-badge portal-badge--pending portal-badge--dot">
-                      {record.status}
+                     <div style={{ color: 'var(--gold)', opacity: 0.6, fontWeight: 300 }}>
+                       {account?.account_name || 'Individual Identity'}
+                     </div>
+                  </td>
+                  <td>
+                     <div style={{ opacity: 0.4, fontStyle: 'italic', fontSize: '0.75rem' }}>
+                       {record.submitted_by_name || 'System'}
+                     </div>
+                  </td>
+                  <td>
+                     <span style={{ 
+                        fontWeight: 400, opacity: 0.5, fontSize: '0.7rem',
+                        color: record.priority === 'Critical' ? '#ef4444' : 'inherit'
+                     }}>
+                        {record.priority?.toUpperCase() || 'STANDARD'}
+                     </span>
+                  </td>
+                  <td>
+                     <span style={{ opacity: 0.3, fontSize: '0.7rem' }}>
+                        {record.verification_status || 'PENDING'}
+                     </span>
+                  </td>
+                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                    <span style={{ 
+                      fontWeight: 500, 
+                      color: 'var(--saffron)', opacity: 0.8
+                    }}>
+                      {record.status?.toUpperCase() || 'ACTIVE'}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'right' }}>
-                    <button style={{
-                      fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase',
-                      color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer',
-                      transition: 'color 0.2s ease', display: 'inline-flex', alignItems: 'center', gap: 6
-                    }}>
-                      View Details
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                        <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                      </svg>
-                    </button>
+                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                    <span style={{ opacity: 0.4, fontSize: '0.75rem' }}>
+                      {new Date(record.created_at).toLocaleDateString()}
+                    </span>
                   </td>
                 </tr>
-              )) : (
-                <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '80px 24px' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" style={{ margin: '0 auto 20px', display: 'block' }}>
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <p style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'rgba(255,255,255,0.2)', fontSize: '1.1rem' }}>
-                      No records found. Start by creating a New Request.
-                    </p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              );
+            }) : (
+              <tr>
+                <td colSpan={6} style={{ textAlign: 'center', padding: '160px 0', opacity: 0.1 }}>
+                  <p className="serif-title" style={{ fontSize: '1.8rem', fontStyle: 'italic' }}>Operational ledger is empty...</p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+        
+        <Pagination 
+          currentPage={currentPage}
+          totalItems={records.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+        />
+      </div>
+
+      {/* FOOTER NOTE */}
+      <div style={{ marginTop: 60, textAlign: 'center' }}>
+         <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em' }}>
+            All records are time-stamped and governed by the Adveris Professional Protocol. Proprietary intellectual asset tracking enabled.
+         </p>
       </div>
     </div>
   );

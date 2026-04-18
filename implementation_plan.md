@@ -91,7 +91,8 @@ Sections:
 - India-specific regulatory context
 
 #### [NEW] team.html — Our Team
-- Ashik G Swamy — Founder & Managing Partner
+- Leadership
+- Ashik G Swamy — Core Member
 - Arthi — Partner
 - [Partner Name] — Partner (placeholder)
 - Search and filter by practice area
@@ -125,7 +126,7 @@ Services: Corporate Law, M&A, Regulatory Compliance (SEBI/RBI/MCA), Company Secr
 #### [NEW] contact.html — Contact
 - Contact form (Name, Email, Phone, Service Enquiry, Message)
 - Phone: +91 97393 82704
-- Email: csashikgswamy@gmail.com
+- Email: admin@adverisadvisors.com
 - Location: Bengaluru, Karnataka
 - Embedded Google Maps placeholder
 - Office hours
@@ -200,13 +201,14 @@ The site is built with clear hook points for Phase 2:
 ## Deployment Plan (Step-by-Step to Go Live)
 
 ### Phase 1 — Static Launch (~₹800/year total)
-1. **Buy domain**: `adverisadvisors.in` via BigRock or GoDaddy (~₹800/year)
+1. **Buy domain**: `adverisadvisors.com` via BigRock or GoDaddy (~₹800/year)
 2. **GitHub**: Create free account → push code to repo
 3. **Netlify**: Connect GitHub repo → auto-deploys on every push
 4. **Custom domain**: Point your domain to Netlify (5-min setup)
 5. **SSL**: Netlify provides free HTTPS automatically
 6. **Netlify CMS**: Enable to allow non-developer content updates
 7. **Google Search Console**: Submit sitemap for faster indexing
+8. **Vercel/GoDaddy Integration**: Point `portal.adverisadvisors.com` to Vercel deployment.
 
 ### Phase 2 — Portal Launch (~₹0–₹2,000/month)
 1. **Supabase**: Free project (50K users, 500MB DB)
@@ -214,7 +216,7 @@ The site is built with clear hook points for Phase 2:
 3. **DB tables**: users, roles, documents, reviews, audit_log
 4. **Edge Functions**: Document review triggers + email via Resend
 5. **Row Level Security**: Supabase RLS enforces role permissions without code
-6. **Google Workspace**: For professional email (csashik@adverisadvisors.in)
+6. **Google Workspace**: For professional email (csashik@adverisadvisors.com)
 
 ---
 

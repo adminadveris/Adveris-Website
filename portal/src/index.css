@@ -1,66 +1,314 @@
 /* ============================================================
-   PORTAL GLOBAL STYLES
-   Uses the same design system as adveris website
+   ADVERIS HYPER-AESTHETIC V3 (SPECULAR MATERIALS)
+   Focus: Material Fidelity, Whisper Typography, Calligraphic Soul
    ============================================================ */
 
-/* Import Google Fonts — same as website */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@100;200;300;400;500;600;700&display=swap');
 
-/* === DESIGN TOKENS — exact copy from website style.css === */
 :root {
   --saffron: #FF9933;
   --gold: #C9A84C;
-  --gold-light: #DFC070;
-  --saffron-hover: #E07B00;
-  --saffron-light: #FFB366;
-  --saffron-pale: rgba(255,153,51,0.1);
-  --saffron-border: rgba(255,153,51,0.3);
+  --navy-deep: #03050C; /* Absolute depth for specular contrast */
   --navy: #0D1B3E;
-  --navy-light: #1B2B5E;
-  --white: #FFFFFF;
-  --off-white: #F8F6F1;
-  --text-dark: #0D1B3E;
-  --text-body: #374151;
-  --text-grey: #6B7280;
-  --border: rgba(13,27,62,0.1);
-  --shadow-sm: 0 4px 16px rgba(13,27,62,0.08);
-  --shadow-md: 0 8px 40px rgba(13,27,62,0.12);
-  --shadow-lg: 0 20px 64px rgba(13,27,62,0.18);
+  --glass-reflection: rgba(255, 255, 255, 0.05);
+  --glass-inner-edge: rgba(255, 255, 255, 0.08);
+  --glass-subtle: rgba(255, 255, 255, 0.012);
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Inter', -apple-system, sans-serif;
-  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in-out: cubic-bezier(0.37, 0, 0.63, 1);
-  --t: 0.35s cubic-bezier(0.37, 0, 0.63, 1);
-  --t-slow: 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --radius: 24px;
-  --radius-sm: 12px;
-  --radius-pill: 9999px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-lux: 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+html { 
+  font-size: 16px; 
+  -webkit-font-smoothing: antialiased; 
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--navy-deep);
+}
 
 body {
   font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.75;
-  letter-spacing: -0.01em;
+  font-weight: 200; /* Whisper Baseline */
+  letter-spacing: 0.01em;
   color: white;
-  background: var(--navy);
+  min-height: 100vh;
   overflow-x: hidden;
-  font-weight: 400;
+  background: radial-gradient(circle at 0% 0%, #111B35 0%, #03050C 100%);
 }
 
-h1, h2, h3, h4, h5 {
+/* FILM GRAIN ENGINE */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3, .serif-title {
   font-family: var(--font-serif);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: -0.01em;
 }
 
-a { color: inherit; text-decoration: none; }
-ul { list-style: none; }
-button { font-family: var(--font-sans); font-size: inherit; border: none; background: none; cursor: pointer; }
-input, textarea, select { font-family: var(--font-sans); }
+/* --- THE ATMOSPHERE (MESH GRADIENT) --- */
+.portal-aurora-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.aurora-blob {
+  position: absolute;
+  filter: blur(200px);
+  opacity: 0.22;
+  border-radius: 50%;
+}
+
+.aurora-blob-1 {
+  width: 1600px;
+  height: 1600px;
+  background: radial-gradient(circle, var(--gold) 0%, transparent 60%);
+  top: -600px;
+  left: -400px;
+  animation: auraFloat 40s infinite alternate;
+}
+
+.aurora-blob-2 {
+  width: 1400px;
+  height: 1400px;
+  background: radial-gradient(circle, var(--saffron) 0%, transparent 60%);
+  bottom: -600px;
+  right: -400px;
+  animation: auraFloat 45s infinite alternate-reverse;
+}
+
+@keyframes auraFloat {
+  0% { transform: translate(0,0) scale(1) rotate(0deg); opacity: 0.15; }
+  50% { transform: translate(100px, 50px) scale(1.05) rotate(5deg); opacity: 0.25; }
+  100% { transform: translate(-50px, 20px) scale(1) rotate(-2deg); opacity: 0.2; }
+}
+
+/* --- CALLIGRAPHIC SIGNATURE --- */
+.portal-brand-lockup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-main {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic; /* The Calligraphy Soul */
+  font-size: 2.2rem;
+  color: white;
+  letter-spacing: -0.02em;
+  line-height: 0.8;
+}
+
+.brand-subline {
+  font-family: var(--font-sans);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.45em; /* Extremely wide tracking */
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* --- WHISPER NAVIGATION --- */
+.portal-nav-pill-v2 {
+  font-size: 0.62rem;
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  transition: all 0.6s var(--ease);
+  padding: 12px 0;
+}
+
+.portal-nav-pill-v2:hover, .portal-nav-pill-v2.active {
+  color: white;
+  letter-spacing: 0.45em;
+  opacity: 1;
+}
+
+/* --- SPECULAR GLASS PANELS --- */
+.portal-panel {
+  background: var(--glass-subtle);
+  backdrop-filter: blur(80px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  /* The Specular Edge */
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
+    0 40px 100px -30px rgba(0,0,0,0.6);
+  border-radius: 4px;
+  padding: 80px;
+  transition: all var(--t-lux);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glass Reflection Overlay */
+.portal-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.portal-panel:hover {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+    0 20px 60px -15px rgba(0,0,0,0.6);
+}
+
+/* --- MINIMALIST TABLE REFACTION --- */
+.portal-table-v2 {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.portal-table-v2 th {
+  padding: 14px 24px;
+  text-align: left;
+  font-family: var(--font-serif);
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.4em; /* Institutional tracking */
+  color: rgba(255,255,255,0.2);
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.01);
+}
+
+.portal-table-v2 td {
+  padding: 12px 24px;
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: rgba(255,255,255,0.5);
+  border-bottom: 1px solid rgba(255,255,255,0.01);
+  transition: none !important;
+}
+
+/* Table Styles Managed in portal.css */
+
+/* Button Styles Managed in portal.css */
+
+/* --- INSTITUTIONAL LABELS --- */
+.firm-intel-tag {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.tag-line {
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.3;
+}
+
+/* --- THEATER LAYOUT --- */
+.theater-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 40px;
+}
+
+/* --- WHISPER INPUTS (ELEGANCE V4) --- */
+.portal-form-group {
+  margin-bottom: 48px;
+}
+
+.portal-form-label {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.25);
+  margin-bottom: 16px;
+  font-family: var(--font-sans);
+}
+
+.portal-form-control {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 20px 0;
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: white;
+  transition: all 0.6s var(--ease);
+  outline: none;
+  border-radius: 0;
+}
+
+.portal-form-control::placeholder {
+  color: rgba(255, 255, 255, 0.1);
+  font-style: italic;
+  font-size: 1.2rem;
+}
+
+.portal-form-control:focus {
+  border-bottom-color: var(--saffron);
+  padding-left: 12px;
+  background: linear-gradient(to right, rgba(255, 153, 51, 0.02), transparent);
+}
+
+select.portal-form-control {
+  cursor: pointer;
+  appearance: none;
+  color: white;
+}
+
+textarea.portal-form-control {
+  min-height: 120px;
+  padding-top: 10px;
+  line-height: 1.6;
+}
+
+/* --- MINIMAL SELECT (PAGINATION) --- */
+.portal-select-minimal {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  transition: all 0.3s var(--ease);
+}
+
+.portal-select-minimal:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.portal-select-minimal option {
+  background: #0D1B3E; /* Solid navy for dropdown options visibility */
+  color: white;
+  padding: 10px;
+}

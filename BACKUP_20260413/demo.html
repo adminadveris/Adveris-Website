@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    .calculator {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow:
+        0 25px 45px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .display {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 20px 24px;
+      text-align: right;
+      margin-bottom: 20px;
+      min-width: 280px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .display-expression {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 16px;
+      height: 24px;
+      overflow: hidden;
+    }
+
+    .display-result {
+      color: #fff;
+      font-size: 42px;
+      font-weight: 300;
+      letter-spacing: -1px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      font-size: 24px;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .btn-number {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-number:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-operator {
+      background: rgba(255, 107, 107, 0.8);
+      color: #fff;
+    }
+
+    .btn-operator:hover {
+      background: rgba(255, 107, 107, 1);
+    }
+
+    .btn-equals {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .btn-equals:hover {
+      background: linear-gradient(135deg, #7b8ff0 0%, #8a5cb8 100%);
+    }
+
+    .btn-clear {
+      background: rgba(255, 82, 82, 0.8);
+      color: #fff;
+    }
+
+    .btn-clear:hover {
+      background: rgba(255, 82, 82, 1);
+    }
+
+    .btn-decimal {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .btn-decimal:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-percent {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-percent:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .btn-plus-minus {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .btn-plus-minus:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    button.span-2 {
+      grid-column: span 2;
+      width: auto;
+      border-radius: 32px;
+      padding: 0 32px;
+    }
+  </style>
+  <link rel="stylesheet" href="css/consent.css"/>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display">
+      <div class="display-expression" id="expression"></div>
+      <div class="display-result" id="result">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn-clear" onclick="clearAll()">AC</button>
+      <button class="btn-plus-minus" onclick="toggleSign()">+/-</button>
+      <button class="btn-percent" onclick="percent()">%</button>
+      <button class="btn-operator" onclick="setOperator('/')">÷</button>
+
+      <button class="btn-number" onclick="appendNumber('7')">7</button>
+      <button class="btn-number" onclick="appendNumber('8')">8</button>
+      <button class="btn-number" onclick="appendNumber('9')">9</button>
+      <button class="btn-operator" onclick="setOperator('*')">×</button>
+
+      <button class="btn-number" onclick="appendNumber('4')">4</button>
+      <button class="btn-number" onclick="appendNumber('5')">5</button>
+      <button class="btn-number" onclick="appendNumber('6')">6</button>
+      <button class="btn-operator" onclick="setOperator('-')">−</button>
+
+      <button class="btn-number" onclick="appendNumber('1')">1</button>
+      <button class="btn-number" onclick="appendNumber('2')">2</button>
+      <button class="btn-number" onclick="appendNumber('3')">3</button>
+      <button class="btn-operator" onclick="setOperator('+')">+</button>
+
+      <button class="btn-number span-2" onclick="appendNumber('0')">0</button>
+      <button class="btn-decimal" onclick="appendDecimal()">.</button>
+      <button class="btn-equals" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let currentNumber = '0';
+    let previousNumber = '';
+    let operator = null;
+    let shouldResetDisplay = false;
+
+    const resultEl = document.getElementById('result');
+    const expressionEl = document.getElementById('expression');
+
+    function updateDisplay() {
+      resultEl.textContent = currentNumber.length > 16
+        ? parseFloat(currentNumber).toExponential(8)
+        : currentNumber;
+    }
+
+    function appendNumber(num) {
+      if (shouldResetDisplay) {
+        currentNumber = num;
+        shouldResetDisplay = false;
+      } else if (currentNumber === '0' && num !== '0') {
+        currentNumber = num;
+      } else if (currentNumber === '0' && num === '0') {
+        return;
+      } else if (currentNumber.replace(/[^0-9]/g, '').length < 16) {
+        currentNumber += num;
+      }
+      updateDisplay();
+    }
+
+    function appendDecimal() {
+      if (shouldResetDisplay) {
+        currentNumber = '0.';
+        shouldResetDisplay = false;
+      } else if (!currentNumber.includes('.')) {
+        currentNumber += '.';
+      }
+      updateDisplay();
+    }
+
+    function setOperator(op) {
+      if (operator && !shouldResetDisplay) {
+        calculate();
+      }
+      previousNumber = currentNumber;
+      operator = op;
+      shouldResetDisplay = true;
+      updateExpression();
+    }
+
+    function calculate() {
+      if (!operator || shouldResetDisplay) return;
+
+      const prev = parseFloat(previousNumber);
+      const curr = parseFloat(currentNumber);
+      let result;
+
+      switch (operator) {
+        case '+': result = prev + curr; break;
+        case '-': result = prev - curr; break;
+        case '*': result = prev * curr; break;
+        case '/': result = curr !== 0 ? prev / curr : 'Error'; break;
+      }
+
+      if (result === 'Error') {
+        currentNumber = 'Error';
+      } else {
+        currentNumber = String(parseFloat(result.toFixed(10).replace(/\.?0+$/, '')));
+      }
+
+      operator = null;
+      previousNumber = '';
+      shouldResetDisplay = true;
+      updateDisplay();
+      expressionEl.textContent = '';
+    }
+
+    function clearAll() {
+      currentNumber = '0';
+      previousNumber = '';
+      operator = null;
+      shouldResetDisplay = false;
+      expressionEl.textContent = '';
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (currentNumber !== '0') {
+        currentNumber = currentNumber.startsWith('-')
+          ? currentNumber.slice(1)
+          : '-' + currentNumber;
+        updateDisplay();
+      }
+    }
+
+    function percent() {
+      currentNumber = String(parseFloat(currentNumber) / 100);
+      updateDisplay();
+    }
+
+    function updateExpression() {
+      const opSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[operator];
+      expressionEl.textContent = `${previousNumber} ${opSymbol}`;
+    }
+  </script>
+  <script src="js/consent.js"></script>
+</body>
+</html>

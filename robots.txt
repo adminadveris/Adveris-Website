@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.adverisadvisors.in/sitemap.xml
+Sitemap: https://www.adverisadvisors.com/sitemap.xml
 
 Disallow: /assets/

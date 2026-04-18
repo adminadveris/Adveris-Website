@@ -58,7 +58,7 @@ const newOverlay = `  <!-- MENU OVERLAY — NKF-style grid / mobile accordion --
           <div class="menu-sub-group">
             <div class="menu-sub-label">Contact</div>
             <a href="tel:+919739382704" class="menu-sub-link">+91 97393 82704</a>
-            <a href="mailto:csashikgswamy@gmail.com" class="menu-sub-link">csashikgswamy@gmail.com</a>
+            <a href="mailto:admin@adverisadvisors.com" class="menu-sub-link">admin@adverisadvisors.com</a>
             <a href="contact.html" class="menu-sub-link">Bengaluru, Karnataka</a>
           </div>
         </div>
