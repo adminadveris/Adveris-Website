@@ -70,7 +70,7 @@ function App() {
   }
 
   return (
-    <Router>
+    <Router basename="/portal">
       <PageBackground />
       <Routes>
         <Route path="/" element={!session ? <Login /> : <Navigate to="/dashboard" />} />

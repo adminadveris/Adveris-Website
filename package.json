@@ -1,0 +1,9 @@
+{
+  "name": "adveris-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd portal && npm install && npm run build",
+    "portal-dev": "cd portal && npm run dev"
+  }
+}

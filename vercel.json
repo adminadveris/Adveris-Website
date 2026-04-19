@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/portal/(.*)",
+      "destination": "/portal-dist/index.html"
+    },
+    {
+      "source": "/portal",
+      "destination": "/portal-dist/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/portal",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/portal/(.*)",
+      "destination": "/",
+      "permanent": false
+    }
+  ]
+}
