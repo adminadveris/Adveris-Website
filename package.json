@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist && mkdir dist && cp index.html dist/ && cp -r assets css js dist/ && (cd portal && npm install && npm run build) && mv portal-dist dist/portal",
+    "build": "rm -rf dist && mkdir dist && cp *.html *.png robots.txt sitemap.xml dist/ && cp -r assets css js dist/ && (cd portal && npm install && npm run build) && mv portal-dist dist/portal",
     "portal-dev": "cd portal && npm run dev"
   }
 }
