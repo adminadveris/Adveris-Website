@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import PortalLayout from '../components/PortalLayout';
 import NewRequest from './NewRequest';
@@ -10,7 +10,6 @@ import ClientDetail from './ClientDetail';
 import ClientForm from './ClientForm';
 import AccountDetail from './AccountDetail';
 import HistoryRegistry from './HistoryRegistry';
-import * as XLSX from 'xlsx';
 import { mockApi } from '../lib/mockApi';
 import Pagination from '../components/Pagination';
 import SearchableSelect from '../components/SearchableSelect';
@@ -193,7 +192,6 @@ const Timesheets = () => {
   const [hours, setHours] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [desc, setDesc] = useState('');
-  const [currentStatus, setCurrentStatus] = useState('submitted');
 
   const loadData = async () => {
     const [p, accs, recs, tlogs] = await Promise.all([
@@ -239,37 +237,11 @@ const Timesheets = () => {
     setHours(log.hours.toString());
     setDate(log.date);
     setDesc(log.description);
-    setCurrentStatus(log.status || 'submitted');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const isAdmin = profile.role === 'admin' || profile.role === 'staff';
-
-  const handleBulkStatus = async (status: string, overrideIds?: string[]) => {
-    setLoading(true);
-    try {
-      const idsToUpdate = overrideIds || selectedIds;
-      await mockApi.bulkUpdateTimesheetsStatus(idsToUpdate, status);
-      if (editingId && idsToUpdate.includes(editingId)) {
-        setCurrentStatus(status);
-      }
-      setSelectedIds([]);
-      await loadData();
-    } finally { setLoading(false); }
-  };
-
-  const handleSelectOne = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
-
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedIds(logs.map(l => l.id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { servicesData } from '../data/servicesData';
 import { mockApi } from '../lib/mockApi';
@@ -34,7 +34,7 @@ const NewRequest = () => {
   const [landmark, setLandmark] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-  const [country, setCountry] = useState('India');
+  const [country] = useState('India');
   const [pincode, setPincode] = useState('');
 
   // Service Data
