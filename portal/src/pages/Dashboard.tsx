@@ -1,4 +1,5 @@
-import { useEffect, useState, FormEvent, ReactNode, ChangeEvent } from 'react';
+import { useEffect, useState } from 'react';
+import type { FormEvent, ReactNode, ChangeEvent } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import PortalLayout from '../components/PortalLayout';
 import NewRequest from './NewRequest';
