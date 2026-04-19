@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/portal/(.*)",
-      "destination": "/portal-dist/index.html"
+      "destination": "/portal/index.html"
     },
     {
       "source": "/portal",
-      "destination": "/portal-dist/index.html"
+      "destination": "/portal/index.html"
     }
   ],
   "redirects": [
