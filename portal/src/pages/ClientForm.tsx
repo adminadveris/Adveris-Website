@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
 
@@ -74,7 +74,7 @@ const ClientForm = () => {
 
   useEffect(() => { loadData(); }, [id]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!formData.client_name || !formData.account_id) {
       alert('Client Name and Parent Account association are mandatory.');

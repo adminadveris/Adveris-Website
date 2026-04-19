@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent, ReactNode, ChangeEvent } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import PortalLayout from '../components/PortalLayout';
 import NewRequest from './NewRequest';
@@ -166,7 +166,7 @@ const Overview = () => {
 };
 
 /* ——— FORM FIELD ——— */
-const FF = ({ label, children }: { label: string, children: React.ReactNode }) => (
+const FF = ({ label, children }: { label: string, children: ReactNode }) => (
   <div className="portal-form-group">
     <label className="portal-form-label">{label}</label>
     {children}
@@ -243,7 +243,7 @@ const Timesheets = () => {
 
   const isAdmin = profile.role === 'admin' || profile.role === 'staff';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedRecordId) return;
     setLoading(true);
@@ -487,7 +487,7 @@ const Expenses = () => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
       setSelectedIds(entries.map(ent => ent.id));
     } else {
@@ -495,7 +495,7 @@ const Expenses = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedAccountId) return;
     setLoading(true);

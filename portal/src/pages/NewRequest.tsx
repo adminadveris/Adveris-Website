@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { servicesData } from '../data/servicesData';
 import { mockApi } from '../lib/mockApi';
@@ -106,7 +106,7 @@ const NewRequest = () => {
     init();
   }, [id]);
 
-  const handlePanCheck = async (e: React.FormEvent) => {
+  const handlePanCheck = async (e: FormEvent) => {
     e.preventDefault();
     if (!pan) return;
     setLoading(true);
@@ -128,7 +128,7 @@ const NewRequest = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedService || !accountName) {
       setError('Please ensure account selection and service domain are complete.');
