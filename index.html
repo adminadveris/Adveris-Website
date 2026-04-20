@@ -202,7 +202,7 @@
             <div class="sec-header__l">
               <p class="sec-label">Practice Areas</p>
               <h2 class="sec-title">Comprehensive <em>Legal & Compliance</em> Services</h2>
-              <p class="sec-body">We deliver end-to-end advisory across India's complex legal and regulatory landscape —
+              <p class="sec-body">We deliver end-to-end advisory across India's complex legal and regulatory landscape
                 from startup formation to enterprise compliance.</p>
             </div>
             <a href="services.html" class="arrow-link"><span class="line"></span><span>All Services</span><span
@@ -358,8 +358,8 @@
               <h2 class="sec-title">Where <em>Expertise</em> Meets Integrity</h2>
               <div class="sec-divider"></div>
               <p style="font-size:1.05rem;line-height:1.85;color:var(--text-grey);margin-bottom:20px;">Adveris Advisors
-                LLP was founded on the belief that every business — from a first-generation startup to a listed
-                enterprise — deserves world-class legal and compliance support.</p>
+                LLP was founded on the belief that every business from a first-generation startup to a listed
+                enterprise deserves world-class legal and compliance support.</p>
               <p style="font-size:1rem;line-height:1.85;color:var(--text-grey);margin-bottom:36px;">Operating out of
                 Bengaluru and serving clients across India, we bring together deep regulatory expertise, proactive
                 advisory, and a commitment to building long-term client relationships built on trust.</p>
@@ -505,29 +505,48 @@
     <div class="card-wrap bg-off" id="testimonials" data-section="testimonials" data-theme="light">
       <style>
         @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
-        .testimonials-scope { font-family: "Poppins", sans-serif; }
-        .testimonials-scope h1, .testimonials-scope h2, .testimonials-scope h4, .testimonials-scope p { font-family: "Poppins", sans-serif !important; }
+
+        .testimonials-scope {
+          font-family: "Poppins", sans-serif;
+        }
+
+        .testimonials-scope h1,
+        .testimonials-scope h2,
+        .testimonials-scope h4,
+        .testimonials-scope p {
+          font-family: "Poppins", sans-serif !important;
+        }
       </style>
-      
+
       <section class="section testimonials-scope" style="padding: 100px 0;">
         <div class="container">
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px;">
+          <div
+            style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px;">
             <p class="sec-label" style="justify-content: center; margin-bottom: 12px;">Trusted Advisor</p>
             <h2 class="sec-title" style="margin-bottom: 16px;">Loved by <em>Leading Businesses</em></h2>
-            <p class="sec-body" style="max-width: 600px; margin: 0 auto;">Every single testimonial is a testament to the profound impact we strive to create every single day through structured legal and compliance support.</p>
+            <p class="sec-body" style="max-width: 600px; margin: 0 auto;">Every single testimonial is a testament to the
+              profound impact we strive to create every single day through structured legal and compliance support.</p>
           </div>
 
           <div class="t-nav">
             <button id="t-prev" class="t-nav-btn" aria-label="Previous Testimonials">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </svg>
             </button>
             <button id="t-next" class="t-nav-btn" aria-label="Next Testimonials">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
 
           <div id="t-grid-container" class="t-grid"></div>
-          
+
           <div id="t-dots-container" class="t-dots"></div>
         </div>
       </section>
@@ -542,7 +561,7 @@
           { date: "Feb 22, 2026", text: "Handled our MCA transitions and annual filings with absolute precision. Their proactive approach to compliance is refreshing and efficient.", name: "Arvind", role: "ELEMENTS MANUFACTURING SOLUTIONS", initial: "A" },
           { date: "Feb 10, 2026", text: "Efficient partner compliance and LLP management. Adveris is our go-to choice for dependable legal services and structured advisory.", name: "Abhimanyu", role: "DESIGNFLOW SERVICE CONSULTANTS", initial: "A" },
           { date: "Jan 18, 2026", text: "Adveris' expertise in industrial compliance and corporate secretarial services has been a pillar for AU2MEK's operational stability.", name: "Swamy", role: "AU2MEK ENGINEERING SOLUTIONS", initial: "S" },
-          { date: "Jan 05, 2026", text: "From LLP formation to regular filings, the team at Adveris provides seamless and dependable advisory support for our tech venture.", name: "SANTOSH", role: "GENSERVE TECHNOLOGIES LLP", initial: "S" }
+          { date: "Jan 05, 2026", text: "From LLP formation to regular filings, the team at Adveris provides seamless and dependable advisory support for our tech venture.", name: "Anand S", role: "RAYNU Analytical & Research Lab LLP", initial: "S" }
         ];
 
         let index = 0;
@@ -553,7 +572,7 @@
           const container = document.getElementById('t-grid-container');
           const dotsContainer = document.getElementById('t-dots-container');
           const count = isMobile ? 1 : 3;
-          
+
           // Determine items to show (circularly if needed, but here we just slice and handle bounds)
           let items = [];
           for (let i = 0; i < count; i++) {
@@ -586,8 +605,8 @@
 
           // Render dots for mobile only
           if (isMobile) {
-            dotsContainer.innerHTML = testimonialsData.map((_, i) => 
-              `<button class="t-dot ${i === index ? 'active' : 'inactive'}" onclick="window.tSlideTo(${i})" aria-label="Slide ${i+1}"></button>`
+            dotsContainer.innerHTML = testimonialsData.map((_, i) =>
+              `<button class="t-dot ${i === index ? 'active' : 'inactive'}" onclick="window.tSlideTo(${i})" aria-label="Slide ${i + 1}"></button>`
             ).join('');
           } else {
             dotsContainer.innerHTML = '';
@@ -647,7 +666,7 @@
             <span class="logo-name" style="font-family:var(--font-serif);font-size:2.8rem;color:white;">Adveris</span>
             <span class="logo-tagline" style="color:rgba(255,255,255,0.45);font-size:0.95rem;">Advisors LLP</span>
           </div>
-          <p>Your Trusted Advisory Partner in India. Expert legal, compliance and company secretary services — delivered
+          <p>Your Trusted Advisory Partner in India. Expert legal, compliance and company secretary services delivered
             with integrity.</p>
         </div>
         <div class="footer-col">
@@ -682,7 +701,8 @@
           <a href="https://www.google.com/maps/search/?api=1&query=Om+Chambers+648/A,+4th+Flr+Binnamangala+1st+stg+Indiranagar+Bengaluru+560038"
             target="_blank" rel="noopener">Bengaluru — 560038</a>
           <div class="footer-socials">
-            <a href="https://www.linkedin.com/company/adveris-advisors-llp" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <a href="https://www.linkedin.com/company/adveris-advisors-llp/" target="_blank" rel="noopener"
+              aria-label="LinkedIn">
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
                 stroke-linecap="round" stroke-linejoin="round">
                 <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
