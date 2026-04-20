@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './index.css';
 import './portal.css';
 import './animations.css';
@@ -76,6 +77,7 @@ function App() {
         <Route path="/" element={!session ? <Login /> : <Navigate to="/dashboard" />} />
         <Route path="/dashboard/*" element={session ? <Dashboard /> : <Navigate to="/" />} />
       </Routes>
+      <SpeedInsights />
     </Router>
   );
 }
