@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect | Adveris Advisors LLP</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="icon" type="image/png" href="adveris_favicon_1776505504440.png" />
+  <style>
+    :root {
+      --bg: #0D1B3E;
+    }
+
+    body {
+      background: var(--bg);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px;
+      margin: 0;
+    }
+
+    .connect-container {
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      animation: fadeIn 1s var(--ease-out);
+    }
+
+    .connect-header {
+      margin-bottom: 40px;
+    }
+
+    .connect-avatar {
+      width: 90px;
+      height: 90px;
+      background: white;
+      color: var(--navy);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 700;
+      box-shadow: 0 0 30px rgba(255, 153, 51, 0.2);
+    }
+
+    .connect-title {
+      font-family: var(--font-serif);
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .connect-tagline {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.05em;
+      margin-bottom: 32px;
+    }
+
+    .connect-links {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .connect-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: var(--radius-sm);
+      color: white;
+      font-weight: 500;
+      transition: all 0.3s var(--ease);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .connect-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--saffron);
+      transform: translateY(-2px);
+    }
+
+    .connect-link span {
+      position: relative;
+      z-index: 2;
+    }
+
+    .link-primary {
+      background: var(--saffron);
+      color: var(--navy);
+      border: none;
+      font-weight: 600;
+    }
+
+    .link-primary:hover {
+      background: var(--saffron-hover);
+      color: white;
+    }
+
+    .icon {
+      margin-right: 12px;
+      width: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .connect-footer {
+      margin-top: auto;
+      padding-top: 60px;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body class="testimonials-scope">
+  <!-- Interactive blobs (subtle) -->
+  <div class="page-bg" aria-hidden="true" style="opacity: 0.3;">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-4"></div>
+  </div>
+
+  <div class="connect-container">
+    <header class="connect-header">
+      <div class="connect-avatar">Ad</div>
+      <h1 class="connect-title">Adveris <em>Advisors</em></h1>
+      <p class="connect-tagline">Trusted Advisory Partners | India</p>
+    </header>
+
+    <div class="connect-links">
+      <a href="https://www.linkedin.com/company/adveris-advisors-llp/" target="_blank" class="connect-link link-primary">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+        </span>
+        <span>LinkedIn</span>
+      </a>
+
+      <a href="services.html" class="connect-link">
+        <span>Our Services</span>
+      </a>
+
+      <a href="team.html" class="connect-link">
+        <span>The Leadership Team</span>
+      </a>
+
+      <a href="tel:+919739382704" class="connect-link">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </span>
+        <span>Call Us Now</span>
+      </a>
+
+      <a href="mailto:admin@adverisadvisors.com" class="connect-link">
+        <span class="icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </span>
+        <span>Click here for enquiry</span>
+      </a>
+
+      <a href="index.html" class="connect-link">
+        <span>Visit Main Website</span>
+      </a>
+    </div>
+
+    <footer class="connect-footer">
+      © 2026 Adveris Advisors LLP
+    </footer>
+  </div>
+</body>
+
+</html>
