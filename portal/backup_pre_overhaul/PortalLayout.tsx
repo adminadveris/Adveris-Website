@@ -103,7 +103,7 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
                 <span className="logo-name" style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', color: 'white' }}>Adveris</span>
                 <span className="logo-tagline" style={{ color: 'rgba(255,255,255,0.45)' }}>Advisors LLP</span>
               </div>
-              <p>Your Trusted Advisory Partner in India. Expert legal, compliance and company secretary services — delivered with integrity.</p>
+              <p>Your Trusted Advisory Partner in India. Expert legal, compliance and company secretary services delivered with integrity.</p>
             </div>
             <div className="footer-col">
               <h4>Support</h4>
