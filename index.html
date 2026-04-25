@@ -58,105 +58,8 @@
     <div class="blob blob-3"></div>
     <div class="blob blob-4"></div>
   </div>
-
-  <!-- NAV -->
-  <nav class="nav" id="mainNav" role="navigation" aria-label="Main navigation">
-    <div class="nav__inner">
-      <a href="index.html" class="nav__logo" aria-label="Adveris Advisors LLP Home">
-        <span class="logo-name">Adveris</span>
-        <span class="logo-tagline">Advisors LLP</span>
-      </a>
-      <!-- <div class="nav__crumb" aria-label="Breadcrumb">
-        <span>Firm</span><span class="sep">—</span><span id="navPage">Home</span>
-      </div> -->
-      <button class="nav__menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false"
-        aria-controls="menuOverlay">
-        <span>Menu</span>
-        <div class="menu-circle" aria-hidden="true">
-          <div class="menu-line"></div>
-          <div class="menu-line"></div>
-          <div class="menu-line"></div>
-        </div>
-      </button>
-    </div>
-  </nav>
-
-  <!-- MENU OVERLAY — NKF-style grid / mobile accordion -->
-  <div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Navigation menu">
-    <div class="menu-overlay__top">
-      <a href="index.html" class="menu-logo nav__logo">
-        <span class="logo-name">Adveris</span>
-        <span class="logo-tagline">Advisors LLP</span>
-      </a>
-      <button class="menu-close" id="menuClose" aria-label="Close menu">
-        <span>Close</span>
-        <div class="menu-close-circle" aria-hidden="true">&times;</div>
-      </button>
-    </div>
-    <div class="menu-body">
-      <!-- Col 1: Navigate -->
-      <div class="menu-col" id="mcol-1">
-        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="true" aria-controls="mcol-1-content">
-          Navigate</div>
-        <div class="menu-col-content" id="mcol-1-content">
-          <a href="index.html" class="menu-primary-link">Home</a>
-          <a href="about.html" class="menu-primary-link">About Us</a>
-          <a href="team.html" class="menu-primary-link">Our Team</a>
-          <a href="contact.html" class="menu-primary-link">Contact</a>
-        </div>
-      </div>
-      <!-- Col 2: Practice Areas -->
-      <div class="menu-col" id="mcol-2">
-        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="false" aria-controls="mcol-2-content">
-          Practice Areas</div>
-        <div class="menu-col-content" id="mcol-2-content">
-          <a href="services.html" class="menu-primary-link"><em>Services</em></a>
-          <div class="menu-sub-group">
-            <div class="menu-sub-label">What We Do</div>
-            <a href="services.html#01" class="menu-sub-link">Corporate Advisory</a>
-            <a href="services.html#02" class="menu-sub-link">VC &amp; Private Equity</a>
-            <a href="services.html#03" class="menu-sub-link">Mergers &amp; Acquisitions</a>
-            <a href="services.html#04" class="menu-sub-link">Loans &amp; Debt Financing</a>
-            <a href="services.html#05" class="menu-sub-link">Commercial Contracts</a>
-            <a href="services.html#06" class="menu-sub-link">Employment Law</a>
-            <a href="services.html#07" class="menu-sub-link">Regulatory Compliance</a>
-            <a href="services.html#08" class="menu-sub-link">Due Diligence</a>
-            <a href="services.html#09" class="menu-sub-link">Dispute &amp; Pre-Litigation</a>
-            <a href="services.html#10" class="menu-sub-link">Business Valuation</a>
-            <a href="services.html#11" class="menu-sub-link">Authorities Representation</a>
-            <a href="services.html#12" class="menu-sub-link">Bankruptcy &amp; Insolvency</a>
-          </div>
-        </div>
-      </div>
-      <!-- Col 3: Explore -->
-      <div class="menu-col" id="mcol-3">
-        <div class="menu-col-title" role="button" tabindex="0" aria-expanded="false" aria-controls="mcol-3-content">
-          Explore</div>
-        <div class="menu-col-content" id="mcol-3-content">
-          <a href="insights.html" class="menu-primary-link">Insights</a>
-          <a href="careers.html" class="menu-primary-link">Careers</a>
-          <div class="menu-sub-group">
-            <div class="menu-sub-label">Contact</div>
-            <a href="tel:+919739382704" class="menu-sub-link">+91 97393 82704</a>
-            <a href="mailto:admin@adverisadvisors.com" class="menu-sub-link">admin@adverisadvisors.com</a>
-            <a href="contact.html" class="menu-sub-link">Bengaluru, Karnataka</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Bottom bar -->
-    <div class="menu-bottom">
-      <div class="menu-bottom-left">
-        <a href="about.html" class="menu-bottom-link">About the Firm</a>
-        <a href="contact.html" class="menu-bottom-link">Get in Touch</a>
-        <a href="careers.html" class="menu-bottom-link">Careers</a>
-      </div>
-      <div class="menu-bottom-right">
-        <span style="font-size:0.7rem;color:rgba(255,255,255,0.3);letter-spacing:0.1em;">Bengaluru ·
-          Pan India</span>
-      </div>
-    </div>
-  </div>
+  <nav class="nav" id="mainNav"></nav>
+  <div class="menu-overlay" id="menuOverlay" role="dialog" aria-modal="true" aria-label="Navigation menu"></div>
 
 
 
@@ -208,16 +111,8 @@
             <a href="services.html" class="arrow-link"><span class="line"></span><span>All Services</span><span
                 class="arr">→</span></a>
           </div>
-          <div class="services-carousel stagger">
-            <div class="svc-card reveal">
-              <div
-                style="font-size: 2rem; color: var(--saffron); font-family: var(--font-serif); margin-bottom: 12px; line-height: 1;">
-                01</div>
-              <h3>Corporate Advisory</h3>
-              <p>Company incorporation, structuring, IPO support, and full-lifecycle corporate governance.</p>
-              <a href="services.html" class="arrow-link arrow-link-dark"><span class="line"></span><span>Learn
-                  more</span><span class="arr">→</span></a>
-            </div>
+          <div class="services-carousel stagger" id="servicesCarousel">
+            <!-- Dynamically populated from data/services.json -->
             <div class="svc-card reveal">
               <div
                 style="font-size: 2rem; color: var(--saffron); font-family: var(--font-serif); margin-bottom: 12px; line-height: 1;">
@@ -322,6 +217,7 @@
       </section>
     </div>
 
+
     <!-- ===================== STATS ===================== -->
     <div class="card-wrap bg-navy" style="margin:0 16px;">
       <section class="section-sm">
@@ -406,28 +302,8 @@
             <a href="team.html" class="arrow-link arrow-link-dark"><span class="line"></span><span>Full Team</span><span
                 class="arr">→</span></a>
           </div>
-          <div class="team-grid stagger">
-            <div class="team-card reveal">
-              <div class="team-avatar">AS</div>
-              <h3>Arthi Singh</h3>
-              <p class="team-role">Partner — Compliance</p>
-              <p class="team-bio">Seasoned compliance professional expertise in regulatory advisory under the Companies
-                Act, SEBI and RBI frameworks.</p>
-            </div>
-            <div class="team-card reveal">
-              <div class="team-avatar">AG</div>
-              <h3>Ashik G Swamy</h3>
-              <p class="team-role">Consultant</p>
-              <p class="team-bio">Practicing Advocate and Fellow Company Secretary (ICSI) with over a decade of
-                experience in corporate governance and regulatory advisory.</p>
-            </div>
-            <div class="team-card reveal">
-              <div class="team-avatar">AS</div>
-              <h3>Arjun S</h3>
-              <p class="team-role">Partner</p>
-              <p class="team-bio">Drives the integration of technology with legal and compliance functions to deliver
-                scalable and structured client support.</p>
-            </div>
+          <div class="team-grid stagger" id="teamPreview">
+            <!-- Dynamically populated from data/team.json -->
           </div>
         </div>
       </section>
@@ -445,46 +321,8 @@
             <a href="insights.html" class="arrow-link arrow-link-dark"><span class="line"></span><span>All
                 Insights</span><span class="arr">→</span></a>
           </div>
-          <div class="insights-grid stagger">
-            <article class="insight-card reveal">
-              <div class="insight-card__top">
-                <span class="insight-tag">Corporate</span>
-                <h3>MCA21 V3: What It Means for Your Company Filings in 2026</h3>
-              </div>
-              <div class="insight-card__body">
-                <p>The Ministry of Corporate Affairs' new MCA21 V3 portal brings significant changes to annual filing
-                  requirements. Here's what every company director needs to know.</p>
-                <div class="insight-meta"><span>March 2026</span><a href="insights.html" class="arrow-link"
-                    style="font-size:0.68rem;"><span class="line" style="width:24px;"></span><span>Read</span><span
-                      class="arr">→</span></a></div>
-              </div>
-            </article>
-            <article class="insight-card reveal">
-              <div class="insight-card__top">
-                <span class="insight-tag">Compliance</span>
-                <h3>SEBI LODR Amendments: Key Changes for Listed Companies</h3>
-              </div>
-              <div class="insight-card__body">
-                <p>SEBI's latest LODR amendments tighten disclosure norms and related-party transaction approval
-                  requirements. We break down the critical changes and timelines.</p>
-                <div class="insight-meta"><span>February 2026</span><a href="insights.html" class="arrow-link"
-                    style="font-size:0.68rem;"><span class="line" style="width:24px;"></span><span>Read</span><span
-                      class="arr">→</span></a></div>
-              </div>
-            </article>
-            <article class="insight-card reveal">
-              <div class="insight-card__top">
-                <span class="insight-tag">Startup</span>
-                <h3>DPIIT Startup Recognition: A Complete Step-by-Step Guide</h3>
-              </div>
-              <div class="insight-card__body">
-                <p>Getting DPIIT recognition unlocks tax exemptions, easier compliance and fundraising advantages. Our
-                  complete guide walks you through every step of the process.</p>
-                <div class="insight-meta"><span>January 2026</span><a href="insights.html" class="arrow-link"
-                    style="font-size:0.68rem;"><span class="line" style="width:24px;"></span><span>Read</span><span
-                      class="arr">→</span></a></div>
-              </div>
-            </article>
+          <div class="insights-grid stagger" id="insightsPreview">
+            <!-- Dynamically populated from data/insights.json -->
           </div>
         </div>
       </section>
@@ -503,227 +341,113 @@
 
     <!-- ===================== TESTIMONIALS ===================== -->
     <div class="card-wrap bg-off" id="testimonials" data-section="testimonials" data-theme="light">
-      <style>
-        @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
-
-        .testimonials-scope {
-          font-family: "Poppins", sans-serif;
-        }
-
-        .testimonials-scope h1,
-        .testimonials-scope h2,
-        .testimonials-scope h4,
-        .testimonials-scope p {
-          font-family: "Poppins", sans-serif !important;
-        }
-      </style>
-
       <section class="section testimonials-scope" style="padding: 100px 0;">
         <div class="container">
-          <div
-            style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px;">
+          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 40px;">
             <p class="sec-label" style="justify-content: center; margin-bottom: 12px;">Trusted Advisor</p>
             <h2 class="sec-title" style="margin-bottom: 16px;">Loved by <em>Leading Businesses</em></h2>
-            <p class="sec-body" style="max-width: 600px; margin: 0 auto;">Every single testimonial is a testament to the
-              profound impact we strive to create every single day through structured legal and compliance support.</p>
+            <p class="sec-body" style="max-width: 600px; margin: 0 auto;">Every single testimonial is a testament to the profound impact we strive to create every single day through structured legal and compliance support.</p>
           </div>
 
           <div class="t-nav">
             <button id="t-prev" class="t-nav-btn" aria-label="Previous Testimonials">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m12 19-7-7 7-7" />
-                <path d="M19 12H5" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
             </button>
             <button id="t-next" class="t-nav-btn" aria-label="Next Testimonials">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </button>
           </div>
 
           <div id="t-grid-container" class="t-grid"></div>
-
           <div id="t-dots-container" class="t-dots"></div>
         </div>
       </section>
     </div>
-
-    <script>
-      (function () {
-        const testimonialsData = [
-          { date: "Apr 12, 2026", text: "Adveris Advisors played a critical role in our foundation's compliance roadmap. Their guidance on NGO reporting and MCA transitions was exceptional.", name: "Kishore", role: "BLR Calling Foundation", initial: "K" },
-          { date: "Mar 28, 2026", text: "Seamless secretarial support and timely ROC filings. The team at Adveris ensured our compliance framework is robust and penalty-free.", name: "Rahul", role: "4D", initial: "R" },
-          { date: "Mar 15, 2026", text: "Expertise in complex advisory and corporate governance. A trusted partner for Keylynk for all our legal and secretarial matters.", name: "Shekar", role: "Keylynk Business Consulting Pvt Ltd", initial: "S" },
-          { date: "Feb 22, 2026", text: "Handled our MCA transitions and annual filings with absolute precision. Their proactive approach to compliance is refreshing and efficient.", name: "Arvind", role: "ELEMENTS MANUFACTURING SOLUTIONS", initial: "A" },
-          { date: "Feb 10, 2026", text: "Efficient partner compliance and LLP management. Adveris is our go-to choice for dependable legal services and structured advisory.", name: "Abhimanyu", role: "DESIGNFLOW SERVICE CONSULTANTS", initial: "A" },
-          { date: "Jan 18, 2026", text: "Adveris' expertise in industrial compliance and corporate secretarial services has been a pillar for AU2MEK's operational stability.", name: "Swamy", role: "AU2MEK ENGINEERING SOLUTIONS", initial: "S" },
-          { date: "Jan 05, 2026", text: "From LLP formation to regular filings, the team at Adveris provides seamless and dependable advisory support for our tech venture.", name: "Anand S", role: "RAYNU Analytical & Research Lab LLP", initial: "S" }
-        ];
-
-        let index = 0;
-        let isMobile = window.innerWidth < 768;
-        let autoTimer;
-
-        function render() {
-          const container = document.getElementById('t-grid-container');
-          const dotsContainer = document.getElementById('t-dots-container');
-          const count = isMobile ? 1 : 3;
-
-          // Determine items to show (circularly if needed, but here we just slice and handle bounds)
-          let items = [];
-          for (let i = 0; i < count; i++) {
-            items.push(testimonialsData[(index + i) % testimonialsData.length]);
-          }
-
-          container.innerHTML = items.map(t => {
-            const star = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FF8F20" stroke="none"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`;
-            const stars = Array(5).fill(star).join('');
-            const colors = ['#0D1B3E', '#FF9933', '#1e293b', '#334155'];
-            const bgColor = colors[t.initial.charCodeAt(0) % colors.length];
-
-            return `
-              <div class="t-card">
-                <div class="t-header">
-                  <div class="t-stars">${stars}</div>
-                  <p class="t-date">${t.date}</p>
-                </div>
-                <p class="t-text">"${t.text}"</p>
-                <div class="t-user">
-                  <div class="t-avatar" style="background:${bgColor}">${t.initial}</div>
-                  <div class="t-user-info">
-                    <h4>${t.name}</h4>
-                    <p>${t.role}</p>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('');
-
-          // Render dots for mobile only
-          if (isMobile) {
-            dotsContainer.innerHTML = testimonialsData.map((_, i) =>
-              `<button class="t-dot ${i === index ? 'active' : 'inactive'}" onclick="window.tSlideTo(${i})" aria-label="Slide ${i + 1}"></button>`
-            ).join('');
-          } else {
-            dotsContainer.innerHTML = '';
-          }
-        }
-
-        window.tSlideTo = (i) => {
-          index = i;
-          render();
-          resetTimer();
-        };
-
-        document.getElementById('t-prev').onclick = () => {
-          index = (index - 1 + testimonialsData.length) % testimonialsData.length;
-          render();
-          resetTimer();
-        };
-
-        document.getElementById('t-next').onclick = () => {
-          index = (index + 1) % testimonialsData.length;
-          render();
-          resetTimer();
-        };
-
-        function resetTimer() {
-          clearInterval(autoTimer);
-          if (isMobile) {
-            autoTimer = setInterval(() => {
-              index = (index + 1) % testimonialsData.length;
-              render();
-            }, 4000);
-          }
-        }
-
-        window.addEventListener('resize', () => {
-          const wasMobile = isMobile;
-          isMobile = window.innerWidth < 768;
-          if (isMobile !== wasMobile) {
-            resetTimer();
-            render();
-          }
-        });
-
-        resetTimer();
-        render();
-      })();
-    </script>
   </main>
 
-  <!-- FOOTER -->
-  <footer data-section="footer" data-theme="dark">
-    <div class="footer-saffron-bar"></div>
-    <div class="container" style="padding-top:72px;">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="nav__logo" style="margin-bottom:16px;">
-            <span class="logo-name" style="font-family:var(--font-serif);font-size:2.8rem;color:white;">Adveris</span>
-            <span class="logo-tagline" style="color:rgba(255,255,255,0.45);font-size:0.95rem;">Advisors LLP</span>
-          </div>
-          <p>Your Trusted Advisory Partner in India. Expert legal, compliance and company secretary services delivered
-            with integrity.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Practice Areas</h4>
-          <a href="services.html#01">Corporate Advisory</a>
-          <a href="services.html#02">VC &amp; Private Equity</a>
-          <a href="services.html#03">Mergers &amp; Acquisitions</a>
-          <a href="services.html#04">Loans &amp; Debt Financing</a>
-          <a href="services.html#05">Commercial Contracts</a>
-          <a href="services.html#06">Employment Law</a>
-          <a href="services.html#07">Regulatory Compliance</a>
-          <a href="services.html#08">Due Diligence</a>
-          <a href="services.html#09">Dispute &amp; Pre-Litigation</a>
-          <a href="services.html#10">Business Valuation</a>
-          <a href="services.html#11">Authorities Representation</a>
-          <a href="services.html#12">Bankruptcy &amp; Insolvency</a>
-        </div>
-        <div class="footer-col">
-          <h4>Firm</h4>
-          <a href="about.html">About Us</a>
-          <a href="team.html">Our Team</a>
-          <a href="insights.html">Insights</a>
-          <a href="careers.html">Careers</a>
-          <a href="contact.html">Contact</a>
-        </div>
-        <div class="footer-col">
-          <h4>Contact</h4>
-          <a href="tel:+919739382704">+91 97393 82704</a>
-          <a href="mailto:admin@adverisadvisors.com">admin@adverisadvisors.com</a>
-          <a href="https://www.google.com/maps/search/?api=1&query=Om+Chambers+648/A,+4th+Flr+Binnamangala+1st+stg+Indiranagar+Bengaluru+560038"
-            target="_blank" rel="noopener">Om Chambers 648/A, Indiranagar</a>
-          <a href="https://www.google.com/maps/search/?api=1&query=Om+Chambers+648/A,+4th+Flr+Binnamangala+1st+stg+Indiranagar+Bengaluru+560038"
-            target="_blank" rel="noopener">Bengaluru — 560038</a>
-          <div class="footer-socials">
-            <a href="https://www.linkedin.com/company/adveris-advisors-llp/" target="_blank" rel="noopener"
-              aria-label="LinkedIn">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                <rect x="2" y="9" width="4" height="12"></rect>
-                <circle cx="4" cy="4" r="2"></circle>
-              </svg>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>© 2026 Adveris Advisors LLP. All rights reserved.</span>
-        <span>Bengaluru, Karnataka, India · <a
-            href="mailto:admin@adverisadvisors.com">admin@adverisadvisors.com</a></span>
-      </div>
-    </div>
-  </footer>
+  <footer data-section="footer" data-theme="dark"></footer>
 
-  <script src="js/consent.js"></script>
-  <script src="js/lenis.min.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/layout.js?v=1.1"></script>
+  <script src="js/content-loader.js?v=1.1"></script>
+  <script src="js/consent.js?v=1.1"></script>
+  <script src="js/lenis.min.js?v=1.1"></script>
+  <script src="js/main.js?v=1.1"></script>
+  <script>
+    // Testimonials Rendering Logic (Now data-driven)
+    window.initTestimonials = function(data) {
+      const testimonialsData = data;
+      let index = 0;
+      let isMobile = window.innerWidth < 768;
+      let autoTimer;
+
+      function render() {
+        const container = document.getElementById('t-grid-container');
+        const dotsContainer = document.getElementById('t-dots-container');
+        if (!container) return;
+        const count = isMobile ? 1 : 3;
+
+        let items = [];
+        for (let i = 0; i < count; i++) {
+          items.push(testimonialsData[(index + i) % testimonialsData.length]);
+        }
+
+        container.innerHTML = items.map(t => {
+          const star = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="#FF8F20" stroke="none"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`;
+          const stars = Array(5).fill(star).join('');
+          const colors = ['#0D1B3E', '#FF9933', '#1e293b', '#334155'];
+          const bgColor = colors[t.initial.charCodeAt(0) % colors.length];
+
+          return `
+            <div class="t-card">
+              <div class="t-header">
+                <div class="t-stars">${stars}</div>
+                <p class="t-date">${t.date}</p>
+              </div>
+              <p class="t-text">"${t.text}"</p>
+              <div class="t-user">
+                <div class="t-avatar" style="background:${bgColor}">${t.initial}</div>
+                <div class="t-user-info">
+                  <h4>${t.name}</h4>
+                  <p>${t.role}</p>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        if (isMobile && dotsContainer) {
+          dotsContainer.innerHTML = testimonialsData.map((_, i) =>
+            `<button class="t-dot ${i === index ? 'active' : 'inactive'}" onclick="window.tSlideTo(${i})" aria-label="Slide ${i + 1}"></button>`
+          ).join('');
+        } else if (dotsContainer) {
+          dotsContainer.innerHTML = '';
+        }
+      }
+
+      window.tSlideTo = (i) => { index = i; render(); resetTimer(); };
+      
+      const prevBtn = document.getElementById('t-prev');
+      const nextBtn = document.getElementById('t-next');
+      if (prevBtn) prevBtn.onclick = () => { index = (index - 1 + testimonialsData.length) % testimonialsData.length; render(); resetTimer(); };
+      if (nextBtn) nextBtn.onclick = () => { index = (index + 1) % testimonialsData.length; render(); resetTimer(); };
+
+      function resetTimer() {
+        clearInterval(autoTimer);
+        if (isMobile) {
+          autoTimer = setInterval(() => { index = (index + 1) % testimonialsData.length; render(); }, 4000);
+        }
+      }
+
+      window.addEventListener('resize', () => {
+        const wasMobile = isMobile;
+        isMobile = window.innerWidth < 768;
+        if (isMobile !== wasMobile) { resetTimer(); render(); }
+      });
+
+      resetTimer();
+      render();
+    };
+  </script>
 </body>
 
 </html>

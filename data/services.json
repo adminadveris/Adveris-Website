@@ -1,0 +1,163 @@
+[
+  {
+    "id": "01",
+    "title": "Corporate Advisory & Structuring",
+    "summary": "Company incorporation, structuring, IPO support, and full-lifecycle corporate governance.",
+    "bullets": [
+      "Company & LLP Incorporation in India and Entity set-up",
+      "Entry strategy for foreign businesses and IP Protection",
+      "Post-incorporation compliances (Record Maintenance, Regulatory/Secretarial/Sectoral)",
+      "Corporate structuring, capital alteration, joint ventures, and financial restructuring",
+      "Insider Trading health checks and ongoing corporate governance",
+      "IPO lifecycle support (virtual data rooms, standard certificates, coordinate with BRLMs, offer document reviews)",
+      "Direct and Indirect Taxation advisory"
+    ]
+  },
+  {
+    "id": "02",
+    "title": "Venture Capital, Private Equity & Fundraiser",
+    "summary": "Angel/Seed investments, term sheets, share purchase agreements, and founder equity structuring.",
+    "bullets": [
+      "Angel, seed, growth-stage, and late-stage investments",
+      "Drafting and negotiation of term sheets",
+      "Share subscription, share purchase, and shareholders’ agreements",
+      "Founder arrangements and equity structuring",
+      "FEMA and FDI compliance for inbound and outbound investments",
+      "Post-closing filings and ongoing regulatory support"
+    ]
+  },
+  {
+    "id": "03",
+    "title": "Mergers & Acquisitions",
+    "summary": "End-to-end M&A advisory, buy-side/sell-side due diligence, and cross-border transactions.",
+    "bullets": [
+      "End-to-end advisory on mergers, acquisitions, divestments, restructurings, and exit transactions",
+      "Transaction structuring, including share purchases, asset transfers, slump sales, and schemes of arrangement",
+      "Buy-side and sell-side legal due diligence, including risk identification and mitigation",
+      "Drafting, review, and negotiation of transaction documents (term sheets, SHA, SPA, SSA, etc.)",
+      "Regulatory advisory, including Companies Act, SEBI, FEMA, and competition law compliances",
+      "Cross-border transaction support, including structuring and approvals",
+      "Advisory on joint ventures, strategic alliances, and investment structuring",
+      "Deal execution support, including conditions precedent, closing, and post-closing compliances",
+      "Integration advisory, including corporate restructuring and governance alignment"
+    ]
+  },
+  {
+    "id": "04",
+    "title": "Loans & Debt Financing",
+    "summary": "Secured and unsecured loan advisory, venture debt, and comprehensive transaction support.",
+    "bullets": [
+      "Advisory on secured and unsecured lending arrangements",
+      "Venture debt, structured debt, and working capital facilities",
+      "Drafting and negotiating loan agreements, security documents, and guarantees",
+      "Lender and borrower-side transaction advisory",
+      "Regulatory and compliance framework relative to debt transactions"
+    ]
+  },
+  {
+    "id": "05",
+    "title": "Commercial Contracts",
+    "summary": "End-to-end contracting strategy, drafting MSAs/SLAs, and SaaS licensing arrangements.",
+    "bullets": [
+      "End-to-end advisory on commercial contracting strategy, structuring, and lifecycle management",
+      "Drafting, review, and negotiation of Master Service Agreements (MSA) and Service Level Agreements (SLA)",
+      "SaaS, technology, licensing, and data-driven commercial arrangements",
+      "Vendor, procurement, supply, outsourcing, and service contracts",
+      "Distribution, franchise, channel partner, and commercial agency arrangements",
+      "Consultancy, non-disclosure, confidentiality, and data protection agreements",
+      "Standardisation, templating, and contract management frameworks for operational efficiency",
+      "Contract risk allocation, liability structuring, and indemnity frameworks",
+      "Negotiation support for complex and high-value commercial arrangements",
+      "Compliance alignment with applicable laws including IT, data protection, and sector-specific regulations",
+      "Dispute prevention structuring, including termination, exit, and enforcement mechanism"
+    ]
+  },
+  {
+    "id": "06",
+    "title": "Employment Law",
+    "summary": "ESOP structuring, employment agreements, HR policy advisory, and POSH frameworks.",
+    "bullets": [
+      "Drafting and review of employment agreements, offer letters, and consultancy arrangements",
+      "Advisory on employment law compliance, HR policies, and POSH frameworks",
+      "ESOP structuring, RSU (Restricted Stock Units), SAR (Stock Appreciation Rights) documentation and implementation",
+      "Advisory on workforce structuring, exits, terminations, and separation documentation"
+    ]
+  },
+  {
+    "id": "07",
+    "title": "Regulatory Compliance & Risk Management",
+    "summary": "FEMA, GIFT City structuring, data protection (DPDP), and Global Capability Centres (GCCs).",
+    "bullets": [
+      "Advisory on regulatory frameworks including FEMA, FDI Policy, Overseas Investment (OI) Rules, Companies Act, Contract Act, and allied laws",
+      "Advisory on GIFT City (IFSC) structuring, regulatory compliance, and operational frameworks",
+      "Data protection and privacy advisory, including compliance with the Digital Personal Data Protection (DPDP) Act",
+      "Advisory on Global Capability Centres (GCCs), including structuring, regulatory positioning, and operational compliance",
+      "Corporate governance and board-level advisory, including policy framework and compliance reviews",
+      "Ongoing compliance management, risk assessment, and regulatory monitoring",
+      "Advisory and support for statutory, regulatory, and sector-specific filings and approvals"
+    ]
+  },
+  {
+    "id": "08",
+    "title": "Due Diligence Report",
+    "summary": "Comprehensive legal, secretarial, and financial audits for investments and M&A deals.",
+    "bullets": [
+      "Comprehensive Legal, Secretarial, and Financial Due Diligence",
+      "Transactional due diligence for investments, debt financing, and M&A transactions",
+      "Contractual and regulatory risk assessment audits",
+      "Issue-based due diligence reports supported by practical remediation guidance"
+    ]
+  },
+  {
+    "id": "09",
+    "title": "Dispute & Pre-Litigation Support",
+    "summary": "Pre-litigation strategy, contractual dispute advisory, and settlement negotiations.",
+    "bullets": [
+      "Advisory on complex contractual and employment-related disputes",
+      "Drafting and negotiation of settlement and separation agreements",
+      "Robust pre-litigation strategy to mitigate cost and timeline risks",
+      "Risk evaluation, assessment, and dispute management support"
+    ]
+  },
+  {
+    "id": "10",
+    "title": "Business Valuation",
+    "summary": "Statutory valuation for share issuance, IBC proceedings, and Ind AS 113 fair value assessments.",
+    "bullets": [
+      "Business Valuation of Securities or Financial Assets (SFA)",
+      "Valuation required for share issuance, buybacks, amalgamation, and demergers",
+      "Statutory valuation services for Insolvency & Bankruptcy Law (IBC)",
+      "Determination of fair value of investments under Ind As 113"
+    ]
+  },
+  {
+    "id": "11",
+    "title": "Representation before Authorities",
+    "summary": "Strategic representation before NCLT, ROC, SEBI, and various High Courts across India.",
+    "bullets": [
+      "Registrar of Companies (ROC) and Regional Director (RD) proceedings",
+      "National Company Law Tribunal (NCLT) & NCLAT representation",
+      "Debt Recovery Tribunal (DRT & DRAT) and High Court matters",
+      "Securities & Exchange Board of India (SEBI) & Economic Offense Court",
+      "Arbitration representation and strategic litigation guidance"
+    ]
+  },
+  {
+    "id": "12",
+    "title": "Bankruptcy & Insolvency (IBC, 2016)",
+    "summary": "CIRP advisory, resolution plan support, and representation before NCLT/NCLAT.",
+    "bullets": [
+      "Advisory on insolvency strategy, including pre-admission and post-admission stages",
+      "Advisory for Financial Creditors, Operational Creditors, and Corporate Debtors",
+      "Drafting and review of applications for initiation of CIRP",
+      "Support in preparation and review of Resolution Plans",
+      "Advisory on Liquidation process, including distribution of assets and priority of claims",
+      "Assisting Resolution Professionals (RP) in legal and secretarial compliance during CIRP",
+      "Due diligence on the Corporate Debtor to identify potential legal and financial risks",
+      "Representation before NCLT and NCLAT in insolvency and bankruptcy matters",
+      "Drafting and vetting of transactional documents related to distressed asset acquisitions",
+      "Advisory on Voluntary Liquidation and strike-off processes for solvent companies",
+      "Cross-border insolvency advisory and coordination with international stakeholders"
+    ]
+  }
+]

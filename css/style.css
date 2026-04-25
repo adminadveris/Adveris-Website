@@ -1160,6 +1160,97 @@ p {
 }
 
 /* ============================================================
+   PRACTICE AREAS DETAIL CARDS (services.html)
+   ============================================================ */
+.svc-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .svc-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.svc-detail-card {
+  background: white;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: 56px 40px 48px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--t);
+  display: flex;
+  flex-direction: column;
+  border-top: 6px solid var(--saffron);
+}
+
+.svc-detail-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--saffron-border);
+}
+
+.svc-num {
+  font-family: var(--font-serif);
+  font-size: 6rem;
+  font-weight: 400;
+  color: var(--saffron);
+  line-height: 0.8;
+  margin-bottom: 0px;
+  opacity: 0.12;
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  pointer-events: none;
+}
+
+.svc-detail-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 28px;
+  line-height: 1.25;
+  position: relative;
+  z-index: 2;
+}
+
+.svc-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.svc-bullets li {
+  font-size: 1rem;
+  color: var(--text-body);
+  line-height: 1.5;
+  position: relative;
+  padding-left: 20px;
+}
+
+.svc-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 6px;
+  height: 6px;
+  background: var(--saffron);
+  border-radius: 50%;
+}
+
+/* ============================================================
    TEAM CARDS
    ============================================================ */
 .team-grid {
@@ -2918,8 +3009,271 @@ select.form-control {
   }
 }
 
-;
-text-transform: uppercase;
-letter-spacing: 0.05em;
-color: var(--saffron);
+/* ============================================================
+   TEAM GRID & CARDS
+   ============================================================ */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  margin-top: 48px;
+}
+
+@media (max-width: 1100px) {
+  .team-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.team-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 36px 28px;
+  text-align: center;
+  transition: var(--t);
+  position: relative;
+  overflow: hidden;
+}
+
+.team-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--saffron), var(--saffron-light));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease);
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--saffron-border);
+}
+
+.team-card:hover::after {
+  transform: scaleX(1);
+}
+
+.team-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--navy);
+  border: 3px solid var(--saffron);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--saffron);
+  margin: 0 auto 20px;
+}
+
+.team-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.team-role {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--saffron);
+  margin-bottom: 16px;
+}
+
+.team-bio {
+  font-size: 0.9rem;
+  color: var(--text-grey);
+  line-height: 1.7;
+}
+
+/* ── Team tags (pill badges inside cards) ── */
+.team-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.team-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--off-white);
+  color: var(--navy);
+  padding: 3px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+}
+
+/* ── Team section dividers (between core / staff / specialised) ── */
+.team-section-header {
+  margin-top: 80px;
+  margin-bottom: 8px;
+  padding-top: 56px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.team-section-header .sec-label {
+  justify-content: center;
+}
+
+.team-section-header .sec-divider {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.team-section-header:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 3em;
+}
+
+/* Centered grid variant — for staff/specialised with < 3 cards */
+.team-grid--centered {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 360px));
+  justify-content: center;
+}
+
+/* ── Leader (core hero card) — refined classes ── */
+.leader-tags {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--saffron);
+  margin-top: 4px;
+}
+
+.leader-role {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--saffron);
+  margin-bottom: 24px;
+}
+
+.leader-bio-p {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.97rem;
+  line-height: 1.85;
+  margin-bottom: 14px;
+}
+
+
+
+/* ============================================================
+   INSIGHTS GRID & CARDS
+   ============================================================ */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+@media (max-width: 1100px) {
+  .insights-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.insight-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: var(--t);
+}
+
+.insight-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--saffron-border);
+}
+
+.insight-card__top {
+  background: var(--navy);
+  padding: 28px 28px 24px;
+}
+
+.insight-card__top h3 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+  line-height: 1.4;
+}
+
+.insight-tag {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--navy);
+  background: var(--saffron);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 14px;
+}
+
+.insight-card__body {
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.insight-card__body p {
+  font-size: 0.9rem;
+  color: var(--text-grey);
+  line-height: 1.75;
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.insight-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-grey);
+  opacity: 0.7;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* hide/show for filter */
+.insight-card[hidden] {
+  display: none;
 }

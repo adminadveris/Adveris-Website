@@ -1,0 +1,50 @@
+[
+  {
+    "category": "Corporate",
+    "title": "MCA21 V3: What It Means for Your Company Filings in 2026",
+    "summary": "The Ministry of Corporate Affairs' new MCA21 V3 portal has significantly transformed how companies file annual returns, event-based forms, and director KYC — here's everything you need to know to stay compliant and penalty-free.",
+    "date": "March 2026",
+    "readTime": "5 min read",
+    "catId": "corporate"
+  },
+  {
+    "category": "Compliance",
+    "title": "SEBI LODR Amendments 2025–26: Key Changes for Listed Companies",
+    "summary": "SEBI's latest amendments to the Listing Obligations and Disclosure Requirements (LODR) Regulations tighten related-party transaction approvals, board composition requirements, and disclosure timelines. We break down every critical change.",
+    "date": "February 2026",
+    "readTime": "7 min read",
+    "catId": "compliance"
+  },
+  {
+    "category": "Startup",
+    "title": "DPIIT Startup Recognition: Complete Step-by-Step Guide 2026",
+    "summary": "Getting DPIIT recognition unlocks income tax exemptions under Section 80-IAC, easier compliance under the Companies Act, and access to government tenders. Our guide walks you through every step, document, and eligibility criterion.",
+    "date": "January 2026",
+    "readTime": "8 min read",
+    "catId": "startup"
+  },
+  {
+    "category": "Tax",
+    "title": "GST Compliance Calendar 2026: Filing Deadlines You Cannot Miss",
+    "summary": "Late GST filings attract interest at 18% per annum and late fees up to ₹10,000 per return. We've compiled the complete GST compliance calendar for 2026 — GSTR-1, GSTR-3B, Annual Return, and reconciliation deadlines, all in one place.",
+    "date": "January 2026",
+    "readTime": "6 min read",
+    "catId": "tax"
+  },
+  {
+    "category": "Corporate",
+    "title": "ROC Annual Filing: Common Mistakes and How to Avoid Them",
+    "summary": "Non-compliance with ROC annual filing requirements can lead to penalties ranging from ₹100/day to company strike-off. We examine the most common mistakes companies make with AOC-4 and MGT-7 filings and how Adveris prevents them.",
+    "date": "January 2026",
+    "readTime": "5 min read",
+    "catId": "corporate"
+  },
+  {
+    "category": "Startup",
+    "title": "LLP vs Private Limited Company: Making the Right Choice in 2026",
+    "summary": "The right entity structure can save you lakhs in taxes and compliance costs every year. We compare LLP and Private Limited Company across taxation, compliance burden, fundraising potential, and operational flexibility — with a clear decision framework.",
+    "date": "January 2026",
+    "readTime": "9 min read",
+    "catId": "startup"
+  }
+]

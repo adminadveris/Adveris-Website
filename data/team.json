@@ -1,0 +1,81 @@
+[
+  {
+    "id": "arthi-singh",
+    "name": "Arthi Singh",
+    "role": "Partner — Compliance",
+    "initial": "AS",
+    "team": "core",
+    "homepageSummary": "Seasoned compliance professional expertise in regulatory advisory under the Companies Act, SEBI and RBI frameworks.",
+    "bio": [
+      "Arthi is a seasoned compliance professional with significant experience in regulatory advisory under the Companies Act, SEBI and RBI frameworks. She leads client compliance programmes with a zero-penalty track record and handles fundraising assignments, drafting term sheets and Share Purchase Agreements.",
+      "She is part of the core group of Adveris Advisors LLP, established with the objective of delivering structured and high-quality legal and compliance support to businesses across India. Her areas of specialisation include MCA21 compliance, ROC filings, board and corporate governance, the SEBI regulatory framework, and company incorporation across India. She adopts a proactive, client-focused advisory approach, ensuring solutions that are practical, compliant, and commercially sound."
+    ],
+    "tags": [
+      "Partner",
+      "CS"
+    ],
+    "location": "Bengaluru, Karnataka",
+    "email": "admin@adverisadvisors.com"
+  },
+  {
+    "id": "arjun-s",
+    "name": "Arjun S",
+    "role": "Partner — Technology",
+    "initial": "AS",
+    "team": "core",
+    "homepageSummary": "Drives the integration of technology with legal and compliance functions to deliver scalable and structured client support.",
+    "bio": [
+      "Arjun S focuses on the technological domain, driving the integration of technology with legal and compliance functions. He develops technology-driven solutions to streamline processes and operational efficiency, leveraging digital tools for scalable and structured client support."
+    ],
+    "tags": [
+      "Partner",
+      "Technology"
+    ]
+  },
+  {
+    "id": "shriya-h",
+    "name": "Shriya H",
+    "role": "Associate",
+    "initial": "SH",
+    "team": "staff",
+    "homepageSummary": "Company Secretary professional overseeing compliance for Public and Private Limited Companies.",
+    "bio": [
+      "Company Secretary professional overseeing compliance for Public and Private Limited Companies. Focused on adherence to the Companies Act and structuring compliance systems aligned with Central and State laws."
+    ],
+    "tags": [
+      "Associate",
+      "CS"
+    ]
+  },
+  {
+    "id": "ashik-g-swamy",
+    "name": "Ashik G Swamy",
+    "role": "Consultant",
+    "initial": "AG",
+    "team": "core",
+    "homepageSummary": "Practicing Advocate and Fellow Company Secretary (ICSI) with over a decade of experience in corporate governance and regulatory advisory.",
+    "bio": [
+      "Ashik G Swamy is a practicing Advocate with a primary focus on corporate laws, regularly appearing before various High Courts and specialised tribunals. He is also a Fellow Company Secretary (ICSI), with over a decade of experience in corporate governance, secretarial compliance, and regulatory advisory."
+    ],
+    "tags": [
+      "Consultant",
+      "Advocate",
+      "FCS"
+    ]
+  },
+  {
+    "id": "kiran-c",
+    "name": "Kiran C",
+    "role": "Consultant",
+    "initial": "KC",
+    "team": "staff",
+    "homepageSummary": "Practicing Advocate with over a decade of experience in banking and financial litigation.",
+    "bio": [
+      "Practicing Advocate with over a decade of experience in banking and financial litigation (DRT/DRAT), as well as family law and practical dispute resolution."
+    ],
+    "tags": [
+      "Consultant",
+      "Advocate"
+    ]
+  }
+]
