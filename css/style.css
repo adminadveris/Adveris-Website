@@ -234,20 +234,22 @@ p {
 
 .logo-name {
   font-family: var(--font-serif);
-  font-size: 2.5rem;
-  font-weight: 600;
+  font-size: 2.6rem;
+  font-weight: 500;
   color: white;
-  line-height: 1;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
   transition: var(--t);
 }
 
 .logo-tagline {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.65);
   transition: var(--t);
+  margin-top: -2px;
 }
 
 .nav--scrolled .logo-name {
@@ -391,13 +393,15 @@ p {
 }
 
 .menu-logo .logo-name {
-  color: white;
-  font-size: 2.2rem;
+  color: var(--navy);
+  font-size: 2.8rem;
+  font-weight: 500;
 }
 
 .menu-logo .logo-tagline {
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.8rem;
+  color: var(--text-grey);
+  font-size: 0.85rem;
+  letter-spacing: 0.45em;
 }
 
 /* Close button — circular × like NKF */
@@ -1455,15 +1459,16 @@ footer {
 }
 
 .footer-brand .logo-name {
+  font-size: 3rem;
+  font-weight: 500;
   color: white;
-  font-size: 2.8rem;
-  margin-bottom: 4px;
+  margin-bottom: 0.2rem;
 }
 
 .footer-brand .logo-tagline {
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+  font-size: 0.9rem;
+  letter-spacing: 0.45em;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .footer-brand p {
