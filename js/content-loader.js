@@ -275,6 +275,63 @@ const initContent = function () {
       .catch(err => console.error('Failed to load testimonials:', err));
   }
 
+  /* ================================================================
+     ABOUT — About page (about.html)
+  ================================================================ */
+  const aboutWhyGrid = document.getElementById('aboutWhyGrid');
+  const aboutValuesGrid = document.getElementById('aboutValuesGrid');
+  if (aboutWhyGrid || aboutValuesGrid) {
+    fetch('data/about.json?v=' + Date.now())
+      .then(r => r.json())
+      .then(data => {
+        if (aboutWhyGrid && data.whyAdveris) {
+          aboutWhyGrid.innerHTML = data.whyAdveris.map(item => `
+            <div style="display:flex;gap:16px;align-items:flex-start;">
+              <div style="width:32px;height:32px;min-width:32px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--navy);">✓</div>
+              <div><strong style="display:block;color:white;margin-bottom:4px;">${item.title}</strong><span style="font-size:0.9rem;color:rgba(255,255,255,0.6);">${item.text}</span></div>
+            </div>
+          `).join('');
+        }
+        if (aboutValuesGrid && data.values) {
+          aboutValuesGrid.innerHTML = data.values.map(item => `
+            <div class="value-card reveal">
+              <h3>${item.title}</h3>
+              <p>${item.text}</p>
+            </div>
+          `).join('');
+          if (window.initReveal) window.initReveal();
+        }
+      })
+      .catch(err => console.error('Failed to load about data:', err));
+  }
+
+  /* ================================================================
+     CAREERS — Careers page (careers.html)
+  ================================================================ */
+  const careersGrid = document.getElementById('careersGrid');
+  if (careersGrid) {
+    fetch('data/careers.json?v=' + Date.now())
+      .then(r => r.json())
+      .then(roles => {
+        careersGrid.innerHTML = roles.map(role => `
+          <div class="role-card reveal">
+            <div>
+              <h3>${role.title}</h3>
+              <p style="font-size:0.9rem;color:var(--text-grey);margin:6px 0;">${role.description}</p>
+              <div class="role-tags">
+                <span class="role-tag tag-type">${role.type}</span>
+                <span class="role-tag tag-exp">${role.experience}</span>
+                <span class="role-tag tag-exp">${role.qualification}</span>
+              </div>
+            </div>
+            <a href="#apply-form" class="btn btn-navy" style="white-space:nowrap;">Apply Now</a>
+          </div>
+        `).join('');
+        if (window.initReveal) window.initReveal();
+      })
+      .catch(err => console.error('Failed to load careers data:', err));
+  }
+
 };
 
 if (window.__layoutReady) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import type { ServiceRecord, Account, AuditLog } from '../types';
 
 const STATUSES_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending Assessment', color: 'var(--saffron)' },
@@ -19,7 +20,7 @@ const Field = ({ label, children, span, whisper }: { label: string; children: Re
     <p className="portal-form-label" style={{ 
         marginBottom: 6, 
         opacity: 0.7, 
-        fontSize: '1rem', // UNIFIED SIZE
+        fontSize: '1rem', 
         textTransform: 'none', 
         letterSpacing: 'normal',
         color: 'var(--gold)',
@@ -29,7 +30,7 @@ const Field = ({ label, children, span, whisper }: { label: string; children: Re
        {label}
     </p>
     <div style={{ 
-        fontSize: '1rem', // UNIFIED SIZE
+        fontSize: '1rem', 
         color: 'white', 
         lineHeight: 1.5, 
         fontWeight: whisper ? 300 : 600,
@@ -44,31 +45,69 @@ const MandateDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [record, setRecord] = useState<any>(null);
-  const [account, setAccount] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [record, setRecord] = useState<ServiceRecord | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
+    if (!id) return;
     setLoading(true);
-    const [, allRecs] = await Promise.all([mockApi.getProfile(), mockApi.getRecords()]);
-    const rec = allRecs.find((r: any) => r.id === id);
-    if (!rec) { navigate('/dashboard/records'); return; }
+    console.log("MANDATE_DETAIL: Loading ID", id);
+    try {
+      const [p, allRecsInitial] = await Promise.all([mockApi.getProfile(), mockApi.getRecords()]);
+      let allRecs = allRecsInitial;
+      
+      // Self-healing: if records are empty, try to seed
+      if (allRecs.length === 0) {
+        console.log("MANDATE_DETAIL: Ledger empty, triggering emergency seed...");
+        await mockApi.seedData();
+        allRecs = await mockApi.getRecords();
+      }
 
-    const [acc, hist] = await Promise.all([
-      mockApi.getAccountById(rec.account_id),
-      mockApi.getHistoryByRecord(id!)
-    ]);
+      console.log("MANDATE_DETAIL: Found", allRecs.length, "total records for role", p.role);
+      
+      const rec = allRecs.find((r: ServiceRecord) => 
+        r.id === id || r.id === `seed-mand-${id}`
+      );
+      
+      if (!rec) { 
+        console.error("MANDATE_DETAIL: Record not found in local state");
+        // Don't navigate away immediately so we can see the error in console
+        setLoading(false);
+        return; 
+      }
 
-    setRecord(rec);
-    setAccount(acc);
-    setHistory(hist);
-    setLoading(false);
+      const [acc, hist] = await Promise.all([
+        mockApi.getAccountById(rec.account_id),
+        mockApi.getHistoryByRecord(id)
+      ]);
+
+      setRecord(rec);
+      setAccount(acc);
+      setHistory(hist);
+    } catch (err) {
+      console.error("MANDATE_DETAIL: Load failure", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { load(); }, [id]);
 
-  if (loading) return null;
+  if (loading) return (
+    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="intelligence-pulse">RETRIEVING MANDATE LEDGER...</div>
+    </div>
+  );
+
+  if (!record) return (
+    <div className="theater-container" style={{ textAlign: 'center', paddingTop: 100 }}>
+       <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1 }}>Record <em>Invalid</em></h1>
+       <p style={{ opacity: 0.4, marginTop: 20 }}>The requested mandate ID "{id}" could not be retrieved from the authorized ledger.</p>
+       <button onClick={() => navigate('/dashboard/records')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return to Records</button>
+    </div>
+  );
 
   const status = STATUSES_MAP[record.status] || { label: record.status, color: 'var(--saffron)' };
 
@@ -103,7 +142,13 @@ const MandateDetail = () => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 40, marginTop: 0, alignItems: 'start' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 800px), 1fr))', 
+        gap: 32, 
+        marginTop: 0, 
+        alignItems: 'start' 
+      }}>
         
         {/* LEFT: INFORMATION LEDGER */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -112,81 +157,30 @@ const MandateDetail = () => {
           <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,255,255,0.05)' }}>
             <h2 style={{ fontSize: '0.8rem', letterSpacing: '0.3rem', fontWeight: 800, color: 'white', marginBottom: 32, opacity: 0.4 }}>GENERAL INFORMATION</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 8 }}>
+            <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
               <Field label="Request ID">{record.request_number}</Field>
               <Field label="Service Type" span>{record.primary_service || record.title}</Field>
             </div>
 
-            {/* Sub-services handling */}
-            {(record.sub_services || record.sub_service) && (
-              <div style={{ marginBottom: 20 }}>
-                <p className="portal-form-label" style={{ marginBottom: 12, opacity: 0.7, fontSize: '1rem', color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Opted Sub-Services</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {(Array.isArray(record.sub_services) ? record.sub_services : (record.sub_service?.split(',') || [])).map((s: string) => (
-                    <span key={s} style={{ fontSize: '0.85rem', padding: '8px 16px', background: 'rgba(255,153,51,0.05)', borderRadius: 4, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.9)', border: '1px solid rgba(255,153,51,0.1)', fontFamily: 'var(--font-sans)' }}>
-                      {s.trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            <div className="portal-data-grid-2">
               <Field label="Additional Services" whisper>{record.description || 'None'}</Field>
-              <Field label="Client Remarks" whisper>{record.client_comms || record.client_remarks || 'No remarks recorded'}</Field>
+              <Field label="Client Remarks" whisper>{record.verification_remarks || 'No remarks recorded'}</Field>
             </div>
           </div>
-
-          {/* SECTION 2: SUPPORTING DOCUMENTATION */}
-          {record.attached_file && (
-            <div className="portal-panel" style={{ padding: '24px 32px', background: 'rgba(255,153,51,0.02)', borderLeft: '4px solid var(--gold)' }}>
-              <h2 style={{ fontSize: '0.7rem', letterSpacing: '0.2rem', fontWeight: 800, color: 'var(--gold)', marginBottom: 20 }}>ATTACHMENT</h2>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.02)', padding: '12px 20px', borderRadius: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
-                  <div>
-                    <p style={{ color: 'white', fontSize: '1rem', fontWeight: 500, fontFamily: 'var(--font-sans)' }}>{record.attached_file.name}</p>
-                    <p style={{ fontSize: '0.75rem', opacity: 0.3, fontFamily: 'var(--font-sans)' }}>{(record.attached_file.size / (1024 * 1024)).toFixed(2)} MB &mdash; {record.attached_file.type}</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => {
-                    const link = document.createElement('a');
-                    link.href = record.attached_file.url;
-                    link.download = record.attached_file.name;
-                    link.click();
-                  }}
-                  className="btn-batch btn-batch--approve"
-                  style={{ padding: '8px 20px', height: 'auto', fontSize: '0.75rem' }}
-                >
-                  DOWNLOAD ASSET
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* SECTION 3: ADMINISTRATIVE SECTION */}
           <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,153,51,0.2)' }}>
             <h2 style={{ fontSize: '0.8rem', letterSpacing: '0.3rem', fontWeight: 800, color: 'var(--gold)', marginBottom: 32 }}>ADMINISTRATIVE SECTION</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 8 }}>
+            <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
               <Field label="Priority">{record.priority || 'Standard'}</Field>
-              <Field label="Target Milestone Due">{record.due_date ? fmt(record.due_date) : 'Pending'}</Field>
               <Field label="Assigned To" span>{record.assigned_to || 'Partner Pending'}</Field>
             </div>
 
-            <div style={{ padding: 20, background: 'rgba(255,153,51,0.03)', borderRadius: 8, marginBottom: 24, border: '1px solid rgba(255,153,51,0.08)' }}>
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                  <Field label="Approved Date">{record.approved_date ? fmt(record.approved_date) : 'Awaiting'}</Field>
-                  <Field label="No of Days Left">{record.days_left || '-'}</Field>
-                  <Field label="No of Hours Consumed" span>{record.hours_consumed || '0'}</Field>
-               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            <div className="portal-data-grid-2">
               <Field label="Document Verification Status">
                   <span style={{ 
-                    color: record.verification_status === 'Approved' ? '#22c55e' : (record.verification_status === 'Reject' ? '#ef4444' : 'var(--gold)'), 
+                    color: record.verification_status === 'Verified' ? '#22c55e' : (record.verification_status === 'Rejected' ? '#ef4444' : 'var(--gold)'), 
                     fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-sans)'
                   }}>
                     {record.verification_status || 'PENDING'}
@@ -194,17 +188,11 @@ const MandateDetail = () => {
               </Field>
               <Field label="Document Verification Remarks" whisper>{record.verification_remarks || 'None recorded'}</Field>
             </div>
-
-            {record.internal_notes && (
-               <div style={{ marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <Field label="Internal Notes" whisper>{record.internal_notes}</Field>
-               </div>
-            )}
           </div>
 
           <div className="portal-panel" style={{ padding: 32, background: 'rgba(255,153,51,0.01)', border: '1px solid rgba(255,153,51,0.05)' }}>
             <h3 style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.3, marginBottom: 24, color: 'var(--gold)' }}>SYSTEM INFORMATION</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px 48px' }}>
+            <div className="portal-data-grid-2">
               <div>
                 <p style={{ fontSize: '0.6rem', fontWeight: 700, opacity: 0.3, marginBottom: 8 }}>CREATED DATE</p>
                 <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{record.created_at ? new Date(record.created_at).toLocaleString() : '—'}</p>
@@ -239,7 +227,7 @@ const MandateDetail = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
                   <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>PAN Identifier</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{record.pan_number || account?.pan_number}</span>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{account?.pan_number || '—'}</span>
                </div>
                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
                   <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Litigation Scan</span>

@@ -3282,3 +3282,114 @@ select.form-control {
 .insight-card[hidden] {
   display: none;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS (Screens under 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  /* 1. Globals & Typography */
+  html {
+    font-size: 14px;
+  }
+  .section {
+    padding: 60px 0 !important;
+  }
+  .section-sm {
+    padding: 40px 0 !important;
+  }
+  h1.hero__title {
+    font-size: 3.2rem !important;
+  }
+  h2.sec-title {
+    font-size: 2.5rem !important;
+  }
+  .card-wrap {
+    margin: 0 8px !important;
+  }
+
+  /* 2. Navigation */
+  .nav {
+    height: 70px !important;
+    padding: 0 20px !important;
+  }
+  .logo-name {
+    font-size: 2rem !important;
+  }
+  .nav__crumb {
+    display: none !important;
+  }
+  .menu-overlay__top {
+    padding: 0 20px !important;
+    height: 70px !important;
+  }
+  .menu-logo .logo-name {
+    font-size: 2rem !important;
+  }
+  .menu-body {
+    grid-template-columns: 1fr !important;
+    padding: 40px 24px !important;
+    gap: 40px !important;
+  }
+  .menu-col {
+    padding-right: 0 !important;
+    border-right: none !important;
+  }
+  .menu-col:not(:first-child) {
+    padding-left: 0 !important;
+  }
+  .menu-bottom {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+    padding: 20px 24px !important;
+  }
+
+  /* 3. Hero Section */
+  .hero {
+    padding: 120px 20px 60px !important;
+  }
+  .hero__actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .hero__actions .btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* 4. Grids & Layouts */
+  .grid-2,
+  .team-grid,
+  .insights-grid,
+  .stats-row,
+  .services-carousel {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .sec-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 20px !important;
+  }
+  .value-card {
+    margin-bottom: 16px !important;
+  }
+  /* Inside About snippet grid */
+  .reveal-right > div {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 5. Side Navigation Dots */
+  .side-dots {
+    display: none !important;
+  }
+  
+  /* 6. Footer Adjustments */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  .footer-col {
+    grid-column: span 1 !important;
+  }
+}

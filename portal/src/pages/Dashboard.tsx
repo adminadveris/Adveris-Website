@@ -12,6 +12,10 @@ import ClientForm from './ClientForm';
 import AccountDetail from './AccountDetail';
 import HistoryRegistry from './HistoryRegistry';
 import { mockApi } from '../lib/mockApi';
+import type { 
+  Profile, Account, ServiceRecord, 
+  TimesheetEntry, ExpenseEntry, UIHistoryItem 
+} from '../types';
 import Pagination from '../components/Pagination';
 import SearchableSelect from '../components/SearchableSelect';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -32,33 +36,106 @@ const statusText: Record<string, string> = {
 
 
 /* ——— OVERVIEW ——— */
-/* ——— OVERVIEW ——— */
 const Overview = () => {
-  const [stats, setStats] = useState({ records: 0, hours: 0, disbursements: 0 });
-  const [activities, setActivities] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    pendingVerifications: 0,
+    activeMandates: 0,
+    totalAccounts: 0,
+    paidThisMonth: 0,
+    pendingCurrMonth: 0,
+    pendingLastMonth: 0,
+    currWeekHours: 0,
+    lastWeekHours: 0,
+    pendingTimesheets: 0
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadOverviewTelemetery = async () => {
       try {
-        const [recs, tlogs, elogs, alogs] = await Promise.all([
+        const [profile, recs, tlogs, elogs, accs, clis] = await Promise.all([
+          mockApi.getProfile(),
           mockApi.getRecords(),
           mockApi.getTimesheets(),
           mockApi.getExpenses(),
-          mockApi.getAuditLogs()
+          mockApi.getAccounts(),
+          mockApi.getClients()
         ]);
         
-        const activeRecords = recs.filter((r: any) => r.status !== 'completed').length;
-        const totalHours = tlogs.reduce((sum: number, log: any) => sum + (Number(log.hours) || 0), 0);
-        const totalDisbursementValue = elogs.reduce((sum: number, log: any) => sum + (Number(log.amount) || 0), 0);
+        const now = new Date();
+        
+        // Date Helpers
+        const getMonday = (d: Date) => {
+          const day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6 : 1);
+          return new Date(d.setDate(diff)).setHours(0,0,0,0);
+        };
+        
+        const startOfThisWeek = getMonday(new Date(now));
+        const startOfLastWeek = startOfThisWeek - (7 * 24 * 60 * 60 * 1000);
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
+
+        // --- Role Based Security Filtering ---
+        let fRecs = recs;
+        let fTlogs = tlogs;
+        let fElogs = elogs;
+        let fAccs = accs;
+        let fClis = clis;
+
+        if (profile.role === 'employee') {
+          // Staff see ALL mandates (per request)
+          fRecs = recs; 
+          // But only their own timesheets and expenses
+          fTlogs = tlogs.filter(t => t.logged_by === profile.full_name);
+          fElogs = elogs.filter(e => e.created_by_name === profile.full_name);
+          
+          // Registry: For now, staff see full registry if they see all mandates
+          fAccs = accs;
+          fClis = clis;
+        } else if (profile.role === 'client') {
+          // Clients see ONLY their own data
+          fRecs = recs.filter(r => r.account_id === profile.account_id);
+          fTlogs = tlogs.filter(t => t.account_id === profile.account_id);
+          fElogs = elogs.filter(e => e.account_id === profile.account_id);
+          fAccs = accs.filter(a => a.id === profile.account_id);
+          fClis = clis.filter(c => c.account_id === profile.account_id);
+        }
+
+        // 1. Operations
+        const pendingVerifications = fRecs.filter(r => r.verification_status === 'Pending').length;
+        const activeMandates = fRecs.filter(r => r.status !== 'completed').length;
+        const totalRegistry = fAccs.length + fClis.length;
+
+        // 2. Financials
+        const paidThisMonth = fElogs
+          .filter(e => e.status === 'paid' && new Date(e.date).getTime() >= startOfThisMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+          
+        const pendingCurrMonth = fElogs
+          .filter(e => e.status !== 'paid' && new Date(e.date).getTime() >= startOfThisMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+          
+        const pendingLastMonth = fElogs
+          .filter(e => e.status !== 'paid' && new Date(e.date).getTime() >= startOfLastMonth && new Date(e.date).getTime() <= endOfLastMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+        // 3. Timesheets
+        const currWeekHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfThisWeek)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+          
+        const lastWeekHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfLastWeek && new Date(t.date).getTime() < startOfThisWeek)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+          
+        const pendingTimesheets = fTlogs.filter(t => t.status === 'submitted').length;
 
         setStats({
-          records: activeRecords,
-          hours: totalHours,
-          disbursements: totalDisbursementValue
+          pendingVerifications, activeMandates, totalAccounts: totalRegistry,
+          paidThisMonth, pendingCurrMonth, pendingLastMonth,
+          currWeekHours, lastWeekHours, pendingTimesheets
         });
-        
-        setActivities(alogs.slice(0, 5));
       } catch (err) {
         console.error("Telemetry failure:", err);
       } finally {
@@ -68,10 +145,31 @@ const Overview = () => {
     loadOverviewTelemetery();
   }, []);
 
-  const statCards = [
-    { label: 'TOTAL PROFESSIONAL HOURS', value: stats.hours.toFixed(0), suffix: 'HRS', accent: 'gold', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
-    { label: 'AMOUNT DISBURSED', value: '₹' + stats.disbursements.toLocaleString('en-IN'), suffix: '', accent: 'saffron', icon: <><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></> },
-    { label: 'ACTIVE MANDATES', value: stats.records.toString(), suffix: 'RECORDS', accent: 'dim', icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
+  const sections = [
+    {
+      title: 'OPERATIONS & VERIFICATION',
+      cards: [
+        { label: 'PENDING VERIFICATION', value: stats.pendingVerifications.toString(), suffix: 'LEDS', accent: 'saffron', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/> },
+        { label: 'ACTIVE MANDATES', value: stats.activeMandates.toString(), suffix: 'LIVE', accent: 'gold', icon: <circle cx="12" cy="12" r="10"/> },
+        { label: 'TOTAL REGISTRY', value: stats.totalAccounts.toString(), suffix: 'STK', accent: 'dim', icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></> }
+      ]
+    },
+    {
+      title: 'FINANCIAL DISBURSALS',
+      cards: [
+        { label: 'PAID THIS MONTH', value: '₹' + stats.paidThisMonth.toLocaleString('en-IN'), suffix: '', accent: 'gold', icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/> },
+        { label: 'PENDING (CURR MONTH)', value: '₹' + stats.pendingCurrMonth.toLocaleString('en-IN'), suffix: '', accent: 'saffron', icon: <><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></> },
+        { label: 'PENDING (LAST MONTH)', value: '₹' + stats.pendingLastMonth.toLocaleString('en-IN'), suffix: '', accent: 'dim', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> }
+      ]
+    },
+    {
+      title: 'PROFESSIONAL TIMESHEETS',
+      cards: [
+        { label: 'THIS WEEK HOURS', value: stats.currWeekHours.toFixed(1), suffix: 'HRS', accent: 'gold', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
+        { label: 'LAST WEEK HOURS', value: stats.lastWeekHours.toFixed(1), suffix: 'HRS', accent: 'dim', icon: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></> },
+        { label: 'PENDING APPROVAL', value: stats.pendingTimesheets.toString(), suffix: 'LOGS', accent: 'saffron', icon: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></> }
+      ]
+    }
   ];
 
   if (loading) return (
@@ -81,85 +179,54 @@ const Overview = () => {
   );
 
   return (
-    <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 150 }}>
-      <div style={{ marginBottom: 40 }}>
-      </div>
-
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 60, marginBottom: 120 }}>
-        {statCards.map(c => (
-          <div key={c.label} className="portal-panel" style={{ padding: '80px 48px' }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 48, fontSize: '0.55rem' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ opacity: 0.4 }}>
-                {c.icon}
-              </svg>
-              {c.label}
-            </div>
-            <div style={{ fontFamily: "var(--font-serif)", fontSize: '6.5rem', fontWeight: 300, lineHeight: 0.8, color: 'white' }}>
-              {c.value}<span style={{ fontSize: '1.2rem', verticalAlign: 'top', opacity: 0.4, marginLeft: 10 }}>{c.suffix}</span>
-            </div>
-            {/* Specular Light Catch */}
-            <div style={{ 
-              position: 'absolute', 
-              top: 0, left: 0, right: 0, bottom: 0,
-              background: `radial-gradient(circle at 0% 0%, rgba(255,255,255,0.05) 0%, transparent 50%)`,
-              pointerEvents: 'none' 
-            }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Two-column layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 450px', gap: 80 }}>
-        {/* Recent Activity */}
-        <div className="portal-panel" style={{ padding: 0 }}>
-          <div style={{ padding: '60px 60px', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-            <h2 style={{ fontSize: '2.4rem', marginTop: 12, fontWeight: 300, letterSpacing: '-0.02em' }}>Recent <em>Activity</em></h2>
-          </div>
-          <div style={{ padding: '20px 60px 60px 60px' }}>
-            <div className="portal-activity-list" style={{ marginTop: 0 }}>
-              {activities.map(log => (
-                <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: 32, padding: '40px 0', borderBottom: '1px solid rgba(255,255,255,0.015)', transition: 'all 0.8s var(--ease)' }}>
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: log.action === 'LOG_TIME' ? 'var(--gold)' : 'var(--saffron)', boxShadow: `0 0 20px var(${log.action === 'LOG_TIME' ? '--gold' : '--saffron'})` }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.9)', fontWeight: 200, fontFamily: 'var(--font-serif)' }}>
-                      <span style={{ fontWeight: 400 }}>{log.user_name}</span> <span style={{ opacity: 0.4, fontStyle: 'italic' }}>{log.action.replace(/_/g, ' ').toLowerCase()}</span>
-                    </div>
-                    <div style={{ fontSize: '0.6rem', opacity: 0.2, marginTop: 12, letterSpacing: '0.4em', textTransform: 'uppercase', fontWeight: 800 }}>{log.details}</div>
-                  </div>
-                  <div style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.2em', opacity: 0.15 }}>
-                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
+    <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 60 }}>
+      {sections.map((section, sIdx) => (
+        <div key={section.title} style={{ marginBottom: sIdx === sections.length - 1 ? 0 : 32 }}>
+          <div className="firm-intel-tag" style={{ marginBottom: 12, fontSize: '0.55rem', opacity: 0.3, letterSpacing: '0.2em' }}>{section.title}</div>
+          <div className="dashboard-grid">
+            {section.cards.map(c => (
+              <div key={c.label} className="portal-panel" style={{ padding: '32px 28px', position: 'relative', overflow: 'hidden' }}>
+                <div className="firm-intel-tag" style={{ marginBottom: 20, fontSize: '0.5rem', opacity: 0.4 }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    {c.icon}
+                  </svg>
+                  {c.label}
                 </div>
-              ))}
-              {activities.length === 0 && (
-                <div style={{ padding: '100px 20px', textAlign: 'center', opacity: 0.05 }}>
-                  <p className="serif-title" style={{ fontSize: '1.6rem', fontStyle: 'italic' }}>Awaiting account telemetry...</p>
+                <div style={{ fontFamily: "var(--font-serif)", fontSize: '2.8rem', fontWeight: 300, lineHeight: 0.9, color: 'white' }}>
+                  {c.value}<span style={{ fontSize: '0.8rem', verticalAlign: 'top', opacity: 0.3, marginLeft: 8, fontWeight: 800 }}>{c.suffix}</span>
                 </div>
-              )}
-            </div>
+                {/* Visual Accent */}
+                <div style={{ 
+                  position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', 
+                  background: c.accent === 'gold' ? 'var(--gold)' : c.accent === 'saffron' ? 'var(--saffron)' : 'rgba(255,255,255,0.05)',
+                  opacity: 0.3
+                }} />
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Local Environment */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
-          <div className="portal-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px 60px', textAlign: 'center' }}>
-            <div style={{ color: 'var(--gold)', marginBottom: 40, opacity: 0.3 }}>
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.8">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-              </svg>
-            </div>
-            <div className="firm-intel-tag" style={{ marginBottom: 40, justifyContent: 'center', opacity: 0.4 }}>PLATFORM ENCRYPTED CACHE</div>
-            <button
-              className="btn-portal-primary"
-              style={{ padding: '14px 32px', fontSize: '0.55rem' }}
-              onClick={async () => { await mockApi.resetDatabase(); window.location.reload(); }}
-            >
-              PURGE ACCOUNT DATA
-            </button>
+      ))}
+      
+      {/* Platform Utilities */}
+      <div style={{ marginTop: 60, display: 'flex', justifyContent: 'center' }}>
+        <div className="portal-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 60px', textAlign: 'center', maxWidth: 600 }}>
+          <div style={{ color: 'var(--gold)', marginBottom: 24, opacity: 0.2 }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="0.8">
+              <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+            </svg>
           </div>
-          
+          <div className="firm-intel-tag" style={{ marginBottom: 32, justifyContent: 'center', opacity: 0.3 }}>PLATFORM ENCRYPTED CACHE</div>
+          <button
+            className="btn-portal-primary"
+            style={{ padding: '14px 32px', fontSize: '0.55rem' }}
+            onClick={() => { 
+              localStorage.clear(); 
+              window.location.href = '/portal/'; 
+            }}
+          >
+            PURGE ACCOUNT DATA
+          </button>
         </div>
       </div>
     </div>
@@ -176,10 +243,10 @@ const FF = ({ label, children }: { label: string, children: ReactNode }) => (
 
 /* ——— TIMESHEETS ——— */
 const Timesheets = () => {
-  const [profile, setProfile] = useState<any>(null);
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [records, setRecords] = useState<any[]>([]);
-  const [logs, setLogs] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [records, setRecords] = useState<ServiceRecord[]>([]);
+  const [logs, setLogs] = useState<TimesheetEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -204,7 +271,13 @@ const Timesheets = () => {
     setProfile(p);
     setAccounts(accs);
     setRecords(recs);
-    setLogs(tlogs);
+    let filteredTlogs = tlogs;
+    if (p.role === 'employee') {
+      filteredTlogs = tlogs.filter(t => t.logged_by === p.full_name);
+    } else if (p.role === 'client') {
+      filteredTlogs = tlogs.filter(t => t.account_id === p.account_id);
+    }
+    setLogs(filteredTlogs);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -231,7 +304,7 @@ const Timesheets = () => {
     sublabel: r.request_number
   }));
 
-  const handleEdit = (log: any) => {
+  const handleEdit = (log: TimesheetEntry) => {
     setEditingId(log.id);
     setSelectedAccountId(log.account_id || '');
     setSelectedRecordId(log.record_id || '');
@@ -328,7 +401,7 @@ const Timesheets = () => {
               <FF label="Strategic Work performed">
                 <textarea required className="portal-form-control" style={{ minHeight: 140 }} placeholder="Strategic context of the work performed..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
-              <div style={{ display: 'grid', gridTemplateColumns: editingId && isAdmin ? '1fr 1fr' : '1fr', gap: 16, marginTop: 16 }}>
+              <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
                  
                  <button disabled={loading || !selectedRecordId} type="submit" className="btn-portal-primary w-full h-48">
                    {loading ? 'SYNCING...' : editingId ? 'Update Timesheet' : 'Create Timesheet'}
@@ -345,8 +418,8 @@ const Timesheets = () => {
     <div className="portal-content">
       {/* Batch actions removed for timesheets */}
 
-      <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div style={{ paddingBottom: 0, display: 'flex', gap: 12 }}>
+      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
+        <div style={{ paddingBottom: 0, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {profile?.role === 'admin' && (
             <ExportDropdown data={logs} filename="Adveris_Timesheets" />
           )}
@@ -376,12 +449,12 @@ const Timesheets = () => {
                   style={{ cursor: 'pointer' }}
                   className={selectedIds.includes(log.id) ? 'selected' : ''}
                 >
-                  <td style={{ paddingLeft: 60 }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
-                  <td style={{ color: 'white', fontSize: '0.85rem' }}>{log.logged_by || 'Admin'}</td>
-                  <td style={{ opacity: 0.6, fontSize: '0.85rem' }}>{log.account_name || 'Individual'}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}><span className="portal-record-id">{(records.find(r => r.id === log.record_id)?.request_number) || 'ADV-000'}</span></td>
-                  <td style={{ fontWeight: 600, color: 'white', textAlign: 'right' }}>{log.hours}h</td>
-                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                  <td data-label="Date" style={{ paddingLeft: 60 }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Created By" style={{ color: 'white', fontSize: '0.85rem' }}>{log.logged_by || 'Admin'}</td>
+                  <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{log.account_name || 'Individual'}</td>
+                  <td data-label="Request ID" style={{ whiteSpace: 'nowrap' }}><span className="portal-record-id">{(records.find(r => r.id === log.record_id)?.request_number) || 'ADV-000'}</span></td>
+                  <td data-label="Hours" style={{ fontWeight: 600, color: 'white', textAlign: 'right' }}>{log.hours}h</td>
+                  <td data-label="Actions" style={{ textAlign: 'right', paddingRight: 60 }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                       <button onClick={() => handleEdit(log)} className="btn-portal-record-dots" title="Edit Log">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -412,9 +485,9 @@ const Timesheets = () => {
 
 /* ——— EXPENSES ——— */
 const Expenses = () => {
-  const [profile, setProfile] = useState<any>(null);
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [entries, setEntries] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [entries, setEntries] = useState<ExpenseEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -439,7 +512,13 @@ const Expenses = () => {
     ]);
     setProfile(p);
     setAccounts(accs);
-    setEntries(eEntries);
+    let filteredExpenses = eEntries;
+    if (p.role === 'employee') {
+      filteredExpenses = eEntries.filter(e => e.created_by_name === p.full_name);
+    } else if (p.role === 'client') {
+      filteredExpenses = eEntries.filter(e => e.account_id === p.account_id);
+    }
+    setEntries(filteredExpenses);
   };
 
   useEffect(() => { loadData(); }, []);
@@ -458,7 +537,7 @@ const Expenses = () => {
     sublabel: a.cin_number || 'Account Entity'
   }));
 
-  const handleEdit = (entry: any) => {
+  const handleEdit = (entry: ExpenseEntry) => {
     setEditingId(entry.id);
     setSelectedAccountId(entry.account_id || '');
     setAmount(entry.amount.toString());
@@ -593,10 +672,10 @@ const Expenses = () => {
                 <textarea required className="portal-form-control" style={{ minHeight: 120 }} placeholder="Detailed reason for this disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
 
-              <div style={{ display: 'grid', gridTemplateColumns: editingId && isAdmin ? '1fr 1fr' : '1fr', gap: 16, marginTop: 16 }}>
+              <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
                  
                   {editingId && isAdmin && (
-                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                     <div className="portal-form-grid-2">
                        <button 
                          type="button"
                          onClick={() => handleBulkStatus('approved', [editingId])}
@@ -679,8 +758,8 @@ const Expenses = () => {
       </AnimatePresence>
       </AnimatePresence>
 
-      <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div style={{ paddingBottom: 0, display: 'flex', gap: 12 }}>
+      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
+        <div style={{ paddingBottom: 0, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {profile?.role === 'admin' && (
             <ExportDropdown data={entries} filename="Adveris_Expenses" />
           )}
@@ -725,7 +804,7 @@ const Expenses = () => {
                   className={selectedIds.includes(e.id) ? 'row-selected' : ''}
                 >
                   {profile?.role === 'admin' && (
-                    <td onClick={e => e.stopPropagation()} style={{ paddingLeft: 60 }}>
+                    <td onClick={e => e.stopPropagation()} style={{ paddingLeft: 60 }} data-label="Select">
                       <input 
                         type="checkbox" 
                         className="portal-checkbox"
@@ -734,24 +813,24 @@ const Expenses = () => {
                       />
                     </td>
                   )}
-                  <td style={{ paddingLeft: profile?.role === 'admin' ? 0 : 60 }}>{new Date(e.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
-                  <td>
+                  <td data-label="Date" style={{ paddingLeft: profile?.role === 'admin' ? 0 : 60 }}>{new Date(e.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Category">
                     <span className="portal-badge" style={{ background: 'rgba(255,153,51,0.05)', color: 'var(--saffron)', border: '1px solid rgba(255,153,51,0.15)', fontSize: '0.65rem' }}>
                       {e.category || 'Disbursement'}
                     </span>
                   </td>
-                  <td style={{ opacity: 0.6, fontSize: '0.85rem' }}>{e.account_name || 'Individual'}</td>
-                  <td>
+                  <td data-label="Account" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{e.account_name || 'Individual'}</td>
+                  <td data-label="Proof">
                     {e.url ? (
                       <a href={e.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--gold)', textDecoration: 'underline', fontSize: '0.75rem' }}>View Receipt</a>
                     ) : (
-                      <span style={{ opacity: 0.1, fontSize: '0.75rem' }}>N/A</span>
+                      <span style={{ opacity: 0.2, fontSize: '0.7rem' }}>N/A</span>
                     )}
                   </td>
-                  <td style={{ fontWeight: 600, color: 'white', textAlign: 'right' }}>{Number(e.amount).toLocaleString('en-IN')}</td>
-                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                  <td data-label="Amount" style={{ textAlign: 'right', fontWeight: 600, color: 'white' }}>{Number(e.amount).toLocaleString('en-IN')}</td>
+                  <td data-label="Actions" style={{ textAlign: 'right', paddingRight: 60 }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                      <button onClick={() => handleEdit(e)} className="btn-portal-record-dots" title="Edit Expense">
+                      <button onClick={() => handleEdit(e)} className="btn-portal-record-dots" title="Edit Disbursement">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                       </button>
                     </div>
@@ -780,8 +859,8 @@ const Expenses = () => {
 
 /* ——— CLIENT OVERVIEW (for client role) ——— */
 const ClientOverview = () => {
-  const [profile, setProfile] = useState<any>(null);
-  const [records, setRecords] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [records, setRecords] = useState<ServiceRecord[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -789,7 +868,7 @@ const ClientOverview = () => {
       setProfile(p);
       const recs = await mockApi.getRecords();
       // Filter to only the client's own mandates
-      setRecords(recs.filter((r: any) => r.account_id === p.account_id || r.submitted_by === p.id));
+      setRecords(recs.filter((r: ServiceRecord) => r.account_id === p.account_id || r.submitted_by === p.id));
     });
   }, []);
 
@@ -811,7 +890,7 @@ const ClientOverview = () => {
           {records.length === 0 ? (
             <p style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '40px 0' }}>No mandates submitted yet.</p>
           ) : (
-            records.map((r: any) => (
+            records.map((r: ServiceRecord) => (
               <div 
                 key={r.id} 
                 onClick={() => navigate(`/dashboard/records/${r.id}`)}
@@ -837,7 +916,7 @@ const ClientOverview = () => {
 
 /* ——— DASHBOARD ROOT ——— */
 const Dashboard = () => {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     mockApi.getProfile().then(setProfile);

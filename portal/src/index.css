@@ -312,3 +312,125 @@ textarea.portal-form-control {
   color: white;
   padding: 10px;
 }
+/* --- RESPONSIVE ADAPTATIONS --- */
+@media (max-width: 1400px) {
+  .theater-container { max-width: 100%; }
+}
+
+@media (max-width: 1024px) {
+  html { font-size: 15px; }
+  .theater-container { padding: 0 30px; }
+  .portal-panel { padding: 40px; }
+}
+
+@media (max-width: 768px) {
+  html { font-size: 14px; }
+  .theater-container { padding: 0 20px; }
+  .portal-panel { padding: 32px 20px; }
+  
+  /* Mobile Header Adjustments */
+  .portal-header-inner-wrap { flex-direction: row; justify-content: space-between; align-items: center; width: 100%; padding: 0 20px; }
+  
+  /* Table Responsiveness (Card Stack Mode) */
+  .portal-table-v2 { border: 0; }
+  .portal-table-v2 thead { border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+  .portal-table-v2 tr { display: block; margin-bottom: 24px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 4px; padding: 12px; }
+  .portal-table-v2 td { border-bottom: 1px solid rgba(255,255,255,0.02); display: block; font-size: .8rem; text-align: right; padding: 12px 8px; }
+  .portal-table-v2 td::before { content: attr(data-label); float: left; font-weight: 700; color: var(--gold); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.4; }
+  .portal-table-v2 td:last-child { border-bottom: 0; }
+
+  .portal-mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    color: var(--gold);
+    cursor: pointer;
+  }
+
+  .portal-tab-group { 
+    display: none !important; /* Hidden by default */
+    flex-direction: column !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    background: var(--navy) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 2000 !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5) !important;
+  }
+  
+  .portal-tab-group.open {
+    display: flex !important; /* Reveal when open */
+  }
+
+  .portal-tab-item { 
+    padding: 16px 24px !important; 
+    font-size: 0.65rem !important; 
+    text-align: left; 
+    border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+    background: transparent !important;
+    border-radius: 0;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    white-space: normal !important;
+    line-height: 1.2 !important;
+  }
+  .portal-tab-item.active {
+    background: rgba(255,153,51,0.05) !important;
+    border-left: 3px solid var(--saffron) !important;
+  }
+  .portal-tab-item svg { margin-right: 0 !important; margin-bottom: 0 !important; flex-shrink: 0; opacity: 0.7; }
+  .portal-header-actions-right { flex-wrap: wrap; gap: 12px; justify-content: flex-start; padding: 16px 24px !important; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .portal-header-actions-right > div { flex-wrap: wrap; justify-content: flex-start; border-right: none !important; padding-right: 0 !important; }
+}
+
+/* --- RESPONSIVE GRID UTILITIES --- */
+.portal-form-grid-2,
+.portal-data-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.portal-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .portal-form-grid-2,
+  .portal-data-grid-2,
+  .portal-form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* --- DASHBOARD GRID OPTIMIZATION --- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

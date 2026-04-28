@@ -3,21 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
 import { AccountModal } from '../components/CRMModals';
 import Pagination from '../components/Pagination';
+import type { Account, Client } from '../types';
 
 // ——— ADVERIS PREMIUM ACCOUNT HYPER-AESTHETIC TABLE ———
-interface ColDef {
+interface ColDef<T> {
   header: string;
   key: string;
-  render?: (row: any) => React.ReactNode;
+  render?: (row: T) => React.ReactNode;
   width?: string | number;
 }
 
-const DataTable = ({
+const DataTable = <T extends { id?: string }>({
   cols, rows, onRowClick, q,
 }: {
-  cols: ColDef[];
-  rows: any[];
-  onRowClick?: (row: any) => void;
+  cols: ColDef<T>[];
+  rows: T[];
+  onRowClick?: (row: T) => void;
   q: string;
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,7 +52,7 @@ const DataTable = ({
                 {cols.map((col, idx) => (
                   <td key={col.key} style={{ paddingLeft: idx === 0 ? 60 : 24 }}>
                     {col.render ? col.render(row) : (
-                       <span style={{ fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>{row[col.key] ?? '—'}</span>
+                       <span style={{ fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>{(row as any)[col.key] ?? '—'}</span>
                     )}
                   </td>
                 ))}
@@ -83,8 +84,8 @@ type Tab = 'accounts' | 'clients';
 
 const CRMHub = () => {
   const [tab, setTab] = useState<Tab>('accounts');
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [clients, setClients] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [q, setQ] = useState('');
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const CRMHub = () => {
 
   useEffect(() => { load(); }, []);
 
-  const accountCols: ColDef[] = [
+  const accountCols: ColDef<Account>[] = [
     {
       header: 'Account Name', key: 'account_name',
       render: r => (
@@ -110,7 +111,7 @@ const CRMHub = () => {
     { header: 'GSTIN Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
   ];
 
-  const clientCols: ColDef[] = [
+  const clientCols: ColDef<Client>[] = [
     {
       header: 'Client Name', key: 'client_name',
       render: r => <div style={{ color: 'white', fontWeight: 500 }}>{r.client_name}</div>

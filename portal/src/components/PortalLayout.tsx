@@ -1,9 +1,10 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
+import type { Profile } from '../types';
 
-const PortalLayout = ({ children, profile }: { children: React.ReactNode, profile: any }) => {
-
+const PortalLayout = ({ children, profile }: { children: React.ReactNode, profile: Profile }) => {
+  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   const handleLogout = async () => {
     localStorage.removeItem('adveris_mock_session');
@@ -15,7 +16,7 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
     // For testing/mock purposes, we associate IDs that match our seeded records
     const NEXUS_ALPHA_ID = 'seed-acc-1'; // We'll update seedData to use these fixed IDs
 
-    const mockUsers: any = {
+    const mockUsers: Record<string, Profile> = {
       admin: { id: 'mock-admin', role: 'admin', full_name: 'Adveris Admin' },
       employee: { id: 'mock-staff', role: 'employee', full_name: 'Firm Professional' },
       client: { id: 'mock-client', role: 'client', full_name: 'Nexus Client', account_id: NEXUS_ALPHA_ID }
@@ -88,44 +89,51 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
         <div className="portal-header-inner-wrap" style={{ maxWidth: 1600 }}>
           <div className="portal-brand-lockup">
             <span className="brand-main">Adveris</span>
-            <span className="brand-subline">ADVISORS LLP</span>
+            <span className="brand-subline">ADVISORS PORTAL</span>
           </div>
 
 
-          <div className="portal-header-actions-right" style={{ gap: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-              <span style={{ fontSize: '0.6rem', opacity: 0.2, letterSpacing: '0.1em' }}>IDENTITY /</span>
-              {['admin', 'employee', 'client'].map(r => (
-                <span
-                  key={r}
-                  onClick={() => switchRole(r)}
-                  className={`menu-trigger-text ${profile.role === r ? 'active' : ''}`}
-                  style={{
-                    fontSize: '0.55rem',
-                    cursor: 'pointer',
-                    color: profile.role === r ? 'var(--gold)' : 'white',
-                    opacity: profile.role === r ? 1 : 0.3,
-                    fontWeight: profile.role === r ? 800 : 400
-                  }}
-                >
-                  {r.toUpperCase()}
-                </span>
-              ))}
-            </div>
-
-            <span className="menu-trigger-text" onClick={handleLogout} style={{ opacity: 0.3, fontSize: '0.6rem', cursor: 'pointer' }}>LOGOUT</span>
+          {/* MOBILE MENU TOGGLE (Header Level) */}
+          <div className="portal-mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
           </div>
         </div>
       </header>
 
       {/* TIER 2: ACCOUNT TABS */}
       <nav className="portal-nav-row" style={{ marginBottom: 0 }}>
-        <div className="container" style={{ maxWidth: 1600 }}>
-          <div className="portal-tab-group" style={{ marginBottom: 0, padding: '0 40px' }}>
+        <div className="container" style={{ maxWidth: 1600, width: '100%' }}>
+          <div className={`portal-tab-group ${isMenuOpen ? 'open' : ''}`} style={{ marginBottom: 0, padding: '0 40px' }}>
+            
+            {/* INJECT IDENTITY SWITCHER AT TOP OF MOBILE DROPDOWN */}
+            <div className="portal-header-actions-right" style={{ gap: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ fontSize: '0.6rem', opacity: 0.2, letterSpacing: '0.1em' }}>IDENTITY /</span>
+                {['admin', 'employee', 'client'].map(r => (
+                  <span
+                    key={r}
+                    onClick={() => switchRole(r)}
+                    className={`menu-trigger-text ${profile.role === r ? 'active' : ''}`}
+                    style={{
+                      fontSize: '0.55rem',
+                      cursor: 'pointer',
+                      color: profile.role === r ? 'var(--gold)' : 'white',
+                      opacity: profile.role === r ? 1 : 0.3,
+                      fontWeight: profile.role === r ? 800 : 400
+                    }}
+                  >
+                    {r.toUpperCase()}
+                  </span>
+                ))}
+              </div>
+              <span className="menu-trigger-text" onClick={handleLogout} style={{ opacity: 0.3, fontSize: '0.6rem', cursor: 'pointer' }}>LOGOUT</span>
+            </div>
+
             {subNavItems.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={() => setIsMenuOpen(false)}
                 end={item.path === '/dashboard/overview'}
                 className={({ isActive }) =>
                   `portal-tab-item ${isActive ? 'active' : ''}`
@@ -153,7 +161,7 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
             <div>
               <div className="portal-brand-lockup" style={{ marginBottom: 8 }}>
                 <span className="brand-main" style={{ fontSize: '1.2rem' }}>Adveris</span>
-                <span className="brand-subline" style={{ fontSize: '0.45rem' }}>ADVISORS LLP</span>
+                <span className="brand-subline" style={{ fontSize: '0.45rem' }}>ADVISORS PORTAL</span>
               </div>
               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', fontWeight: 200, letterSpacing: '0.02em' }}>
                 Professional advisory for the Indian market. Strategic compliance, regulatory governance, and corporate excellence.
@@ -162,7 +170,7 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
 
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.1)', letterSpacing: '0.3em', fontWeight: 600, marginBottom: 8 }}>
-                © 2026 Adveris Advisors LLP. DEPLOYED FOR ACCOUNT USE.
+                © 2026 Adveris Advisors Portal. DEPLOYED FOR ACCOUNT USE.
               </div>
               <div style={{ display: 'flex', gap: 24, justifyContent: 'flex-end', opacity: 0.15 }}>
                 <span style={{ fontSize: '0.55rem', color: 'var(--gold)', letterSpacing: '0.3em', fontWeight: 800 }}>BENGALURU</span>

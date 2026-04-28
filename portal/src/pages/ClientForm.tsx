@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import type { Account } from '../types';
 
 const ClientForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,7 +12,7 @@ const ClientForm = () => {
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   // Form State
   const [formData, setFormData] = useState({

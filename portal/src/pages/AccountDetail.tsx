@@ -2,17 +2,21 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
 import { AccountModal } from '../components/CRMModals';
+import type { 
+  Account, Client, ServiceRecord, 
+  TimesheetEntry, ExpenseEntry, AuditLog 
+} from '../types';
 import { AnimatePresence } from 'framer-motion';
 
 const AccountDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [account, setAccount] = useState<any>(null);
-  const [clients, setClients] = useState<any[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
-  const [timesheets, setTimesheets] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
-  const [mandates, setMandates] = useState<any[]>([]);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [history, setHistory] = useState<AuditLog[]>([]);
+  const [timesheets, setTimesheets] = useState<TimesheetEntry[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
+  const [mandates, setMandates] = useState<ServiceRecord[]>([]);
   
   const [showAllHistory] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,9 +41,9 @@ const AccountDetail = () => {
     setHistory(hist);
     
     // Filter institutional data
-    setTimesheets(allT.filter((t: any) => t.account_id === id));
-    setExpenses(allE.filter((e: any) => e.account_id === id));
-    setMandates(allM.filter((m: any) => m.account_id === id));
+    setTimesheets(allT.filter((t: TimesheetEntry) => t.account_id === id));
+    setExpenses(allE.filter((e: ExpenseEntry) => e.account_id === id));
+    setMandates(allM.filter((m: ServiceRecord) => m.account_id === id));
     
     setLoading(false);
   };
@@ -52,7 +56,7 @@ const AccountDetail = () => {
     return { totalHours, totalExp, mandateCount: mandates.length };
   }, [timesheets, expenses, mandates]);
 
-  if (loading) return (
+  if (loading || !account) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="portal-loader" />
     </div>
@@ -82,7 +86,7 @@ const AccountDetail = () => {
       </div>
 
       {/* Fiscal Pulse / Quick Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, margin: '12px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, margin: '12px 0' }}>
         <div className="portal-panel" style={{ padding: 16, borderLeft: '3px solid var(--gold)' }}>
            <p style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.4, letterSpacing: '0.15em' }}>TOTAL PROFESSIONAL HOURS</p>
            <h2 className="serif-title" style={{ fontSize: '2rem', marginTop: 8, color: 'white' }}>{stats.totalHours}<em style={{ fontSize: '0.9rem', marginLeft: 6 }}>HRS</em></h2>

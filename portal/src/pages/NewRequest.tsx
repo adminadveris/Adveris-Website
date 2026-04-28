@@ -4,18 +4,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { servicesData } from '../data/servicesData';
 import { mockApi } from '../lib/mockApi';
 import SearchableSelect from '../components/SearchableSelect';
+import type { Profile, Account, ServiceRecord } from '../types';
 
 type Step = 'pan' | 'register' | 'scoping' | 'spec' | 'full';
 
 const NewRequest = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [step, setStep] = useState<Step>(id ? 'full' : 'pan');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   // Account Data
   const [pan, setPan] = useState('');
@@ -75,7 +76,7 @@ const NewRequest = () => {
       
       if (id) {
         const records = await mockApi.getRecords();
-        const existing = records.find((r: any) => r.id === id);
+        const existing = records.find((r: ServiceRecord) => r.id === id);
         if (existing) {
           setAccountId(existing.account_id);
           setAccountName(existing.account_name);
@@ -156,13 +157,13 @@ const NewRequest = () => {
         finalAccountId = newAcc.id;
       }
 
-      const payload: any = {
-        account_id: finalAccountId,
+      const payload: Partial<ServiceRecord> = {
+        account_id: finalAccountId || '',
         account_name: accountName,
         title: selectedService,
         primary_service: selectedService,
         description: additionalInfo,
-        sub_services: selectedSubServices,
+        additional_services: selectedSubServices.join(', '),
         client_comms: clientComms,
       };
 
@@ -275,7 +276,7 @@ const NewRequest = () => {
                       setLoading(false);
                     }
                   }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+                    <div className="portal-form-grid-2" style={{ gap: 40 }}>
                       {/* COLUMN 1: STATUTORY */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div className="firm-intel-tag" style={{ marginBottom: 8 }}>STATUTORY IDENTIFIERS</div>
@@ -285,7 +286,7 @@ const NewRequest = () => {
                           <input required className="portal-form-control" value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Full Company Name..." />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div className="portal-form-grid-2" style={{ gap: 16 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">CIN NUMBER</label>
                             <input className="portal-form-control" value={cin} onChange={e => setCin(e.target.value)} placeholder="U1234..." />
@@ -318,7 +319,7 @@ const NewRequest = () => {
                           <input className="portal-form-control" value={houseNo} onChange={e => setHouseNo(e.target.value)} />
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div className="portal-form-grid-2" style={{ gap: 16 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">Street 1</label>
                             <input className="portal-form-control" value={street1} onChange={e => setStreet1(e.target.value)} />
@@ -329,7 +330,7 @@ const NewRequest = () => {
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                        <div className="portal-form-grid-2" style={{ gap: 16 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">Street 3</label>
                             <input className="portal-form-control" value={street3} onChange={e => setStreet3(e.target.value)} />
@@ -340,7 +341,7 @@ const NewRequest = () => {
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+                        <div className="portal-form-grid-3" style={{ gap: 12 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">City</label>
                             <input className="portal-form-control" value={city} onChange={e => setCity(e.target.value)} />
@@ -429,7 +430,7 @@ const NewRequest = () => {
 
         {/* ADMIN COMMAND CENTER: ELEGANCE V4 OVERHAUL */}
         {isAdmin && (
-          <div style={{ display: 'grid', gridTemplateColumns: '7fr 3fr', gap: 40, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 800px), 1fr))', gap: 32, alignItems: 'start' }}>
             
             {/* LEFT: ENGINEERING FORM */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -441,7 +442,7 @@ const NewRequest = () => {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                    
                    {/* IDENTITY & REFERENCE - Standardized to 2 columns */}
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 40px' }}>
+                   <div className="portal-form-grid-2" style={{ gap: '16px 40px' }}>
                       <div className="portal-form-group">
                          <label className="portal-form-label">Reference No</label>
                          <input readOnly className="portal-form-control" style={{ opacity: 0.6, cursor: 'not-allowed' }} value={requestNumber} />
@@ -456,7 +457,7 @@ const NewRequest = () => {
                             readOnly={!!id && !isAdmin}
                          />
                       </div>
-                      <div className="portal-form-group" style={{ gridColumn: 'span 2' }}>
+                      <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
                          <label className="portal-form-label">Account Name</label>
                          {isAdmin ? (
                             <SearchableSelect 
@@ -521,7 +522,7 @@ const NewRequest = () => {
                    )}
 
                    {/* CLIENT INPUTS */}
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+                   <div className="portal-form-grid-2" style={{ gap: 32 }}>
                       <div className="portal-form-group">
                          <label className="portal-form-label">Additional Services</label>
                          <textarea 
@@ -621,7 +622,7 @@ const NewRequest = () => {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                    {/* Balanced 2-column grid */}
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 40px' }}>
+                   <div className="portal-form-grid-2" style={{ gap: '16px 40px' }}>
                       <div className="portal-form-group">
                          <label className="portal-form-label">Priority</label>
                          <select 
@@ -653,7 +654,7 @@ const NewRequest = () => {
                            readOnly={!isAdmin} 
                          />
                       </div>
-                      <div className="portal-form-group" style={{ gridColumn: 'span 2' }}>
+                      <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
                          <label className="portal-form-label">Assigned To</label>
                          <input 
                            className="portal-form-control" 
@@ -672,7 +673,7 @@ const NewRequest = () => {
                    )}
 
                    {/* PERFORMANCE METRICS - Standardized to 2 columns */}
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 40px', padding: 20, background: 'rgba(255,153,51,0.03)', borderRadius: 8 }}>
+                   <div className="portal-form-grid-2" style={{ gap: '16px 40px', padding: 20, background: 'rgba(255,153,51,0.03)', borderRadius: 8 }}>
                       <div className="portal-form-group" style={{ marginBottom: 0 }}>
                          <label className="portal-form-label">Approved Date</label>
                          <input 
@@ -696,7 +697,7 @@ const NewRequest = () => {
                          <label className="portal-form-label">No of Days Left</label>
                          <input readOnly className="portal-form-control" style={{ opacity: 0.6 }} value={daysLeft} />
                       </div>
-                      <div className="portal-form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
+                      <div className="portal-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
                          <label className="portal-form-label">No of Hours Consumed</label>
                          <input 
                            type="number" 
@@ -708,7 +709,7 @@ const NewRequest = () => {
                       </div>
                    </div>
 
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginTop: 8 }}>
+                   <div className="portal-form-grid-2" style={{ gap: 40, marginTop: 8 }}>
                       <div className="portal-form-group">
                          <label className="portal-form-label">Document Verification Status</label>
                          <select 

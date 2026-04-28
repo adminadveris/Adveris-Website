@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { mockApi } from '../lib/mockApi';
+import type { Account } from '../types';
 
 /* ─── Shared UI Components ─── */
 const ModalShell = ({ title, sub, onClose, children }: { title: React.ReactNode; sub?: string; onClose: () => void; children: React.ReactNode }) => (
@@ -36,7 +37,7 @@ const FormField = ({ label, children }: { label: string; children: React.ReactNo
 );
 
 /* ─── ACCOUNT MODAL ─── */
-export const AccountModal = ({ account, onClose, onSaved }: { account?: any; onClose: () => void; onSaved: () => void }) => {
+export const AccountModal = ({ account, onClose, onSaved }: { account?: Account; onClose: () => void; onSaved: () => void }) => {
   const [data, setData] = useState({
     account_name: account?.account_name || '',
     cin_number: account?.cin_number || '',

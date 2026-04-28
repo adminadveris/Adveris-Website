@@ -179,6 +179,8 @@
 /* ——— INSTITUTIONAL TABS (Flow-Aesthetic) ——— */
 .portal-tab-group {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 40px;
@@ -460,6 +462,13 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .portal-form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 /* === PORTAL TABLE === */

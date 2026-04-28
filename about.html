@@ -14,11 +14,12 @@
   <meta name="keywords"
     content="about Adveris Advisors, law firm about us, Bengaluru legal firm, compliance firm India, company secretary firm India" />
   <link rel="canonical" href="https://www.adverisadvisors.com/about.html" />
-  <link rel="icon" type="image/png" href="adveris_favicon_1776505504440.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
   <meta property="og:title" content="About Adveris Advisors LLP" />
   <meta property="og:description"
     content="Bengaluru-based corporate law and compliance firm serving India with integrity and expertise." />
   <meta property="og:type" content="website" />
+  <link rel="preload" href="css/style.css" as="style">
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/animations.css" />
   <link rel="stylesheet" href="css/consent.css" />
@@ -73,39 +74,8 @@
             <div class="reveal-right"
               style="background:var(--navy);border-radius:var(--radius-sm);padding:48px 40px;color:white;">
               <div class="sec-label" style="color:var(--saffron);margin-bottom:28px;">Why Adveris?</div>
-              <div style="display:flex;flex-direction:column;gap:20px;">
-                <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <div
-                    style="width:32px;height:32px;min-width:32px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--navy);">
-                    ✓</div>
-                  <div><strong style="display:block;color:white;margin-bottom:4px;">Pan-India Expertise</strong><span
-                      style="font-size:0.9rem;color:rgba(255,255,255,0.6);">Licensed professionals serving clients in
-                      every major Indian state and territory.</span></div>
-                </div>
-                <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <div
-                    style="width:32px;height:32px;min-width:32px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--navy);">
-                    ✓</div>
-                  <div><strong style="display:block;color:white;margin-bottom:4px;">Proactive Advisory</strong><span
-                      style="font-size:0.9rem;color:rgba(255,255,255,0.6);">We anticipate regulatory changes and prepare
-                      clients before they become compliance issues.</span></div>
-                </div>
-                <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <div
-                    style="width:32px;height:32px;min-width:32px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--navy);">
-                    ✓</div>
-                  <div><strong style="display:block;color:white;margin-bottom:4px;">Technology-Enabled</strong><span
-                      style="font-size:0.9rem;color:rgba(255,255,255,0.6);">Modern document management, compliance
-                      tracking and digital delivery for seamless client experience.</span></div>
-                </div>
-                <div style="display:flex;gap:16px;align-items:flex-start;">
-                  <div
-                    style="width:32px;height:32px;min-width:32px;border-radius:50%;background:var(--saffron);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;color:var(--navy);">
-                    ✓</div>
-                  <div><strong style="display:block;color:white;margin-bottom:4px;">Transparent Pricing</strong><span
-                      style="font-size:0.9rem;color:rgba(255,255,255,0.6);">Clear, upfront engagements with no hidden
-                      fees or surprise billing.</span></div>
-                </div>
+              <div id="aboutWhyGrid" style="display:flex;flex-direction:column;gap:20px;">
+                <!-- Dynamically populated from data/about.json -->
               </div>
             </div>
           </div>
@@ -124,27 +94,8 @@
             <p class="sec-body" style="margin:0 auto;">The principles that guide every engagement, every decision, and
               every relationship we build.</p>
           </div>
-          <div class="values-grid stagger">
-            <div class="value-card reveal">
-              <h3>Integrity First</h3>
-              <p>We believe honesty is non-negotiable. Our advice is always unbiased, fully transparent, and in the best
-                interest of our clients — even when it's difficult to hear.</p>
-            </div>
-            <div class="value-card reveal">
-              <h3>Deep Expertise</h3>
-              <p>Our team holds professional certifications from ICSI, Bar Council and other recognised bodies. We
-                invest continuously in staying current with India's evolving regulatory framework.</p>
-            </div>
-            <div class="value-card reveal">
-              <h3>Client-First Trust</h3>
-              <p>Long-term relationships are built on consistent results. We measure success not by the size of our
-                firm, but by the trust our clients place in us year after year.</p>
-            </div>
-            <div class="value-card reveal">
-              <h3>Innovation in Practice</h3>
-              <p>We leverage technology to deliver faster, more accurate, and more cost-effective compliance solutions —
-                without ever compromising on the quality of advice.</p>
-            </div>
+          <div class="values-grid stagger" id="aboutValuesGrid">
+            <!-- Dynamically populated from data/about.json -->
           </div>
         </div>
       </section>
@@ -166,11 +117,11 @@
 
   <footer data-section="footer" data-theme="dark"></footer>
 
-  <script src="js/layout.js?v=1.1"></script>
-  <script src="js/content-loader.js?v=1.1"></script>
-  <script src="js/consent.js?v=1.1"></script>
-  <script src="js/lenis.min.js?v=1.1"></script>
-  <script src="js/main.js?v=1.1"></script>
+  <script src="js/layout.js?v=1.1" defer></script>
+  <script src="js/content-loader.js?v=1.1" defer></script>
+  <script src="js/consent.js?v=1.1" defer></script>
+  <script src="js/lenis.min.js?v=1.1" defer></script>
+  <script src="js/main.js?v=1.1" defer></script>
 </body>
 
 </html>

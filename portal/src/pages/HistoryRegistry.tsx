@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
 import Pagination from '../components/Pagination';
+import type { ServiceRecord, AuditLog } from '../types';
 
 const fmt = (iso: string) =>
   new Date(iso).toLocaleString('en-IN', { 
@@ -15,8 +16,8 @@ const fmt = (iso: string) =>
 const HistoryRegistry = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [record, setRecord] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [record, setRecord] = useState<ServiceRecord | null>(null);
+  const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -29,7 +30,7 @@ const HistoryRegistry = () => {
         mockApi.getRecords(),
         mockApi.getHistoryByRecord(id)
       ]);
-      const rec = recs.find((r: any) => r.id === id);
+      const rec = recs.find((r: ServiceRecord) => r.id === id);
       if (!rec) { navigate('/dashboard/records'); return; }
       
       setRecord(rec);
@@ -44,7 +45,11 @@ const HistoryRegistry = () => {
     currentPage * pageSize
   );
 
-  if (loading) return null;
+  if (loading || !record) return (
+    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="portal-loader" />
+    </div>
+  );
 
   return (
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 100, fontFamily: 'var(--font-sans)' }}>
@@ -69,7 +74,7 @@ const HistoryRegistry = () => {
            Account History
         </h1>
         <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.4)', fontWeight: 300, fontFamily: 'var(--font-sans)' }}>
-            {record.request_number} &mdash; <span style={{ color: 'var(--gold)', fontWeight: 500 }}>{record.title || record.primary_service}</span>
+            {record.request_number} — <span style={{ color: 'var(--gold)', fontWeight: 500 }}>{record.title || record.primary_service}</span>
         </p>
       </div>
 

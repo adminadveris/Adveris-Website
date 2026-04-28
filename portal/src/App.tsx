@@ -6,6 +6,7 @@ import './animations.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { supabase } from './lib/supabaseClient';
+import type { Profile } from './types';
 
 // === ANIMATED BACKGROUND — same as website ===
 const PageBackground = () => (
@@ -35,23 +36,43 @@ const PageBackground = () => (
 );
 
 function App() {
-  const [session, setSession] = useState<any>(null);
+  console.log("PORTAL: App component is rendering");
+  const [session, setSession] = useState<{ user: Profile } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockSession = localStorage.getItem('adveris_mock_session');
-    if (mockSession) {
-      setSession({ user: JSON.parse(mockSession) });
-      setLoading(false);
-      return;
-    }
+    const init = async () => {
+      // 1. Check for local mock session first (fastest)
+      const mockSession = localStorage.getItem('adveris_mock_session');
+      if (mockSession) {
+        setSession({ user: JSON.parse(mockSession) });
+        setLoading(false);
+        // Seed in background
+        mockApi.seedData();
+        return;
+      }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
+      // 2. Check Supabase session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+      } catch (err) {
+        console.warn("Supabase session check failed", err);
+      } finally {
+        setLoading(false);
+        // Seed in background
+        mockApi.seedData();
+      }
+    };
+    
+    init();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // If we have a mock session in progress, don't let Supabase overwrite it with null
+      const mockSession = localStorage.getItem('adveris_mock_session');
+      if (mockSession && !session) {
+        return; 
+      }
       setSession(session);
     });
 

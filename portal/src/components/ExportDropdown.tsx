@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import * as XLSX from 'xlsx';
 
-export const exportToCSV = (data: any[], filename: string) => {
+export const exportToCSV = <T extends object>(data: T[], filename: string) => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
   const blob = new Blob([csvOutput], { type: 'text/csv' });
@@ -12,51 +12,51 @@ export const exportToCSV = (data: any[], filename: string) => {
   a.click();
 };
 
-export const exportToExcel = (data: any[], filename: string) => {
+export const exportToExcel = <T extends object>(data: T[], filename: string) => {
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
   XLSX.writeFile(workbook, `${filename}.xlsx`);
 };
 
-export const filterDataByRange = (data: any[], rangeKey: string, dateField: string = 'date') => {
+export const filterDataByRange = <T extends object>(data: T[], rangeKey: string, dateField: string = 'date') => {
   const now = new Date();
   const start = new Date();
 
   switch (rangeKey) {
     case 'last_week':
       start.setDate(now.getDate() - 7);
-      return data.filter(d => new Date(d[dateField]) >= start);
+      return data.filter(d => new Date((d as any)[dateField]) >= start);
     case 'prev_month': {
       const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
       return data.filter(d => {
-        const dd = new Date(d[dateField]);
+        const dd = new Date((d as any)[dateField]);
         return dd >= prevMonthStart && dd <= prevMonthEnd;
       });
     }
     case 'last_3m':
       start.setMonth(now.getMonth() - 3);
-      return data.filter(d => new Date(d[dateField]) >= start);
+      return data.filter(d => new Date((d as any)[dateField]) >= start);
     case 'last_6m':
       start.setMonth(now.getMonth() - 6);
-      return data.filter(d => new Date(d[dateField]) >= start);
+      return data.filter(d => new Date((d as any)[dateField]) >= start);
     case 'last_1y':
       start.setFullYear(now.getFullYear() - 1);
-      return data.filter(d => new Date(d[dateField]) >= start);
+      return data.filter(d => new Date((d as any)[dateField]) >= start);
     default:
       return data;
   }
 };
 
-interface ExportDropdownProps {
-  data: any[];
+interface ExportDropdownProps<T> {
+  data: T[];
   filename: string;
   label?: string;
   dateField?: string;
 }
 
-const ExportDropdown = ({ data, filename, label = "EXPORT DATA", dateField = "date" }: ExportDropdownProps) => {
+const ExportDropdown = <T extends object>({ data, filename, label = "EXPORT DATA", dateField = "date" }: ExportDropdownProps<T>) => {
   const [open, setOpen] = useState(false);
 
   const ranges = [

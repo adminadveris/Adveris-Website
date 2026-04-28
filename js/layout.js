@@ -122,6 +122,37 @@ const SHARED_FOOTER = `
   </div>
 `;
 
+function initSEO() {
+  const pageName = document.body.getAttribute('data-page') || 'Home';
+  const siteName = 'Adveris Advisors LLP';
+  
+  // Set default canonical if missing
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement('link');
+    canonical.setAttribute('rel', 'canonical');
+    document.head.appendChild(canonical);
+  }
+  canonical.setAttribute('href', window.location.href.split('?')[0]);
+
+  // Set default OG tags if missing
+  let ogUrl = document.querySelector('meta[property="og:url"]');
+  if (!ogUrl) {
+    ogUrl = document.createElement('meta');
+    ogUrl.setAttribute('property', 'og:url');
+    document.head.appendChild(ogUrl);
+  }
+  ogUrl.setAttribute('content', window.location.href);
+
+  let ogSiteName = document.querySelector('meta[property="og:site_name"]');
+  if (!ogSiteName) {
+    ogSiteName = document.createElement('meta');
+    ogSiteName.setAttribute('property', 'og:site_name');
+    ogSiteName.setAttribute('content', siteName);
+    document.head.appendChild(ogSiteName);
+  }
+}
+
 function initLayout() {
   const nav = document.getElementById('mainNav');
   const menu = document.getElementById('menuOverlay');
@@ -130,6 +161,8 @@ function initLayout() {
   if (nav) nav.innerHTML = SHARED_NAV;
   if (menu) menu.innerHTML = SHARED_MENU;
   if (footer) footer.innerHTML = SHARED_FOOTER;
+
+  initSEO();
 
   // Signal that layout HTML is ready — main.js listens for this
   window.__layoutReady = true;

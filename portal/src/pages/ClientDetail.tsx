@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import type { Client, Account, AuditLog } from '../types/index';
 
 const ClientDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [client, setClient] = useState<any>(null);
-  const [account, setAccount] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [client, setClient] = useState<Client | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [history, setHistory] = useState<AuditLog[]>([]);
   const [showAllHistory] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -30,13 +31,13 @@ const ClientDetail = () => {
 
   useEffect(() => { load(); }, [id]);
 
-  if (loading) return (
+  if (loading || !client) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="portal-loader" />
     </div>
   );
 
-  const ContactBlock = ({ emails, phones }: { emails: string[]; phones: string[] }) => (
+  const ContactBlock = ({ emails, phones }: { emails: (string | undefined)[]; phones: (string | undefined)[] }) => (
     <div className="portal-panel" style={{ padding: 32 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48 }}>
         <div>
@@ -91,7 +92,7 @@ const ClientDetail = () => {
               onClick={() => navigate(`/dashboard/crm/accounts/${account?.id}`)} 
               style={{ color: 'var(--gold)', cursor: 'pointer', marginLeft: 6, textDecoration: 'underline' }}
             >
-              {account?.account_name}
+              {account?.account_name || 'Individual Entity'}
             </span>
           </p>
         </div>
@@ -204,8 +205,8 @@ const ClientDetail = () => {
              <h4 style={{ fontSize: '0.65rem', fontWeight: 800, opacity: 0.3, letterSpacing: '0.15em', marginBottom: 24 }}>ACCOUNT CONTEXT</h4>
              <div style={{ padding: 24, background: 'rgba(255,153,51,0.05)', borderRadius: 16, border: '1px solid rgba(255,153,51,0.1)' }}>
                 <p style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.5, marginBottom: 8 }}>LEGAL ENTITY</p>
-                <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>{account?.account_name}</p>
-                <p style={{ fontSize: '0.75rem', color: 'var(--gold)', marginTop: 4 }}>{account?.industry}</p>
+                <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>{account?.account_name || 'Individual Entity'}</p>
+                <p style={{ fontSize: '0.75rem', color: 'var(--gold)', marginTop: 4 }}>{account?.industry || 'General'}</p>
                 <button 
                   onClick={() => navigate(`/dashboard/crm/accounts/${account?.id}`)}
                   className="btn-portal-outline" 

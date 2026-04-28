@@ -2,17 +2,22 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
 import Pagination from '../components/Pagination';
+import type { ServiceRecord, Account } from '../types';
 
 const RecordsList = () => {
-  const [records, setRecords] = useState<any[]>([]);
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [records, setRecords] = useState<ServiceRecord[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([mockApi.getRecords(), mockApi.getAccounts()]).then(([recs, accs]) => {
-      setRecords(recs);
+    Promise.all([mockApi.getProfile(), mockApi.getRecords(), mockApi.getAccounts()]).then(([profile, recs, accs]) => {
+      let filteredRecs = recs;
+      if (profile.role === 'client') {
+        filteredRecs = recs.filter(r => r.account_id === profile.account_id);
+      }
+      setRecords(filteredRecs);
       setAccounts(accs);
     });
   }, []);
@@ -56,25 +61,25 @@ const RecordsList = () => {
                   onClick={() => navigate(`/dashboard/records/${record.id}`)} 
                   style={{ cursor: 'pointer' }}
                 >
-                  <td style={{ paddingLeft: 60 }}>
+                  <td data-label="Firm ID" style={{ paddingLeft: 60 }}>
                     <span style={{ opacity: 0.4 }}>{record.request_number}</span>
                   </td>
-                  <td>
+                  <td data-label="Account Mandate">
                     <div style={{ color: 'white', fontWeight: 500 }}>
                       {record.title || record.primary_service}
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Account Name">
                      <div style={{ color: 'var(--gold)', opacity: 0.6, fontWeight: 300 }}>
                        {account?.account_name || 'Individual Identity'}
                      </div>
                   </td>
-                  <td>
+                  <td data-label="Created By">
                      <div style={{ opacity: 0.4, fontStyle: 'italic', fontSize: '0.75rem' }}>
                        {record.submitted_by_name || 'System'}
                      </div>
                   </td>
-                  <td>
+                  <td data-label="Priority">
                      <span style={{ 
                         fontWeight: 400, opacity: 0.5, fontSize: '0.7rem',
                         color: record.priority === 'Critical' ? '#ef4444' : 'inherit'
@@ -82,12 +87,12 @@ const RecordsList = () => {
                         {record.priority?.toUpperCase() || 'STANDARD'}
                      </span>
                   </td>
-                  <td>
+                  <td data-label="Verification">
                      <span style={{ opacity: 0.3, fontSize: '0.7rem' }}>
                         {record.verification_status || 'PENDING'}
                      </span>
                   </td>
-                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                  <td data-label="Status" style={{ textAlign: 'right', paddingRight: 60 }}>
                     <span style={{ 
                       fontWeight: 500, 
                       color: 'var(--saffron)', opacity: 0.8
@@ -95,7 +100,7 @@ const RecordsList = () => {
                       {record.status?.toUpperCase() || 'ACTIVE'}
                     </span>
                   </td>
-                  <td style={{ textAlign: 'right', paddingRight: 60 }}>
+                  <td data-label="Date" style={{ textAlign: 'right', paddingRight: 60 }}>
                     <span style={{ opacity: 0.4, fontSize: '0.75rem' }}>
                       {new Date(record.created_at).toLocaleDateString()}
                     </span>

@@ -14,7 +14,8 @@
   <meta name="keywords"
     content="careers law firm India, company secretary jobs Bengaluru, legal associate jobs India, compliance analyst jobs, Adveris careers" />
   <link rel="canonical" href="https://www.adverisadvisors.com/careers.html" />
-  <link rel="icon" type="image/png" href="adveris_favicon_1776505504440.png" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preload" href="css/style.css" as="style">
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/animations.css" />
   <link rel="stylesheet" href="css/consent.css" />
@@ -96,50 +97,8 @@
             </div>
             <span style="font-size:0.8rem;color:var(--text-grey);">Bengaluru · Hybrid</span>
           </div>
-          <div style="display:flex;flex-direction:column;gap:16px;">
-
-            <div class="role-card reveal">
-              <div>
-                <h3>Company Secretary (CS)</h3>
-                <p style="font-size:0.9rem;color:var(--text-grey);margin:6px 0;">Lead ROC filings, board governance,
-                  AGM/EGM management and MCA compliance for our corporate clients.</p>
-                <div class="role-tags">
-                  <span class="role-tag tag-type">Full Time</span>
-                  <span class="role-tag tag-exp">2–4 Years</span>
-                  <span class="role-tag tag-exp">ICSI Qualified</span>
-                </div>
-              </div>
-              <a href="#apply-form" class="btn btn-navy" style="white-space:nowrap;">Apply Now</a>
-            </div>
-
-            <div class="role-card reveal">
-              <div>
-                <h3>Legal Associate</h3>
-                <p style="font-size:0.9rem;color:var(--text-grey);margin:6px 0;">Draft and review commercial contracts,
-                  assist in M&A due diligence, and support senior partners on corporate law mandates.</p>
-                <div class="role-tags">
-                  <span class="role-tag tag-type">Full Time</span>
-                  <span class="role-tag tag-exp">1–2 Years</span>
-                  <span class="role-tag tag-exp">LLB Required</span>
-                </div>
-              </div>
-              <a href="#apply-form" class="btn btn-navy" style="white-space:nowrap;">Apply Now</a>
-            </div>
-
-            <div class="role-card reveal">
-              <div>
-                <h3>Compliance Analyst</h3>
-                <p style="font-size:0.9rem;color:var(--text-grey);margin:6px 0;">Monitor and manage regulatory
-                  compliance calendars for clients under SEBI, RBI and MCA frameworks. Freshers welcome.</p>
-                <div class="role-tags">
-                  <span class="role-tag tag-type">Full Time</span>
-                  <span class="role-tag tag-exp">0–1 Years</span>
-                  <span class="role-tag tag-exp">Freshers OK</span>
-                </div>
-              </div>
-              <a href="#apply-form" class="btn btn-navy" style="white-space:nowrap;">Apply Now</a>
-            </div>
-
+          <div id="careersGrid" style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Dynamically populated from data/careers.json -->
           </div>
         </div>
       </section>
@@ -215,11 +174,11 @@
   </main>
 
   <footer data-section="footer" data-theme="dark"></footer>
-  <script src="js/layout.js?v=1.1"></script>
-  <script src="js/content-loader.js?v=1.1"></script>
-  <script src="js/consent.js?v=1.1"></script>
-  <script src="js/lenis.min.js?v=1.1"></script>
-  <script src="js/main.js?v=1.1"></script>
+  <script src="js/layout.js?v=1.1" defer></script>
+  <script src="js/content-loader.js?v=1.1" defer></script>
+  <script src="js/consent.js?v=1.1" defer></script>
+  <script src="js/lenis.min.js?v=1.1" defer></script>
+  <script src="js/main.js?v=1.1" defer></script>
 </body>
 
 </html>

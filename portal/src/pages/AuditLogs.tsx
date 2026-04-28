@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { mockApi } from '../lib/mockApi';
 import Pagination from '../components/Pagination';
 import ExportDropdown from '../components/ExportDropdown';
+import type { AuditLog } from '../types';
 
 const actionStyles: Record<string, { color: string; bg: string; border: string }> = {
   CREATE_RECORD: { color: 'var(--saffron)', bg: 'var(--saffron-pale)', border: 'var(--saffron-border)' },
@@ -10,7 +11,7 @@ const actionStyles: Record<string, { color: string; bg: string; border: string }
 };
 
 const AuditLogs = () => {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
