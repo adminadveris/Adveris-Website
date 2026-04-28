@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import { useAuth } from '../contexts/AuthContext';
 import type { ServiceRecord, Account, AuditLog } from '../types';
 
 const STATUSES_MAP: Record<string, { label: string; color: string }> = {
@@ -44,56 +45,61 @@ const Field = ({ label, children, span, whisper }: { label: string; children: Re
 const MandateDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuth();
 
   const [record, setRecord] = useState<ServiceRecord | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const load = async () => {
-    if (!id) return;
-    setLoading(true);
-    console.log("MANDATE_DETAIL: Loading ID", id);
-    try {
-      const [p, allRecsInitial] = await Promise.all([mockApi.getProfile(), mockApi.getRecords()]);
-      let allRecs = allRecsInitial;
-      
-      // Self-healing: if records are empty, try to seed
-      if (allRecs.length === 0) {
-        console.log("MANDATE_DETAIL: Ledger empty, triggering emergency seed...");
-        await mockApi.seedData();
-        allRecs = await mockApi.getRecords();
-      }
+  useEffect(() => {
+    const loadData = async () => {
+      if (!id || !profile) return;
+      setLoading(true);
+      try {
+        let allRecs = await mockApi.getRecords();
+        
+        // Self-healing: if records are empty, try to seed
+        if (allRecs.length === 0) {
+          await mockApi.seedData();
+          allRecs = await mockApi.getRecords();
+        }
 
-      console.log("MANDATE_DETAIL: Found", allRecs.length, "total records for role", p.role);
-      
-      const rec = allRecs.find((r: ServiceRecord) => 
-        r.id === id || r.id === `seed-mand-${id}`
-      );
-      
-      if (!rec) { 
-        console.error("MANDATE_DETAIL: Record not found in local state");
-        // Don't navigate away immediately so we can see the error in console
+        const rec = allRecs.find((r: ServiceRecord) => 
+          r.id === id || r.id === `seed-mand-${id}`
+        );
+        
+        if (!rec) { 
+          setError("Record not found.");
+          setLoading(false);
+          return; 
+        }
+
+        // Basic RBAC guard
+        if (profile.role === 'client' && rec.account_id !== profile.account_id) {
+          setError("Access strictly denied. Intelligence classification exceeds your clearance.");
+          setLoading(false);
+          return;
+        }
+
+        const [acc, hist] = await Promise.all([
+          mockApi.getAccountById(rec.account_id),
+          mockApi.getHistoryByRecord(rec.id)
+        ]);
+
+        setRecord(rec);
+        setAccount(acc);
+        setHistory(hist);
+      } catch (err: any) {
+        console.error("MANDATE_DETAIL: Load failure", err);
+        setError(err.message || 'Operation failed.');
+      } finally {
         setLoading(false);
-        return; 
       }
-
-      const [acc, hist] = await Promise.all([
-        mockApi.getAccountById(rec.account_id),
-        mockApi.getHistoryByRecord(id)
-      ]);
-
-      setRecord(rec);
-      setAccount(acc);
-      setHistory(hist);
-    } catch (err) {
-      console.error("MANDATE_DETAIL: Load failure", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, [id]);
+    };
+    loadData();
+  }, [id, profile]);
 
   if (loading) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

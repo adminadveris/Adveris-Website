@@ -3,15 +3,16 @@ import type { FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { servicesData } from '../data/servicesData';
 import { mockApi } from '../lib/mockApi';
+import { useAuth } from '../contexts/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
-import type { Profile, Account, ServiceRecord } from '../types';
+import type { Account, ServiceRecord } from '../types';
 
 type Step = 'pan' | 'register' | 'scoping' | 'spec' | 'full';
 
 const NewRequest = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile } = useAuth();
   const [step, setStep] = useState<Step>(id ? 'full' : 'pan');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -70,8 +71,8 @@ const NewRequest = () => {
 
   useEffect(() => {
     const init = async () => {
-      const [p, accs] = await Promise.all([mockApi.getProfile(), mockApi.getAccounts()]);
-      setProfile(p);
+      if (!profile) return;
+      const accs = await mockApi.getAccounts();
       setAccounts(accs);
       
       if (id) {
@@ -100,13 +101,13 @@ const NewRequest = () => {
           }
           setStep('full');
         }
-      } else if (p.role === 'admin' || p.role === 'employee') {
+      } else if (profile.role === 'admin' || profile.role === 'employee') {
         setStep('full');
       }
       setLoading(false);
     };
     init();
-  }, [id]);
+  }, [id, profile]);
 
   const handlePanCheck = async (e: FormEvent) => {
     e.preventDefault();

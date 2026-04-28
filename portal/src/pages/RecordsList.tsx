@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockApi } from '../lib/mockApi';
+import { useAuth } from '../contexts/AuthContext';
 import Pagination from '../components/Pagination';
 import type { ServiceRecord, Account } from '../types';
 
 const RecordsList = () => {
+  const { profile } = useAuth();
   const [records, setRecords] = useState<ServiceRecord[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -12,7 +14,8 @@ const RecordsList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    Promise.all([mockApi.getProfile(), mockApi.getRecords(), mockApi.getAccounts()]).then(([profile, recs, accs]) => {
+    if (!profile) return;
+    Promise.all([mockApi.getRecords(), mockApi.getAccounts()]).then(([recs, accs]) => {
       let filteredRecs = recs;
       if (profile.role === 'client') {
         filteredRecs = recs.filter(r => r.account_id === profile.account_id);
@@ -20,7 +23,7 @@ const RecordsList = () => {
       setRecords(filteredRecs);
       setAccounts(accs);
     });
-  }, []);
+  }, [profile]);
 
   const paginatedRecords = records.slice(
     (currentPage - 1) * pageSize,
