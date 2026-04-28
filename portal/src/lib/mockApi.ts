@@ -62,7 +62,7 @@ export const mockApi = {
     const existing: Account[] = getLS(STORAGE_KEYS.ACCOUNTS);
     if (data.pan_number) {
       const dup = existing.find((a: Account) =>
-        a.pan_number && a.pan_number.toUpperCase() === data.pan_number.toUpperCase()
+        a.pan_number && a.pan_number.toUpperCase() === data.pan_number?.toUpperCase()
       );
       if (dup) throw new Error(`An account with PAN "${data.pan_number}" already exists: ${dup.account_name}`);
     }
@@ -370,8 +370,8 @@ export const mockApi = {
     }));
   },
 
-  getHistoryByRecord: async (record_id: string): Promise<UIHistoryItem[]> => {
-    const all = await mockApi.getAuditLogs();
+  getHistoryByRecord: async (record_id: string): Promise<AuditLog[]> => {
+    const all: AuditLog[] = getLS(STORAGE_KEYS.LOGS);
     return all.filter(l => l.record_id === record_id);
   },
 
@@ -425,6 +425,7 @@ export const mockApi = {
             request_number: `ADV-${800 + i + 1}`, title: `Service ${i + 1}`,
             primary_service: 'Corporate Secretarial', sub_service: 'General Compliance',
             status: i % 5 === 0 ? 'completed' : 'active', verification_status: i % 4 === 0 ? 'Pending' : 'Verified',
+            priority: 'Standard', submitted_by: 'mock-user-123', submitted_by_name: 'System',
             assigned_to: 'Firm Professional', // Assign all to the mock staff for testing
             created_at: daysAgo(15 + i), created_by_name: 'System', updated_at: isoNow, updated_by_name: 'System'
         });

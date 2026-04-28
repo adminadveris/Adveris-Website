@@ -82,7 +82,7 @@ const RecordsList = () => {
                   <td data-label="Priority">
                      <span style={{ 
                         fontWeight: 400, opacity: 0.5, fontSize: '0.7rem',
-                        color: record.priority === 'Critical' ? '#ef4444' : 'inherit'
+                        color: record.priority === 'Urgent' ? '#ef4444' : 'inherit'
                      }}>
                         {record.priority?.toUpperCase() || 'STANDARD'}
                      </span>

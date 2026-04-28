@@ -69,7 +69,12 @@ export interface ServiceRecord {
   verification_status: 'Pending' | 'Verified' | 'Rejected';
   verification_remarks?: string;
   additional_services?: string;
+  sub_services?: string[];
   due_date?: string;
+  approved_date?: string;
+  days_left?: number | string;
+  hours_consumed?: number | string;
+  attached_file?: { name: string; size: number; type: string; url: string };
   internal_notes?: string;
   client_comms?: string;
   created_at: string;

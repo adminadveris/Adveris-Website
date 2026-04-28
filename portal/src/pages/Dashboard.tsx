@@ -310,12 +310,12 @@ const Timesheets = () => {
     setSelectedRecordId(log.record_id || '');
     setHours(log.hours.toString());
     setDate(log.date);
-    setDesc(log.description);
+    setDesc(log.task_details || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const isAdmin = profile.role === 'admin' || profile.role === 'staff';
+  const isAdmin = profile.role === 'admin' || profile.role === 'employee';
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -524,7 +524,7 @@ const Expenses = () => {
   useEffect(() => { loadData(); }, []);
 
   if (!profile) return null;
-  const isAdmin = profile.role === 'admin' || profile.role === 'staff';
+  const isAdmin = profile.role === 'admin' || profile.role === 'employee';
 
   const paginatedEntries = entries.slice(
     (currentPage - 1) * pageSize,
@@ -543,7 +543,7 @@ const Expenses = () => {
     setAmount(entry.amount.toString());
     setCategory(entry.category || 'Regulatory Fees');
     setDate(entry.date);
-    setDesc(entry.description);
+    setDesc(entry.description || '');
     setUrl(entry.url || '');
     setCurrentStatus(entry.status || 'submitted');
     setShowForm(true);
@@ -554,7 +554,7 @@ const Expenses = () => {
     setLoading(true);
     try {
       const idsToUpdate = overrideIds || selectedIds;
-      await mockApi.bulkUpdateExpensesStatus(idsToUpdate, status);
+      await mockApi.bulkUpdateExpensesStatus(idsToUpdate, status as ExpenseEntry['status']);
       if (editingId && idsToUpdate.includes(editingId)) {
         setCurrentStatus(status);
       }

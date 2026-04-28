@@ -44,8 +44,8 @@ const NewRequest = () => {
   const [additionalInfo, setAdditionalInfo] = useState('');
   
   // High-Level Admin/Staff Operational Fields
-  const [priority, setPriority] = useState('Standard');
-  const [status, setStatus] = useState('ongoing');
+  const [priority, setPriority] = useState<ServiceRecord['priority']>('Standard');
+  const [status, setStatus] = useState<ServiceRecord['status']>('active');
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
@@ -54,7 +54,7 @@ const NewRequest = () => {
   const [selectedSubServices, setSelectedSubServices] = useState<string[]>([]);
   
   // Governance Fields
-  const [verificationStatus, setVerificationStatus] = useState('Pending');
+  const [verificationStatus, setVerificationStatus] = useState<ServiceRecord['verification_status']>('Pending');
   const [verificationRemarks, setVerificationRemarks] = useState('');
   
   // Performance Metrics [NEW]
@@ -83,7 +83,7 @@ const NewRequest = () => {
           setSelectedService(existing.primary_service || '');
           setAdditionalInfo(existing.description || '');
           setPriority(existing.priority || 'Standard');
-          setStatus(existing.status || 'ongoing');
+          setStatus(existing.status || 'active');
           setDueDate(existing.due_date || '');
           setAssignedTo(existing.assigned_to || '');
           setInternalNotes(existing.internal_notes || '');
@@ -100,7 +100,7 @@ const NewRequest = () => {
           }
           setStep('full');
         }
-      } else if (p.role === 'admin' || p.role === 'staff') {
+      } else if (p.role === 'admin' || p.role === 'employee') {
         setStep('full');
       }
       setLoading(false);
@@ -217,7 +217,7 @@ const NewRequest = () => {
     </div>
   );
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'staff';
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'employee';
 
   return (
     <div className="theater-container" style={{ paddingTop: 20, paddingBottom: 80 }}>
@@ -628,13 +628,13 @@ const NewRequest = () => {
                          <select 
                            className="portal-form-control" 
                            value={priority} 
-                           onChange={e => setPriority(e.target.value)}
+                           onChange={e => setPriority(e.target.value as ServiceRecord['priority'])}
                            disabled={!isAdmin}
                          >
                             <option value="Low">Low</option>
                             <option value="Standard">Standard</option>
                             <option value="High">High</option>
-                            <option value="Critical">Critical</option>
+                            <option value="Urgent">Urgent</option>
                          </select>
                       </div>
                       <div className="portal-form-group">
@@ -716,7 +716,7 @@ const NewRequest = () => {
                            className="portal-form-control" 
                            value={verificationStatus} 
                            onChange={e => {
-                             setVerificationStatus(e.target.value);
+                             setVerificationStatus(e.target.value as ServiceRecord['verification_status']);
                              if (e.target.value === 'Approved') {
                                const today = new Date().toISOString().split('T')[0];
                                setApprovedDate(today);
@@ -733,9 +733,8 @@ const NewRequest = () => {
                            disabled={!isAdmin}
                          >
                             <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Request for resubmission">Request for resubmission</option>
-                            <option value="Reject">Reject</option>
+                            <option value="Verified">Verified</option>
+                            <option value="Rejected">Rejected</option>
                          </select>
                       </div>
                       <div className="portal-form-group">

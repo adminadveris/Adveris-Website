@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import { supabase } from './lib/supabaseClient';
 import type { Profile } from './types';
+import { mockApi } from './lib/mockApi';
 
 // === ANIMATED BACKGROUND — same as website ===
 const PageBackground = () => (
@@ -54,8 +55,8 @@ function App() {
 
       // 2. Check Supabase session
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
+        const { data: { session: sbSession } } = await supabase.auth.getSession();
+        setSession(sbSession as unknown as { user: Profile });
       } catch (err) {
         console.warn("Supabase session check failed", err);
       } finally {
@@ -67,13 +68,13 @@ function App() {
     
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sbSession) => {
       // If we have a mock session in progress, don't let Supabase overwrite it with null
       const mockSession = localStorage.getItem('adveris_mock_session');
-      if (mockSession && !session) {
+      if (mockSession && !sbSession) {
         return; 
       }
-      setSession(session);
+      setSession(sbSession as unknown as { user: Profile });
     });
 
     return () => subscription.unsubscribe();
