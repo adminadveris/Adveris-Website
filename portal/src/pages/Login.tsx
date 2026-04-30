@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { Profile, Client } from '../types';
+import type { User, Client } from '../types';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,59 +17,31 @@ const Login = () => {
     setLoading(true);
 
     const cleanEmail = email.trim().toLowerCase();
-    const cleanPass = password.trim(); // Trim password just in case of copy-paste spaces
+    const cleanPass = password.trim();
 
-    console.log("LOGIN_DEBUG:", { cleanEmail, cleanPass });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: cleanPass,
+      });
 
-    // 1. Static Mock Auth (Admin/Staff)
-    // We'll make this EXTREMELY simple: 
-    // Email: csashikgswamy@gmail.com -> Pass: csashikgswamy123
-    // Email: staff@adverisadvisors.com -> Pass: staff123
-
-    if (cleanEmail === 'cs@cs.com') {
-      if (cleanPass === 'cs123') {
-        const adminProfile = { id: 'mock-admin', email: 'csashikgswamy@gmail.com', role: 'admin' as const, full_name: 'Adveris Admin' };
-        localStorage.setItem('adveris_mock_session', JSON.stringify(adminProfile));
-        window.location.href = '/portal/dashboard';
-        return;
+      if (error) {
+        throw error;
       }
-    }
 
-    if (cleanEmail === 'staff@adverisadvisors.com') {
-      if (cleanPass === 'staff123') {
-        const staffProfile = { id: 'mock-staff', email: 'staff@adverisadvisors.com', role: 'employee' as const, full_name: 'Firm Professional' };
-        localStorage.setItem('adveris_mock_session', JSON.stringify(staffProfile));
+      if (data.session) {
         window.location.href = '/portal/dashboard';
-        return;
       }
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err.message || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    // 2. Client Auth lookup
-    const clientsStr = localStorage.getItem('adveris_clients');
-    if (clientsStr) {
-      const clients: Client[] = JSON.parse(clientsStr);
-      const foundClient = clients.find((c: Client) => c.email_1.toLowerCase() === cleanEmail);
-      if (foundClient && cleanPass === 'pass123') {
-        const sessionUser = {
-          id: foundClient.id,
-          email: foundClient.email_1,
-          role: 'client' as const,
-          full_name: foundClient.client_name,
-          account_id: foundClient.account_id
-        };
-        localStorage.setItem('adveris_mock_session', JSON.stringify(sessionUser));
-        window.location.href = '/portal/dashboard';
-        return;
-      }
-    }
-
-    // Fallback to error if no mock match
-    setError('Invalid credentials. Please use csashikgswamy@gmail.com / csashikgswamy123');
-    setLoading(false);
   };
 
   return (
-    <div className="login-stage" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+    <div className="login-stage" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflow: 'hidden' }}>
       <div className="portal-aurora-bg">
         <div className="aurora-blob aurora-blob-1" style={{ opacity: 0.15 }}></div>
         <div className="aurora-blob aurora-blob-2" style={{ opacity: 0.1 }}></div>
@@ -79,18 +52,27 @@ const Login = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="portal-panel"
-        style={{ width: '100%', maxWidth: 540, padding: '100px 72px', textAlign: 'center' }}
+        style={{ 
+          width: '100%', 
+          maxWidth: 500, 
+          padding: 'clamp(40px, 8vh, 60px) clamp(30px, 5vw, 60px)', 
+          textAlign: 'center',
+          maxHeight: '95vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}
       >
-        <div className="portal-brand-lockup" style={{ marginBottom: 60, alignItems: 'center' }}>
-          <span className="brand-main" style={{ fontSize: '3.5rem' }}>Adveris</span>
-          <span className="brand-subline" style={{ fontSize: '0.65rem', letterSpacing: '0.5em' }}>ADVISORS PORTAL</span>
+        <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(30px, 6vh, 48px)', alignItems: 'center' }}>
+          <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Adveris</span>
+          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>ADVISORS PORTAL</span>
         </div>
 
-        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 48, opacity: 0.4 }}>ACCOUNT ACCESS</div>
+        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>ACCOUNT ACCESS</div>
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vh, 32px)' }}>
           <div style={{ textAlign: 'left' }}>
-            <label className="portal-form-label">Professional Email</label>
+            <label className="portal-form-label">Email</label>
             <input
               type="email"
               className="portal-form-control"
@@ -102,7 +84,7 @@ const Login = () => {
           </div>
 
           <div style={{ textAlign: 'left' }}>
-            <label className="portal-form-label">Access Identity Key</label>
+            <label className="portal-form-label">Password</label>
             <input
               type="password"
               className="portal-form-control"
@@ -110,6 +92,11 @@ const Login = () => {
               onChange={e => setPassword(e.target.value)}
               required
             />
+            <div style={{ textAlign: 'right', marginTop: 8 }}>
+              <Link to="/forgot-password" style={{ fontSize: '0.65rem', color: 'var(--gold)', textDecoration: 'none', opacity: 0.7 }}>
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <AnimatePresence>
@@ -128,15 +115,21 @@ const Login = () => {
             type="submit"
             className="btn-portal-primary"
             disabled={loading}
-            style={{ marginTop: 20, width: '100%' }}
+            style={{ marginTop: 8, width: '100%' }}
           >
-            {loading ? 'AUTHENTICATING...' : 'SECURE ADVISORS PORTAL ENTRY'}
+            {loading ? 'AUTHENTICATING...' : 'SECURE ENTRY'}
           </button>
+
+          <div style={{ marginTop: 12 }}>
+            <p style={{ fontSize: '0.75rem', opacity: 0.4 }}>
+              New to Adveris? <Link to="/signup" style={{ color: 'var(--gold)', textDecoration: 'none' }}>Request Access</Link>
+            </p>
+          </div>
         </form>
 
-        <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(255,255,255,0.02)' }}>
-          <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.15)', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            Strategic Compliance · Pan India · Global Governance
+        <div style={{ marginTop: 'clamp(30px, 6vh, 60px)', paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.02)' }}>
+          <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.15)', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            Strategic Compliance · Pan India
           </p>
         </div>
       </motion.div>

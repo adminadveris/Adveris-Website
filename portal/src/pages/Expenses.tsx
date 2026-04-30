@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
-import type { Account, ExpenseEntry } from '../types';
+import type { Account, Request, ExpenseEntry } from '../types';
 import Pagination from '../components/Pagination';
 import SearchableSelect from '../components/SearchableSelect';
 import ExportDropdown from '../components/ExportDropdown';
@@ -29,8 +29,9 @@ const statusText: Record<string, string> = {
 };
 
 const Expenses = () => {
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [records, setRecords] = useState<Request[]>([]);
   const [entries, setEntries] = useState<ExpenseEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,36 +39,47 @@ const Expenses = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  const getInputStyle = (field: string) => ({
+    border: validationErrors.includes(field) ? '1px solid var(--saffron)' : '1.5px solid rgba(255,255,255,0.1)',
+    transition: 'all 0.3s ease',
+    boxShadow: validationErrors.includes(field) ? '0 0 0 3px rgba(255,153,51,0.08)' : 'none'
+  });
 
   // Form State
   const [selectedAccountId, setSelectedAccountId] = useState('');
+  const [selectedRecordId, setSelectedRecordId] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Regulatory Fees');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [desc, setDesc] = useState('');
   const [url, setUrl] = useState('');
   const [currentStatus, setCurrentStatus] = useState('submitted');
+  const [expenseNumber, setExpenseNumber] = useState('');
 
   const loadData = async () => {
-    if (!profile) return;
-    const [accs, eEntries] = await Promise.all([
-      mockApi.getAccounts(),
-      mockApi.getExpenses()
+    if (!user) return;
+    const [accs, recs, eEntries] = await Promise.all([
+      api.getAccounts(),
+      api.getRecords(),
+      api.getExpenses()
     ]);
     setAccounts(accs);
+    setRecords(recs);
     let filteredExpenses = eEntries;
-    if (profile.role === 'employee') {
-      filteredExpenses = eEntries.filter(e => e.created_by_name === profile.full_name);
-    } else if (profile.role === 'client') {
-      filteredExpenses = eEntries.filter(e => e.account_id === profile.account_id);
+    if (user.role === 'employee') {
+      filteredExpenses = eEntries.filter(e => e.created_by_name === user.full_name);
+    } else if (user.role === 'client') {
+      filteredExpenses = eEntries.filter(e => e.account_id === user.account_id);
     }
     setEntries(filteredExpenses);
   };
 
-  useEffect(() => { loadData(); }, [profile]);
+  useEffect(() => { loadData(); }, [user]);
 
-  if (!profile) return null;
-  const isAdmin = profile.role === 'admin' || profile.role === 'employee';
+  if (!user) return null;
+  const isAdmin = user.role === 'admin' || user.role === 'employee';
 
   const paginatedEntries = entries.slice(
     (currentPage - 1) * pageSize,
@@ -83,12 +95,14 @@ const Expenses = () => {
   const handleEdit = (entry: ExpenseEntry) => {
     setEditingId(entry.id);
     setSelectedAccountId(entry.account_id || '');
+    setSelectedRecordId(entry.record_id || '');
     setAmount(entry.amount.toString());
     setCategory(entry.category || 'Regulatory Fees');
     setDate(entry.date);
     setDesc(entry.description || '');
     setUrl(entry.url || '');
     setCurrentStatus(entry.status || 'submitted');
+    setExpenseNumber(entry.expense_number || '');
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -97,7 +111,7 @@ const Expenses = () => {
     setLoading(true);
     try {
       const idsToUpdate = overrideIds || selectedIds;
-      await mockApi.bulkUpdateExpensesStatus(idsToUpdate, status as ExpenseEntry['status']);
+      await api.bulkUpdateExpensesStatus(idsToUpdate, status as ExpenseEntry['status']);
       if (editingId && idsToUpdate.includes(editingId)) {
         setCurrentStatus(status);
       }
@@ -119,12 +133,25 @@ const Expenses = () => {
   };
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedAccountId) return;
+    if (e) e.preventDefault();
+    
+    const errors: string[] = [];
+    if (!selectedAccountId) errors.push('selectedAccountId');
+    if (!amount) errors.push('amount');
+    if (!date) errors.push('date');
+    if (!desc) errors.push('desc');
+
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
     setLoading(true);
+    setValidationErrors([]);
     try {
       const account = accounts.find(a => a.id === selectedAccountId);
       const payload = {
+        record_id: selectedRecordId || null,
         account_id: selectedAccountId,
         account_name: account?.account_name || 'N/A',
         amount: Number(amount),
@@ -135,9 +162,9 @@ const Expenses = () => {
       };
 
       if (editingId) {
-        await mockApi.updateExpense(editingId, payload);
+        await api.updateExpense(editingId, payload);
       } else {
-        await mockApi.createExpense(payload);
+        await api.createExpense(payload);
       }
 
       setShowForm(false);
@@ -146,6 +173,7 @@ const Expenses = () => {
       setDesc('');
       setUrl('');
       setSelectedAccountId('');
+      setSelectedRecordId('');
       await loadData();
     } finally { setLoading(false); }
   };
@@ -157,6 +185,8 @@ const Expenses = () => {
     setDesc('');
     setUrl('');
     setSelectedAccountId('');
+    setSelectedRecordId('');
+    setExpenseNumber('');
   };
 
   if (showForm) {
@@ -167,9 +197,9 @@ const Expenses = () => {
             
             {editingId && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 700, opacity: 0.4 }}>STATUS</span>
+                <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.4 }}>Status</span>
                 <span className="portal-badge" style={{ background: statusColors[currentStatus], color: statusText[currentStatus], border: 'none', padding: '6px 16px' }}>
-                  {currentStatus.toUpperCase()}
+                  {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
                 </span>
               </div>
             )}
@@ -178,21 +208,39 @@ const Expenses = () => {
         </div>
         
         <div className="portal-request-grid-center">
-          <div className="portal-auth-card scoping-width">
+          <div className="portal-panel scoping-width" style={{ padding: 48 }}>
             <form onSubmit={handleSubmit}>
+              {editingId && (
+                <div style={{ marginBottom: 24 }}>
+                  <FF label="Expense Reference">
+                    <input readOnly className="portal-form-control" style={{ opacity: 0.6, color: 'var(--gold)', fontWeight: 700 }} value={expenseNumber} />
+                  </FF>
+                </div>
+              )}
               <div style={{ marginBottom: 24 }}>
                 <SearchableSelect 
                   label="Client Account"
                   options={accountOptions}
                   value={selectedAccountId}
-                  onChange={setSelectedAccountId}
+                  error={validationErrors.includes('selectedAccountId')}
+                  onChange={(id) => { setSelectedAccountId(id); setSelectedRecordId(''); }}
                   placeholder="Search Account Name..."
+                />
+              </div>
+
+              <div style={{ marginBottom: 24, opacity: selectedAccountId ? 1 : 0.4, pointerEvents: selectedAccountId ? 'auto' : 'none', transition: 'all 0.3s' }}>
+                <SearchableSelect 
+                  label="Associated Mandate"
+                  options={records.filter(r => r.account_id === selectedAccountId).map(r => ({ id: r.id, label: r.title, sublabel: r.request_number }))}
+                  value={selectedRecordId}
+                  onChange={setSelectedRecordId}
+                  placeholder={selectedAccountId ? "Select Project or ADV Request..." : "Select account first..."}
                 />
               </div>
 
               <div className="portal-form-grid-2">
                 <FF label="Amount (INR)">
-                  <input required type="number" className="portal-form-control" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
+                  <input required type="number" className="portal-form-control" style={getInputStyle('amount')} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
                 </FF>
                 <FF label="Category">
                   <select className="portal-form-control" value={category} onChange={e => setCategory(e.target.value)}>
@@ -205,14 +253,14 @@ const Expenses = () => {
               </div>
               <div className="portal-form-grid-2">
                 <FF label="Incurred Date">
-                  <input required type="date" className="portal-form-control" value={date} onChange={e => setDate(e.target.value)} />
+                  <input required type="date" className="portal-form-control" style={getInputStyle('date')} value={date} onChange={e => setDate(e.target.value)} />
                 </FF>
                 <FF label="Receipt URL (Optional)">
                   <input type="url" className="portal-form-control" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." />
                 </FF>
               </div>
               <FF label="Rationale & Justification">
-                <textarea required className="portal-form-control" style={{ minHeight: 120 }} placeholder="Detailed reason for this disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
+                <textarea required className="portal-form-control" style={{ minHeight: 120, ...getInputStyle('desc') }} placeholder="Detailed reason for this disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
 
               <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
@@ -231,7 +279,7 @@ const Expenses = () => {
                            opacity: currentStatus === 'approved' ? 1 : 0.4
                          }}
                        >
-                          APPROVE
+                          Approve
                        </button>
                        <button 
                          type="button"
@@ -245,13 +293,13 @@ const Expenses = () => {
                            opacity: currentStatus === 'rejected' ? 1 : 0.4
                          }}
                        >
-                          REJECT
+                          Reject
                        </button>
                      </div>
                   )}
 
                  <button disabled={loading || !selectedAccountId} type="submit" className="btn-portal-primary" style={{ width: '100%', height: 48 }}>
-                   {loading ? 'POSTING...' : editingId ? 'Update Expense' : 'Create Expense'}
+                   {loading ? 'Posting...' : editingId ? 'Update Expense' : 'Create Expense'}
                  </button>
               </div>
             </form>
@@ -265,7 +313,7 @@ const Expenses = () => {
     <div className="portal-content">
       {/* Action Bar (Top Relocation) */}
       <AnimatePresence>
-        {selectedIds.length > 0 && profile?.role === 'admin' && (
+        {selectedIds.length > 0 && user?.role === 'admin' && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -273,7 +321,7 @@ const Expenses = () => {
             className="portal-batch-bar"
           >
             <div className="batch-content">
-              <span className="batch-label">{selectedIds.length} DISBURSEMENTS SELECTED</span>
+              <span className="batch-label">{selectedIds.length} Disbursements Selected</span>
               <div className="batch-actions">
                 <button 
                   disabled={loading}
@@ -281,7 +329,7 @@ const Expenses = () => {
                   className="btn-batch btn-batch--approve"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  APPROVE
+                  Approve
                 </button>
                 <button 
                   disabled={loading}
@@ -289,10 +337,10 @@ const Expenses = () => {
                   className="btn-batch btn-batch--reject"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  REJECT
+                  Reject
                 </button>
                 <div className="batch-divider" />
-                <button onClick={() => setSelectedIds([])} className="btn-batch-text">CANCEL</button>
+                <button onClick={() => setSelectedIds([])} className="btn-batch-text">Cancel</button>
               </div>
             </div>
           </motion.div>
@@ -301,8 +349,8 @@ const Expenses = () => {
 
       <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
         <div style={{ paddingBottom: 0, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-          {profile?.role === 'admin' && (
-            <ExportDropdown data={entries} filename="Adveris_Expenses" label="EXPORT LEDGER" dateField="date" />
+          {user?.role === 'admin' && (
+            <ExportDropdown data={entries} filename="Adveris_Expenses" label="Export Expense" dateField="date" />
           )}
           <button 
             className="btn-portal-primary" 
@@ -319,7 +367,7 @@ const Expenses = () => {
           <table className="portal-table-v2">
             <thead>
               <tr>
-                {profile?.role === 'admin' && (
+                {user?.role === 'admin' && (
                   <th style={{ width: 40, paddingLeft: 60 }}>
                     <input 
                       type="checkbox" 
@@ -329,9 +377,10 @@ const Expenses = () => {
                     />
                   </th>
                 )}
-                <th style={{ width: 90, paddingLeft: profile?.role === 'admin' ? 0 : 60 }}>Date</th>
+                <th style={{ width: 90, paddingLeft: user?.role === 'admin' ? 0 : 60 }}>Date</th>
                 <th style={{ width: 140 }}>Category</th>
                 <th style={{ width: 140 }}>Account Name</th>
+                <th style={{ width: 100 }}>Exp-Ref</th>
                 <th style={{ width: 100 }}>Verification</th>
                 <th style={{ textAlign: 'right', width: 120 }}>Amount (INR)</th>
                 <th style={{ textAlign: 'right', paddingRight: 60, width: 80 }}>Actions</th>
@@ -344,7 +393,7 @@ const Expenses = () => {
                   style={{ cursor: 'pointer' }}
                   className={selectedIds.includes(e.id) ? 'selected' : ''}
                 >
-                  {profile?.role === 'admin' && (
+                  {user?.role === 'admin' && (
                     <td onClick={evt => evt.stopPropagation()} style={{ paddingLeft: 60 }}>
                       <input 
                         type="checkbox" 
@@ -354,12 +403,13 @@ const Expenses = () => {
                       />
                     </td>
                   )}
-                  <td data-label="Date" style={{ paddingLeft: profile?.role === 'admin' ? 0 : 60 }}>{new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Date" style={{ paddingLeft: user?.role === 'admin' ? 0 : 60 }}>{new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
                   <td data-label="Category" style={{ color: 'white', fontSize: '0.85rem' }}>{e.category}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{e.account_name}</td>
+                  <td data-label="Exp-Ref" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{e.expense_number || 'Exp-Temp'}</td>
                   <td data-label="Verification">
                     <span className="portal-badge" style={{ background: statusColors[e.status || 'submitted'], color: statusText[e.status || 'submitted'] }}>
-                      {(e.status || 'submitted').toUpperCase()}
+                      {((e.status || 'submitted').charAt(0).toUpperCase() + (e.status || 'submitted').slice(1))}
                     </span>
                   </td>
                   <td data-label="Amount" style={{ fontWeight: 600, color: 'white', textAlign: 'right' }}>₹{e.amount.toLocaleString('en-IN')}</td>
@@ -373,7 +423,7 @@ const Expenses = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={profile?.role === 'admin' ? 7 : 6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No disbursement logs detected.</td>
+                  <td colSpan={user?.role === 'admin' ? 7 : 6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No disbursement logs detected.</td>
                 </tr>
               )}
             </tbody>

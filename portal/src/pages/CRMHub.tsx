@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import { AccountModal } from '../components/CRMModals';
 import Pagination from '../components/Pagination';
 import type { Account, Client } from '../types';
@@ -91,7 +91,7 @@ const CRMHub = () => {
   const navigate = useNavigate();
 
   const load = async () => {
-    const [accs, clis] = await Promise.all([mockApi.getAccounts(), mockApi.getClients()]);
+    const [accs, clis] = await Promise.all([api.getAccounts(), api.getClients()]);
     setAccounts(accs);
     setClients(clis);
   };
@@ -136,7 +136,7 @@ const CRMHub = () => {
             className="btn-portal-primary"
             style={{ width: 'auto', whiteSpace: 'nowrap', padding: '16px 40px' }}
           >
-            NEW CLIENT
+            {tab === 'accounts' ? 'New Account' : 'New Client'}
           </button>
         </div>
       </div>
@@ -150,16 +150,17 @@ const CRMHub = () => {
                 key={t} 
                 onClick={() => setTab(t)} 
                 className={`portal-tab-item ${tab === t ? 'active' : ''}`}
+                style={{ fontSize: '0.85rem', fontWeight: 500 }}
               >
                 {t === 'accounts' ? (
                   <>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    MANAGE ACCOUNTS
+                    Manage Accounts
                   </>
                 ) : (
                   <>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                    MANAGE CLIENTS
+                    Manage Clients
                   </>
                 )}
               </button>

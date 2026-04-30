@@ -12,6 +12,8 @@ interface SearchableSelectProps {
   onChange: (value: string) => void;
   placeholder?: string;
   label?: string;
+  error?: boolean;
+  style?: React.CSSProperties;
 }
 
 const SearchableSelect: React.FC<SearchableSelectProps> = ({
@@ -19,7 +21,9 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   value,
   onChange,
   placeholder = "Search...",
-  label
+  label,
+  error,
+  style
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,10 +63,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          background: 'rgba(255,255,255,0.03)',
-          border: `1px solid ${isOpen ? 'var(--saffron)' : 'rgba(255,255,255,0.08)'}`,
+          background: 'rgba(0,0,0,0.25)',
+          border: error ? '1px solid var(--saffron)' : `1px solid ${isOpen ? 'var(--saffron)' : 'rgba(255,255,255,0.08)'}`,
           borderRadius: 8,
-          padding: '12px 16px',
+          padding: '14px 20px',
           color: selectedOption ? 'white' : 'rgba(255,255,255,0.3)',
           cursor: 'pointer',
           display: 'flex',
@@ -70,7 +74,8 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           justifyContent: 'space-between',
           fontSize: '0.88rem',
           transition: 'all 0.2s ease',
-          boxShadow: isOpen ? '0 0 0 3px rgba(255,153,51,0.1)' : 'none'
+          boxShadow: error ? '0 0 0 3px rgba(255,153,51,0.08)' : (isOpen ? '0 0 0 3px rgba(255,153,51,0.1)' : 'none'),
+          ...style
         }}
       >
         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -90,7 +95,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           top: 'calc(100% + 8px)',
           left: 0,
           right: 0,
-          background: 'rgba(30, 30, 30, 0.98)',
+          background: 'rgba(13, 27, 62, 0.98)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255,255,255,0.12)',
           borderRadius: 12,

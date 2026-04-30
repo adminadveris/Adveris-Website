@@ -1,5 +1,5 @@
 import type { 
-  Profile, Account, Client, ServiceRecord, 
+  User, Account, Client, Request, 
   TimesheetEntry, ExpenseEntry, AuditLog, UIHistoryItem 
 } from '../types';
 
@@ -8,7 +8,7 @@ const STORAGE_KEYS = {
   TIMESHEETS: 'adveris_timesheets',
   EXPENSES: 'adveris_expenses',
   LOGS: 'adveris_audit_logs',
-  PROFILE: 'adveris_mock_session',
+  User: 'adveris_mock_session',
   ACCOUNTS: 'adveris_accounts',
   CLIENTS: 'adveris_clients',
 };
@@ -20,9 +20,9 @@ const getLS = (key: string) => {
 const setLS = (key: string, val: any) => localStorage.setItem(key, JSON.stringify(val));
 
 export const mockApi = {
-  // --- AUTH/PROFILE ---
-  getProfile: async (): Promise<Profile> => {
-    const session = localStorage.getItem(STORAGE_KEYS.PROFILE);
+  // --- AUTH/User ---
+  getProfile: async (): Promise<User> => {
+    const session = localStorage.getItem(STORAGE_KEYS.User);
     if (session) return JSON.parse(session);
     return {
       id: 'mock-user-123',
@@ -35,11 +35,11 @@ export const mockApi = {
   // --- ACCOUNTS (CRM) ---
   getAccounts: async (): Promise<Account[]> => {
     const all: Account[] = getLS(STORAGE_KEYS.ACCOUNTS);
-    const profile = await mockApi.getProfile();
-    if (profile.role === 'admin') return all;
-    if (profile.role === 'employee') return all; 
-    if (profile.role === 'client' && profile.account_id) {
-      return all.filter((a: Account) => a.id === profile.account_id);
+    const User = await mockApi.getProfile();
+    if (User.role === 'admin') return all;
+    if (User.role === 'employee') return all; 
+    if (User.role === 'client' && User.account_id) {
+      return all.filter((a: Account) => a.id === User.account_id);
     }
     return [];
   },
@@ -51,10 +51,10 @@ export const mockApi = {
 
   findAccountByPAN: async (pan: string): Promise<Account | null> => {
     const all: Account[] = getLS(STORAGE_KEYS.ACCOUNTS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const match = all.find((a: Account) => a.pan_number && a.pan_number.toUpperCase() === pan.toUpperCase());
     if (!match) return null;
-    if (profile.role === 'client' && profile.account_id && match.id !== profile.account_id) return null;
+    if (User.role === 'client' && User.account_id && match.id !== User.account_id) return null;
     return match;
   },
 
@@ -66,15 +66,15 @@ export const mockApi = {
       );
       if (dup) throw new Error(`An account with PAN "${data.pan_number}" already exists: ${dup.account_name}`);
     }
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const newAcc: Account = { 
       account_name: '',
       ...data, 
       id: crypto.randomUUID(), 
       created_at: new Date().toISOString(),
-      created_by_name: profile.full_name,
+      created_by_name: User.full_name,
       updated_at: new Date().toISOString(),
-      updated_by_name: profile.full_name,
+      updated_by_name: User.full_name,
       cin_number: data.cin_number || '',
       gstin_number: data.gstin_number || '',
       house_no: data.house_no || '',
@@ -94,17 +94,17 @@ export const mockApi = {
 
   updateAccount: async (id: string, data: Partial<Account>): Promise<Account> => {
     const all: Account[] = getLS(STORAGE_KEYS.ACCOUNTS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const idx = all.findIndex((a: Account) => a.id === id);
     if (idx === -1) throw new Error('Account not found');
-    if (profile.role === 'client' && profile.account_id !== id) throw new Error('Access Denied');
+    if (User.role === 'client' && User.account_id !== id) throw new Error('Access Denied');
 
     const old = all[idx];
     const updated: Account = { 
       ...old, 
       ...data, 
       updated_at: new Date().toISOString(),
-      updated_by_name: profile.full_name
+      updated_by_name: User.full_name
     };
     all[idx] = updated;
     setLS(STORAGE_KEYS.ACCOUNTS, all);
@@ -119,10 +119,10 @@ export const mockApi = {
   // --- CLIENTS (CRM) ---
   getClients: async (): Promise<Client[]> => {
     const all: Client[] = getLS(STORAGE_KEYS.CLIENTS);
-    const profile = await mockApi.getProfile();
-    if (profile.role === 'admin' || profile.role === 'employee') return all;
-    if (profile.role === 'client' && profile.account_id) {
-      return all.filter((c: Client) => c.account_id === profile.account_id);
+    const User = await mockApi.getProfile();
+    if (User.role === 'admin' || User.role === 'employee') return all;
+    if (User.role === 'client' && User.account_id) {
+      return all.filter((c: Client) => c.account_id === User.account_id);
     }
     return [];
   },
@@ -139,16 +139,16 @@ export const mockApi = {
 
   createClient: async (data: Partial<Client>): Promise<Client> => {
     const existing: Client[] = getLS(STORAGE_KEYS.CLIENTS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const newClient: Client = { 
       account_id: '', client_name: '', email_1: '', email_2: '', email_3: '',
       phone_1: '', phone_2: '', phone_3: '',
       ...data, 
       id: crypto.randomUUID(), 
       created_at: new Date().toISOString(),
-      created_by_name: profile.full_name,
+      created_by_name: User.full_name,
       updated_at: new Date().toISOString(),
-      updated_by_name: profile.full_name,
+      updated_by_name: User.full_name,
       house_no: data.house_no || '',
       street_1: data.street_1 || '',
       street_2: data.street_2 || '',
@@ -166,13 +166,13 @@ export const mockApi = {
 
   updateClient: async (id: string, data: Partial<Client>): Promise<Client> => {
     const all: Client[] = getLS(STORAGE_KEYS.CLIENTS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const idx = all.findIndex((c: Client) => c.id === id);
     if (idx === -1) throw new Error('Client not found');
     const old = all[idx];
-    if (profile.role === 'client' && profile.account_id !== old.account_id) throw new Error('Access Denied');
+    if (User.role === 'client' && User.account_id !== old.account_id) throw new Error('Access Denied');
 
-    const updated: Client = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: profile.full_name };
+    const updated: Client = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: User.full_name };
     all[idx] = updated;
     setLS(STORAGE_KEYS.CLIENTS, all);
     for (const [field, newVal] of Object.entries(data)) {
@@ -184,47 +184,47 @@ export const mockApi = {
   },
 
   // --- SERVICE RECORDS ---
-  getRecords: async (): Promise<ServiceRecord[]> => {
-    const all: ServiceRecord[] = getLS(STORAGE_KEYS.RECORDS);
-    const profile = await mockApi.getProfile();
-    if (profile.role === 'admin' || profile.role === 'employee') return all;
-    if (profile.role === 'client' && profile.account_id) {
-      return all.filter((r: ServiceRecord) => r.account_id === profile.account_id);
+  getRecords: async (): Promise<Request[]> => {
+    const all: Request[] = getLS(STORAGE_KEYS.RECORDS);
+    const User = await mockApi.getProfile();
+    if (User.role === 'admin' || User.role === 'employee') return all;
+    if (User.role === 'client' && User.account_id) {
+      return all.filter((r: Request) => r.account_id === User.account_id);
     }
     return [];
   },
 
-  createRecord: async (record: Partial<ServiceRecord>): Promise<ServiceRecord> => {
-    const existing: ServiceRecord[] = getLS(STORAGE_KEYS.RECORDS);
-    const profile = await mockApi.getProfile();
-    const newRecord: ServiceRecord = {
+  createRecord: async (record: Partial<Request>): Promise<Request> => {
+    const existing: Request[] = getLS(STORAGE_KEYS.RECORDS);
+    const User = await mockApi.getProfile();
+    const newRecord: Request = {
       id: crypto.randomUUID(), account_id: '', account_name: '',
       request_number: `ADV-${Math.floor(100 + Math.random() * 900)}`,
       title: '', primary_service: '', sub_service: '', status: 'pending', priority: 'Standard',
-      verification_status: 'Pending', submitted_by: profile.id, submitted_by_name: profile.full_name,
-      created_at: new Date().toISOString(), created_by_name: profile.full_name,
-      updated_at: new Date().toISOString(), updated_by_name: profile.full_name,
+      verification_status: 'Pending', submitted_by: User.id, submitted_by_name: User.full_name,
+      created_at: new Date().toISOString(), created_by_name: User.full_name,
+      updated_at: new Date().toISOString(), updated_by_name: User.full_name,
       ...record,
-    } as ServiceRecord;
+    } as Request;
     setLS(STORAGE_KEYS.RECORDS, [newRecord, ...existing]);
-    await mockApi.logChange('records', newRecord.id, 'CREATE', 'mandate', null, newRecord.request_number);
+    await mockApi.logChange('Request', newRecord.id, 'CREATE', 'mandate', null, newRecord.request_number);
     return newRecord;
   },
 
-  updateRecord: async (id: string, data: Partial<ServiceRecord>): Promise<ServiceRecord> => {
-    const all: ServiceRecord[] = getLS(STORAGE_KEYS.RECORDS);
-    const profile = await mockApi.getProfile();
-    const idx = all.findIndex((r: ServiceRecord) => r.id === id);
+  updateRecord: async (id: string, data: Partial<Request>): Promise<Request> => {
+    const all: Request[] = getLS(STORAGE_KEYS.RECORDS);
+    const User = await mockApi.getProfile();
+    const idx = all.findIndex((r: Request) => r.id === id);
     if (idx === -1) throw new Error('Record not found');
     const old = all[idx];
-    if (profile.role === 'client' && profile.account_id !== old.account_id) throw new Error('Access Denied');
+    if (User.role === 'client' && User.account_id !== old.account_id) throw new Error('Access Denied');
 
-    const updated: ServiceRecord = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: profile.full_name };
+    const updated: Request = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: User.full_name };
     all[idx] = updated;
     setLS(STORAGE_KEYS.RECORDS, all);
     for (const [field, newVal] of Object.entries(data)) {
-      if (old[field as keyof ServiceRecord] !== newVal) {
-        await mockApi.logChange('records', id, 'UPDATE', field, String(old[field as keyof ServiceRecord] ?? ''), String(newVal ?? ''));
+      if (old[field as keyof Request] !== newVal) {
+        await mockApi.logChange('Request', id, 'UPDATE', field, String(old[field as keyof Request] ?? ''), String(newVal ?? ''));
       }
     }
     return all[idx];
@@ -233,42 +233,42 @@ export const mockApi = {
   // --- TIMESHEETS ---
   getTimesheets: async (recordId?: string): Promise<TimesheetEntry[]> => {
     const all: TimesheetEntry[] = getLS(STORAGE_KEYS.TIMESHEETS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     let filtered = all;
-    if (profile.role === 'client' && profile.account_id) {
-      filtered = all.filter((t: TimesheetEntry) => t.account_id === profile.account_id);
+    if (User.role === 'client' && User.account_id) {
+      filtered = all.filter((t: TimesheetEntry) => t.account_id === User.account_id);
     }
     return recordId ? filtered.filter((t: TimesheetEntry) => t.record_id === recordId) : filtered;
   },
 
   createTimesheet: async (entry: Partial<TimesheetEntry>): Promise<TimesheetEntry> => {
     const existing: TimesheetEntry[] = getLS(STORAGE_KEYS.TIMESHEETS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const newEntry: TimesheetEntry = { 
       id: crypto.randomUUID(), record_id: '', account_id: '', account_name: '',
       hours: 0, date: new Date().toISOString().split('T')[0],
-      logged_by: profile.full_name, status: 'submitted', 
-      created_at: new Date().toISOString(), created_by_name: profile.full_name,
-      updated_at: new Date().toISOString(), updated_by_name: profile.full_name,
+      logged_by: User.full_name, status: 'submitted', 
+      created_at: new Date().toISOString(), created_by_name: User.full_name,
+      updated_at: new Date().toISOString(), updated_by_name: User.full_name,
       ...entry, 
     } as TimesheetEntry;
     setLS(STORAGE_KEYS.TIMESHEETS, [newEntry, ...existing]);
     if (newEntry.record_id) {
-      await mockApi.logChange('timesheets', newEntry.record_id, 'UPDATE', 'hours_logged', null, `${newEntry.hours}h by ${profile.full_name}`);
+      await mockApi.logChange('timesheets', newEntry.record_id, 'UPDATE', 'hours_logged', null, `${newEntry.hours}h by ${User.full_name}`);
     }
     return newEntry;
   },
 
   updateTimesheet: async (id: string, data: Partial<TimesheetEntry>): Promise<TimesheetEntry> => {
     const all: TimesheetEntry[] = getLS(STORAGE_KEYS.TIMESHEETS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const idx = all.findIndex((t: TimesheetEntry) => t.id === id);
     if (idx === -1) throw new Error('Time log not found');
     const old = all[idx];
-    if (profile.role === 'employee' && old.logged_by !== profile.full_name) throw new Error('Access Denied');
-    if (profile.role === 'client') throw new Error('Action not permitted');
+    if (User.role === 'employee' && old.logged_by !== User.full_name) throw new Error('Access Denied');
+    if (User.role === 'client') throw new Error('Action not permitted');
 
-    const updated: TimesheetEntry = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: profile.full_name };
+    const updated: TimesheetEntry = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: User.full_name };
     all[idx] = updated;
     setLS(STORAGE_KEYS.TIMESHEETS, all);
     for (const [field, newVal] of Object.entries(data)) {
@@ -290,23 +290,23 @@ export const mockApi = {
   // --- EXPENSES ---
   getExpenses: async (recordId?: string): Promise<ExpenseEntry[]> => {
     const all: ExpenseEntry[] = getLS(STORAGE_KEYS.EXPENSES);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     let filtered = all;
-    if (profile.role === 'client' && profile.account_id) {
-      filtered = all.filter((e: ExpenseEntry) => e.account_id === profile.account_id);
+    if (User.role === 'client' && User.account_id) {
+      filtered = all.filter((e: ExpenseEntry) => e.account_id === User.account_id);
     }
     return recordId ? filtered.filter((e: ExpenseEntry) => e.record_id === recordId) : filtered;
   },
 
   createExpense: async (entry: Partial<ExpenseEntry>): Promise<ExpenseEntry> => {
     const all: ExpenseEntry[] = getLS(STORAGE_KEYS.EXPENSES);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const newEntry: ExpenseEntry = { 
       id: crypto.randomUUID(), record_id: '', account_id: '', account_name: '',
       amount: 0, date: new Date().toISOString().split('T')[0],
       category: 'General', status: 'submitted', 
-      created_at: new Date().toISOString(), created_by_name: profile.full_name,
-      updated_at: new Date().toISOString(), updated_by_name: profile.full_name,
+      created_at: new Date().toISOString(), created_by_name: User.full_name,
+      updated_at: new Date().toISOString(), updated_by_name: User.full_name,
       ...entry, 
     } as ExpenseEntry;
     setLS(STORAGE_KEYS.EXPENSES, [newEntry, ...all]);
@@ -316,14 +316,14 @@ export const mockApi = {
 
   updateExpense: async (id: string, data: Partial<ExpenseEntry>): Promise<ExpenseEntry> => {
     const all: ExpenseEntry[] = getLS(STORAGE_KEYS.EXPENSES);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const idx = all.findIndex((e: ExpenseEntry) => e.id === id);
     if (idx === -1) throw new Error('Expense record not found');
     const old = all[idx];
-    if (profile.role === 'employee' && old.created_by_name !== profile.full_name) throw new Error('Access Denied');
-    if (profile.role === 'client') throw new Error('Action not permitted');
+    if (User.role === 'employee' && old.created_by_name !== User.full_name) throw new Error('Access Denied');
+    if (User.role === 'client') throw new Error('Action not permitted');
 
-    const updated: ExpenseEntry = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: profile.full_name };
+    const updated: ExpenseEntry = { ...old, ...data, updated_at: new Date().toISOString(), updated_by_name: User.full_name };
     all[idx] = updated;
     setLS(STORAGE_KEYS.EXPENSES, all);
     for (const [field, newVal] of Object.entries(data)) {
@@ -345,10 +345,10 @@ export const mockApi = {
   // --- AUDIT / HISTORY LOGS ---
   logChange: async (table_name: string, record_id: string, action: AuditLog['action'], field_name: string, old_value: string | null, new_value: string | null): Promise<void> => {
     const all: AuditLog[] = getLS(STORAGE_KEYS.LOGS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     const newLog: AuditLog = {
       id: crypto.randomUUID(), table_name, record_id, action, field_name, old_value, new_value,
-      changed_by: profile.id || 'system', changed_by_name: profile.full_name || 'System',
+      changed_by: User.id || 'system', changed_by_name: User.full_name || 'System',
       created_at: new Date().toISOString(),
     };
     setLS(STORAGE_KEYS.LOGS, [newLog, ...all]);
@@ -356,12 +356,12 @@ export const mockApi = {
 
   getAuditLogs: async (): Promise<UIHistoryItem[]> => {
     const all: AuditLog[] = getLS(STORAGE_KEYS.LOGS);
-    const profile = await mockApi.getProfile();
+    const User = await mockApi.getProfile();
     let filtered = all;
-    if (profile.role === 'client' && profile.account_id) {
+    if (User.role === 'client' && User.account_id) {
        const records = await mockApi.getRecords();
-       const recordIds = records.map((r: ServiceRecord) => r.id);
-       filtered = all.filter((l: AuditLog) => l.record_id === profile.account_id || recordIds.includes(l.record_id));
+       const recordIds = records.map((r: Request) => r.id);
+       filtered = all.filter((l: AuditLog) => l.record_id === User.account_id || recordIds.includes(l.record_id));
     } 
     return filtered.map((l: AuditLog) => ({
       id: l.id, timestamp: l.created_at, action: l.action,
@@ -417,7 +417,7 @@ export const mockApi = {
     setLS(STORAGE_KEYS.CLIENTS, seededClients);
 
     // 3. Seed Mandates (Records)
-    const seededRecords: ServiceRecord[] = [];
+    const seededRecords: Request[] = [];
     for (let i = 0; i < 15; i++) {
         const acc = seededAccs[i % seededAccs.length];
         seededRecords.push({
@@ -470,7 +470,7 @@ export const mockApi = {
     setLS(STORAGE_KEYS.EXPENSES, seededExpenses);
 
     // 6. Seed Audit Logs
-    await mockApi.logChange('records', 'seed-mand-1', 'CREATE', 'mandate', null, 'ADV-801');
+    await mockApi.logChange('Request', 'seed-mand-1', 'CREATE', 'mandate', null, 'ADV-801');
   },
 
   resetDatabase: () => {

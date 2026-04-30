@@ -1,29 +1,82 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import type { Profile } from '../types';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+import { api } from '../lib/api';
+import type { User, Notification } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const PortalLayout = ({ children, profile }: { children: React.ReactNode, profile: Profile }) => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+const PortalLayout = ({ children, user }: { children: React.ReactNode, user: User }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadNotifs = async () => {
+      if (!user) return;
+      try {
+        const data = await api.getNotifications(user.id);
+        setNotifications(data);
+      } catch (e) {
+        console.error("Failed to load notifications", e);
+      }
+    };
+    
+    loadNotifs();
+
+    // --- REAL-TIME SUBSCRIPTION ---
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'Notification',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setNotifications(prev => [payload.new as Notification, ...prev].slice(0, 20));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const handleLogout = async () => {
-    localStorage.removeItem('adveris_mock_session');
     await supabase.auth.signOut();
     window.location.href = '/';
   };
 
-  const switchRole = (role: string) => {
-    // For testing/mock purposes, we associate IDs that match our seeded records
-    const NEXUS_ALPHA_ID = 'seed-acc-1'; // We'll update seedData to use these fixed IDs
-
-    const mockUsers: Record<string, Profile> = {
-      admin: { id: 'mock-admin', role: 'admin', full_name: 'Adveris Admin' },
-      employee: { id: 'mock-staff', role: 'employee', full_name: 'Firm Professional' },
-      client: { id: 'mock-client', role: 'client', full_name: 'Nexus Client', account_id: NEXUS_ALPHA_ID }
-    };
-    localStorage.setItem('adveris_mock_session', JSON.stringify(mockUsers[role]));
-    window.location.reload();
+  const markAllAsRead = async () => {
+    for (const n of notifications) {
+      if (!n.is_read) await api.markNotificationAsRead(n.id);
+    }
+    const data = await api.getNotifications(user.id);
+    setNotifications(data);
   };
+
+  // --- CLICK OUTSIDE TO CLOSE ---
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.dropdown-trigger')) {
+        setIsProfileOpen(false);
+        setIsNotificationsOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClickOutside);
+    return () => window.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const subNavItems = [
     {
@@ -40,13 +93,13 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
     },
     {
       name: 'All Requests',
-      path: '/dashboard/records',
+      path: '/dashboard/requests',
       roles: ['admin', 'employee'],
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 17L12 22L22 17M2 12L12 17L22 12M12 2L2 7L12 12L22 7L12 2Z"></path></svg>
     },
     {
       name: 'My Mandates',
-      path: '/dashboard/records',
+      path: '/dashboard/requests',
       roles: ['client'],
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M2 17L12 22L22 17M2 12L12 17L22 12M12 2L2 7L12 12L22 7L12 2Z"></path></svg>
     },
@@ -74,60 +127,213 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
       roles: ['admin'],
       icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
     },
-  ].filter(item => item.roles.includes(profile.role));
+    {
+      name: 'User Governance',
+      path: '/dashboard/users',
+      roles: ['admin', 'employee'],
+      icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+    }
+  ].filter(item => item.roles.includes(user.role));
 
   return (
     <div className="portal-aura-container">
-      {/* AURORA BLOBS — Atmospheric Glowing Effect */}
       <div className="portal-aurora-bg" aria-hidden="true">
         <div className="aurora-blob aurora-blob-1"></div>
         <div className="aurora-blob aurora-blob-2"></div>
       </div>
 
-      {/* TIER 1: BRAND & PRIMARY ACTIONS */}
       <header className="portal-header-top">
         <div className="portal-header-inner-wrap" style={{ maxWidth: 1600 }}>
           <div className="portal-brand-lockup">
             <span className="brand-main">Adveris</span>
-            <span className="brand-subline">ADVISORS PORTAL</span>
+            <span className="brand-subline">Advisors Portal</span>
           </div>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            
+            {/* NOTIFICATIONS */}
+            <div style={{ position: 'relative' }} className="dropdown-trigger">
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', position: 'relative', padding: 8 }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                {unreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, background: 'var(--saffron)', borderRadius: '50%', border: '2px solid var(--navy)' }} />
+                )}
+              </button>
 
-          {/* MOBILE MENU TOGGLE (Header Level) */}
-          <div className="portal-mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              <AnimatePresence>
+                {isNotificationsOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    style={{ 
+                      position: 'absolute', top: '100%', right: 0, width: 360, background: 'rgba(30, 41, 59, 0.95)', 
+                      backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
+                      marginTop: 12, zIndex: 2000, boxShadow: '0 20px 50px rgba(0,0,0,0.5)', overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>Notifications</h3>
+                      <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>Mark all as read</button>
+                    </div>
+                    <div style={{ maxHeight: 400, overflowY: 'auto', padding: '12px 0' }} className="custom-scrollbar">
+                      {notifications.length > 0 ? (
+                        notifications.map(n => (
+                          <div key={n.id} style={{ padding: '16px 24px', display: 'flex', gap: 16, background: n.is_read ? 'transparent' : 'rgba(255,153,51,0.03)', transition: 'background 0.3s' }}>
+                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={n.is_read ? "rgba(255,255,255,0.3)" : "var(--gold)"} strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <p style={{ fontSize: '0.85rem', color: n.is_read ? 'rgba(255,255,255,0.6)' : 'white', margin: '0 0 4px', fontWeight: n.is_read ? 400 : 600 }}>{n.title}</p>
+                              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', margin: '0 0 8px' }}>{n.message}</p>
+                              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', fontWeight: 700 }}>{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            {!n.is_read && <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--saffron)', marginTop: 8 }} />}
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ padding: '60px 40px', textAlign: 'center', opacity: 0.2 }}>
+                          <p style={{ fontSize: '0.85rem' }}>No new notifications.</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* USER PROFILE DROPDOWN */}
+            <div style={{ position: 'relative' }} className="dropdown-trigger">
+              <div 
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 100, transition: 'background 0.3s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--navy)', fontWeight: 800, fontSize: '0.7rem' }}>
+                  {user.full_name?.charAt(0).toUpperCase()}
+                </div>
+                <div className="desktop-User-info" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'white', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {user.full_name.split(' ')[0]}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ transform: isProfileOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}><path d="M6 9l6 6 6-6" /></svg>
+                  </span>
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    style={{ 
+                      position: 'absolute', top: '100%', right: 0, width: 240, background: 'rgba(30, 41, 59, 0.95)', 
+                      backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
+                      marginTop: 12, zIndex: 2000, boxShadow: '0 20px 50px rgba(0,0,0,0.5)', overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', margin: '0 0 4px' }}>{user.full_name}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{user.email}</p>
+                    </div>
+                    <div style={{ padding: 8 }}>
+                      <button 
+                        onClick={() => { setIsProfileOpen(false); navigate('/dashboard/profile'); }}
+                        style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Edit profile</span>
+                      </button>
+                      <button 
+                        onClick={() => { setIsProfileOpen(false); setIsSupportOpen(true); }}
+                        style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Support</span>
+                      </button>
+                      <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '8px 0' }} />
+                      <button 
+                        onClick={handleLogout}
+                        style={{ width: '100%', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', borderRadius: 8, color: '#f87171', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.05)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Sign out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="portal-mobile-menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* TIER 2: ACCOUNT TABS */}
+      {/* SUPPORT MODAL */}
+      <AnimatePresence>
+        {isSupportOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="portal-modal-overlay"
+            onClick={() => setIsSupportOpen(false)}
+            style={{ zIndex: 3000 }}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="portal-modal-card"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: 500, padding: 48 }}
+            >
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,153,51,0.1)', color: 'var(--saffron)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Concierge Support</h2>
+              <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: 40 }}>Our institutional support team is available for strategic assistance and technical guidance.</p>
+              
+              <div style={{ display: 'grid', gap: 24 }}>
+                <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12 }}>
+                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.02em', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>General Inquiries</p>
+                  <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 500, margin: 0 }}>connect@adveris.in</p>
+                </div>
+                <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12 }}>
+                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.02em', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>Institutional Hotline</p>
+                  <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 500, margin: 0 }}>+91 80 4951 8888</p>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setIsSupportOpen(false)}
+                className="btn-portal-primary"
+                style={{ width: '100%', marginTop: 48, padding: '20px 0' }}
+              >
+                Close Support
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className="portal-nav-row" style={{ marginBottom: 0 }}>
         <div className="container" style={{ maxWidth: 1600, width: '100%' }}>
           <div className={`portal-tab-group ${isMenuOpen ? 'open' : ''}`} style={{ marginBottom: 0, padding: '0 40px' }}>
             
-            {/* INJECT IDENTITY SWITCHER AT TOP OF MOBILE DROPDOWN */}
-            <div className="portal-header-actions-right" style={{ gap: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, borderRight: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.6rem', opacity: 0.2, letterSpacing: '0.1em' }}>IDENTITY /</span>
-                {['admin', 'employee', 'client'].map(r => (
-                  <span
-                    key={r}
-                    onClick={() => switchRole(r)}
-                    className={`menu-trigger-text ${profile.role === r ? 'active' : ''}`}
-                    style={{
-                      fontSize: '0.55rem',
-                      cursor: 'pointer',
-                      color: profile.role === r ? 'var(--gold)' : 'white',
-                      opacity: profile.role === r ? 1 : 0.3,
-                      fontWeight: profile.role === r ? 800 : 400
-                    }}
-                  >
-                    {r.toUpperCase()}
-                  </span>
-                ))}
-              </div>
-              <span className="menu-trigger-text" onClick={handleLogout} style={{ opacity: 0.3, fontSize: '0.6rem', cursor: 'pointer' }}>LOGOUT</span>
-            </div>
+
 
             {subNavItems.map((item) => (
               <NavLink
@@ -153,7 +359,6 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
         </div>
       </main>
 
-      {/* MINIMALIST FOOTER — ACCOUNT SIGNATURE */}
       <footer style={{ marginTop: 'auto', paddingBottom: 40, borderTop: '1px solid rgba(255,255,255,0.03)', position: 'relative', zIndex: 10 }}>
         <div style={{ width: '100%', maxWidth: 1600, margin: '0 auto', padding: '40px 40px 0' }}>
 
@@ -161,7 +366,7 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
             <div>
               <div className="portal-brand-lockup" style={{ marginBottom: 8 }}>
                 <span className="brand-main" style={{ fontSize: '1.2rem' }}>Adveris</span>
-                <span className="brand-subline" style={{ fontSize: '0.45rem' }}>ADVISORS PORTAL</span>
+                <span className="brand-subline" style={{ fontSize: '0.65rem', fontWeight: 400, color: 'rgba(255,255,255,0.3)', letterSpacing: 'normal' }}>Advisors Portal</span>
               </div>
               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', fontWeight: 200, letterSpacing: '0.02em' }}>
                 Professional advisory for the Indian market. Strategic compliance, regulatory governance, and corporate excellence.
@@ -169,13 +374,11 @@ const PortalLayout = ({ children, profile }: { children: React.ReactNode, profil
             </div>
 
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.1)', letterSpacing: '0.3em', fontWeight: 600, marginBottom: 8 }}>
-                © 2026 Adveris Advisors Portal. DEPLOYED FOR ACCOUNT USE.
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.1)', fontWeight: 500, marginBottom: 8 }}>
+                © 2026 Adveris Advisors Portal
               </div>
               <div style={{ display: 'flex', gap: 24, justifyContent: 'flex-end', opacity: 0.15 }}>
-                <span style={{ fontSize: '0.55rem', color: 'var(--gold)', letterSpacing: '0.3em', fontWeight: 800 }}>BENGALURU</span>
-                <span style={{ fontSize: '0.55rem', color: 'var(--gold)', letterSpacing: '0.3em', fontWeight: 800 }}>MUMBAI</span>
-                <span style={{ fontSize: '0.55rem', color: 'var(--gold)', letterSpacing: '0.3em', fontWeight: 800 }}>DELHI</span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--gold)', fontWeight: 600 }}>Bengaluru Headquarters</span>
               </div>
             </div>
           </div>

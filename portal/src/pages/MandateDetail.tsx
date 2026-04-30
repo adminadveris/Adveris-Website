@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
-import type { ServiceRecord, Account, AuditLog } from '../types';
+import type { Request, Account, AuditLog } from '../types';
 
 const STATUSES_MAP: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending Assessment', color: 'var(--saffron)' },
@@ -45,9 +45,9 @@ const Field = ({ label, children, span, whisper }: { label: string; children: Re
 const MandateDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user } = useAuth();
 
-  const [record, setRecord] = useState<ServiceRecord | null>(null);
+  const [request, setRequest] = useState<Request | null>(null);
   const [account, setAccount] = useState<Account | null>(null);
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,40 +55,34 @@ const MandateDetail = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!id || !profile) return;
+      if (!id || !user) return;
       setLoading(true);
       try {
-        let allRecs = await mockApi.getRecords();
-        
-        // Self-healing: if records are empty, try to seed
-        if (allRecs.length === 0) {
-          await mockApi.seedData();
-          allRecs = await mockApi.getRecords();
-        }
+        let allRecs = await api.getRecords();
 
-        const rec = allRecs.find((r: ServiceRecord) => 
+        const rec = allRecs.find((r: Request) => 
           r.id === id || r.id === `seed-mand-${id}`
         );
         
         if (!rec) { 
-          setError("Record not found.");
+          setError("Request not found.");
           setLoading(false);
           return; 
         }
 
         // Basic RBAC guard
-        if (profile.role === 'client' && rec.account_id !== profile.account_id) {
+        if (user.role === 'client' && rec.account_id !== user.account_id) {
           setError("Access strictly denied. Intelligence classification exceeds your clearance.");
           setLoading(false);
           return;
         }
 
         const [acc, hist] = await Promise.all([
-          mockApi.getAccountById(rec.account_id),
-          mockApi.getHistoryByRecord(rec.id)
+          api.getAccountById(rec.account_id),
+          api.getHistoryByRecord(rec.id)
         ]);
 
-        setRecord(rec);
+        setRequest(rec);
         setAccount(acc);
         setHistory(hist);
       } catch (err: any) {
@@ -99,23 +93,25 @@ const MandateDetail = () => {
       }
     };
     loadData();
-  }, [id, profile]);
+  }, [id, user]);
 
   if (loading) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="intelligence-pulse">RETRIEVING MANDATE LEDGER...</div>
+      <div className="intelligence-pulse">Retrieving request ledger...</div>
     </div>
   );
 
-  if (!record) return (
+  if (!request) return (
     <div className="theater-container" style={{ textAlign: 'center', paddingTop: 100 }}>
-       <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1 }}>Record <em>Invalid</em></h1>
+       <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1 }}>Request <em>Invalid</em></h1>
        <p style={{ opacity: 0.4, marginTop: 20 }}>The requested mandate ID "{id}" could not be retrieved from the authorized ledger.</p>
-       <button onClick={() => navigate('/dashboard/records')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return to Records</button>
+       <button onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return to Requests</button>
     </div>
   );
 
-  const status = STATUSES_MAP[record.status] || { label: record.status, color: 'var(--saffron)' };
+  const status = (request.status === 'rejected' || request.status === 'closed') 
+    ? { label: 'Closed', color: '#ef4444' } 
+    : { label: 'Active', color: '#4ade80' };
 
   return (
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40, fontFamily: 'var(--font-sans)' }}>
@@ -123,7 +119,7 @@ const MandateDetail = () => {
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button 
-            onClick={() => navigate('/dashboard/records')} 
+            onClick={() => navigate('/dashboard/requests')} 
             style={{ 
               background: 'none', border: 'none', color: 'white', 
               fontSize: '0.85rem', letterSpacing: 'normal', fontWeight: 600, 
@@ -138,7 +134,7 @@ const MandateDetail = () => {
           </button>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <button 
-              onClick={() => navigate(`/dashboard/records/${id}/edit`)} 
+              onClick={() => navigate(`/dashboard/requests/${id}/edit`)} 
               className="btn-portal-primary"
               style={{ padding: '12px 28px', fontSize: '0.65rem' }}
             >
@@ -161,59 +157,59 @@ const MandateDetail = () => {
           
           {/* SECTION 1: GENERAL INFORMATION */}
           <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,255,255,0.05)' }}>
-            <h2 style={{ fontSize: '0.8rem', letterSpacing: '0.3rem', fontWeight: 800, color: 'white', marginBottom: 32, opacity: 0.4 }}>GENERAL INFORMATION</h2>
+            <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', marginBottom: 32, opacity: 0.4 }}>General Information</h2>
             
             <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
-              <Field label="Request ID">{record.request_number}</Field>
-              <Field label="Service Type" span>{record.primary_service || record.title}</Field>
+              <Field label="Request ID">{request.request_number}</Field>
+              <Field label="Service Type" span>{request.primary_service || request.title}</Field>
             </div>
 
             <div className="portal-data-grid-2">
-              <Field label="Additional Services" whisper>{record.description || 'None'}</Field>
-              <Field label="Client Remarks" whisper>{record.verification_remarks || 'No remarks recorded'}</Field>
+              <Field label="Additional Services" whisper>{request.description || 'None'}</Field>
+              <Field label="Client Remarks" whisper>{request.verification_remarks || 'No remarks recorded'}</Field>
             </div>
           </div>
 
           {/* SECTION 3: ADMINISTRATIVE SECTION */}
           <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,153,51,0.2)' }}>
-            <h2 style={{ fontSize: '0.8rem', letterSpacing: '0.3rem', fontWeight: 800, color: 'var(--gold)', marginBottom: 32 }}>ADMINISTRATIVE SECTION</h2>
+            <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--gold)', marginBottom: 32 }}>Administrative Section</h2>
             
             <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
-              <Field label="Priority">{record.priority || 'Standard'}</Field>
-              <Field label="Assigned To" span>{record.assigned_to || 'Partner Pending'}</Field>
+              <Field label="Priority">{request.priority || 'Standard'}</Field>
+              <Field label="Assigned To" span>{request.assigned_to || 'Partner Pending'}</Field>
             </div>
 
             <div className="portal-data-grid-2">
-              <Field label="Document Verification Status">
+              <Field label="Verification Status">
                   <span style={{ 
-                    color: record.verification_status === 'Verified' ? '#22c55e' : (record.verification_status === 'Rejected' ? '#ef4444' : 'var(--gold)'), 
+                    color: request.verification_status === 'Verified' ? '#22c55e' : (request.verification_status === 'Rejected' ? '#ef4444' : 'var(--gold)'), 
                     fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-sans)'
                   }}>
-                    {record.verification_status || 'PENDING'}
+                    {request.verification_status || 'Pending'}
                   </span>
               </Field>
-              <Field label="Document Verification Remarks" whisper>{record.verification_remarks || 'None recorded'}</Field>
+              <Field label="Verification Remarks" whisper>{request.verification_remarks || 'None recorded'}</Field>
             </div>
           </div>
 
           <div className="portal-panel" style={{ padding: 32, background: 'rgba(255,153,51,0.01)', border: '1px solid rgba(255,153,51,0.05)' }}>
-            <h3 style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.3, marginBottom: 24, color: 'var(--gold)' }}>SYSTEM INFORMATION</h3>
+            <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.3, marginBottom: 24, color: 'var(--gold)' }}>System Information</h3>
             <div className="portal-data-grid-2">
               <div>
-                <p style={{ fontSize: '0.6rem', fontWeight: 700, opacity: 0.3, marginBottom: 8 }}>CREATED DATE</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{record.created_at ? new Date(record.created_at).toLocaleString() : '—'}</p>
+                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Created Date</p>
+                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.created_at ? new Date(request.created_at).toLocaleString() : '—'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.6rem', fontWeight: 700, opacity: 0.3, marginBottom: 8 }}>CREATED BY</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{record.created_by_name || 'System'}</p>
+                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Created By</p>
+                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.created_by_name || 'System'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.6rem', fontWeight: 700, opacity: 0.3, marginBottom: 8 }}>LAST MODIFIED DATE</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{record.updated_at ? new Date(record.updated_at).toLocaleString() : '—'}</p>
+                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Last Modified Date</p>
+                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.updated_at ? new Date(request.updated_at).toLocaleString() : '—'}</p>
               </div>
               <div>
-                <p style={{ fontSize: '0.6rem', fontWeight: 700, opacity: 0.3, marginBottom: 8 }}>LAST MODIFIED BY</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{record.updated_by_name || 'System'}</p>
+                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Last Modified By</p>
+                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.updated_by_name || 'System'}</p>
               </div>
             </div>
           </div>
@@ -225,45 +221,51 @@ const MandateDetail = () => {
           
           {/* CARD 1: ACCOUNT REGISTRY */}
           <div className="portal-panel" style={{ padding: 24, borderLeft: '4px solid var(--gold)' }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.7rem' }}>ACCOUNT REGISTRY</div>
+            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Account Registry</div>
             <div style={{ marginBottom: 24 }}>
                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.2rem', color: 'white', lineHeight: 1.1, marginBottom: 6, fontWeight: 700 }}>{account?.account_name}</p>
-               <p style={{ fontSize: '0.6rem', letterSpacing: '0.3em', color: 'var(--gold)', fontWeight: 800, fontFamily: 'var(--font-sans)' }}>AUTHORIZED REGISTRY OBJECT</p>
+               <p style={{ fontSize: '0.7rem', color: 'var(--gold)', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>Authorized Registry Object</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
                   <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>PAN Identifier</span>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{account?.pan_number || '—'}</span>
                </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
-                  <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Litigation Scan</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#22c55e', fontFamily: 'var(--font-sans)' }}>CLEAN</span>
-               </div>
-               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
-                  <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Record Type</span>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>INSTITUTIONAL</span>
-               </div>
+               {(user?.role === 'admin' || user?.role === 'employee') && (
+                 <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
+                    <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Litigation Scan</span>
+                    <span style={{ 
+                        fontSize: '0.85rem', 
+                        fontWeight: 700, 
+                        color: account?.litigation_scan === 'FLAGGED' || account?.litigation_scan === 'SEVERE' ? '#ef4444' : (account?.litigation_scan === 'PENDING' ? 'var(--gold)' : '#22c55e'), 
+                        fontFamily: 'var(--font-sans)' 
+                    }}>
+                        {account?.litigation_scan || 'Clean'}
+                    </span>
+                 </div>
+               )}
+
             </div>
           </div>
 
           {/* CARD 2: STATUS TELEMETRY */}
           <div className="portal-panel" style={{ padding: 24 }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.7rem' }}>STATUS TELEMETRY</div>
+            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Status Telemetry</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>MANDATE STATUS</span>
+                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Request Status</span>
                 <span style={{ 
-                    fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.15em', 
+                    fontSize: '0.65rem', fontWeight: 600, 
                     color: status.color, background: `${status.color}10`, 
                     padding: '4px 12px', borderRadius: 4, border: '1px solid currentColor', fontFamily: 'var(--font-sans)' 
                 }}>
-                    {status.label.toUpperCase()}
+                    {status.label}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>DAYS ACTIVE</span>
+                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Days Active</span>
                 <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-sans)' }}>
-                   {Math.floor((new Date().getTime() - new Date(record.created_at).getTime()) / (1000 * 60 * 60 * 24))} Days
+                   {Math.floor((new Date().getTime() - new Date(request.created_at).getTime()) / (1000 * 60 * 60 * 24))} Days
                 </span>
               </div>
             </div>
@@ -271,24 +273,26 @@ const MandateDetail = () => {
 
           {/* CARD 3: HISTORICAL PULSE */}
           <div className="portal-panel" style={{ padding: 24 }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.7rem' }}>HISTORICAL PULSE</div>
+            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Historical Pulse</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {history.slice(0, 3).map(log => (
                 <div key={log.id} style={{ borderLeft: '2px solid rgba(255,153,51,0.2)', paddingLeft: 12, paddingBottom: 4 }}>
-                   <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{log.field_name?.toUpperCase() || 'DATA'} {log.action}</p>
+                   <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>
+                    {(log.field_name || 'Data').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} {log.action === 'CREATE' ? 'Created' : log.action === 'UPDATE' ? 'Updated' : log.action}
+                   </p>
                    <p style={{ fontSize: '0.75rem', opacity: 0.4, marginTop: 2, fontFamily: 'var(--font-sans)' }}>{fmt(log.created_at)}</p>
                 </div>
               ))}
               <button 
-                onClick={() => navigate(`/dashboard/records/${id}/history`)}
+                onClick={() => navigate(`/dashboard/requests/${id}/history`)}
                 style={{ 
                   width: '100%', padding: '10px 0', background: 'none', border: '1px solid rgba(255,255,255,0.05)', 
-                  color: 'var(--gold)', fontSize: '0.65rem', fontWeight: 800, 
-                  letterSpacing: '0.2em', cursor: 'pointer', borderRadius: 4,
+                  color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 600, 
+                  cursor: 'pointer', borderRadius: 4,
                   transition: 'all 0.3s', marginTop: 8, fontFamily: 'var(--font-sans)'
                 }}
               >
-                VIEW FULL AUDIT
+                View Full Audit
               </button>
             </div>
           </div>

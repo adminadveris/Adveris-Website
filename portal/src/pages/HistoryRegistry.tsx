@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import Pagination from '../components/Pagination';
-import type { ServiceRecord, AuditLog } from '../types';
+import type { Request, AuditLog } from '../types';
 
 const fmt = (iso: string) =>
   new Date(iso).toLocaleString('en-IN', { 
@@ -16,7 +16,7 @@ const fmt = (iso: string) =>
 const HistoryRegistry = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [record, setRecord] = useState<ServiceRecord | null>(null);
+  const [request, setRequest] = useState<Request | null>(null);
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,13 +27,13 @@ const HistoryRegistry = () => {
       if (!id) return;
       setLoading(true);
       const [recs, hist] = await Promise.all([
-        mockApi.getRecords(),
-        mockApi.getHistoryByRecord(id)
+        api.getRecords(),
+        api.getHistoryByRecord(id)
       ]);
-      const rec = recs.find((r: ServiceRecord) => r.id === id);
-      if (!rec) { navigate('/dashboard/records'); return; }
+      const rec = recs.find((r: Request) => r.id === id);
+      if (!rec) { navigate('/dashboard/requests'); return; }
       
-      setRecord(rec);
+      setRequest(rec);
       setHistory(hist);
       setLoading(false);
     };
@@ -45,7 +45,7 @@ const HistoryRegistry = () => {
     currentPage * pageSize
   );
 
-  if (loading || !record) return (
+  if (loading || !request) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="portal-loader" />
     </div>
@@ -56,7 +56,7 @@ const HistoryRegistry = () => {
       {/* HEADER: COMPACT & ELEGANT */}
       <div style={{ marginBottom: 32 }}>
         <button 
-            onClick={() => navigate(`/dashboard/records/${id}`)} 
+            onClick={() => navigate(`/dashboard/requests/${id}`)} 
             style={{ 
                 background: 'none', border: 'none', color: 'white', 
                 fontSize: '0.75rem', fontWeight: 600, 
@@ -74,7 +74,7 @@ const HistoryRegistry = () => {
            Account History
         </h1>
         <p style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.4)', fontWeight: 300, fontFamily: 'var(--font-sans)' }}>
-            {record.request_number} — <span style={{ color: 'var(--gold)', fontWeight: 500 }}>{record.title || record.primary_service}</span>
+            {request.request_number} — <span style={{ color: 'var(--gold)', fontWeight: 500 }}>{request.title || request.primary_service}</span>
         </p>
       </div>
 
@@ -84,12 +84,12 @@ const HistoryRegistry = () => {
           <table className="portal-table-v2">
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <th style={{ width: 160, fontSize: '0.65rem', letterSpacing: '0.1em' }}>TIMESTAMP</th>
-                <th style={{ width: 120, fontSize: '0.65rem', letterSpacing: '0.1em' }}>ACTION</th>
-                <th style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>EVENT TYPE</th>
-                <th style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>PREVIOUS STATE</th>
-                <th style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>REFINED STATE</th>
-                <th style={{ textAlign: 'right', fontSize: '0.65rem', letterSpacing: '0.1em' }}>EXECUTED BY</th>
+                <th style={{ width: 160, fontSize: '0.75rem' }}>Timestamp</th>
+                <th style={{ width: 120, fontSize: '0.75rem' }}>Action</th>
+                <th style={{ fontSize: '0.75rem' }}>Event Type</th>
+                <th style={{ fontSize: '0.75rem' }}>Previous State</th>
+                <th style={{ fontSize: '0.75rem' }}>Refined State</th>
+                <th style={{ textAlign: 'right', fontSize: '0.75rem' }}>Executed By</th>
               </tr>
             </thead>
             <tbody style={{ fontSize: '0.85rem' }}>
@@ -98,24 +98,26 @@ const HistoryRegistry = () => {
                   <td style={{ opacity: 0.4, fontWeight: 300 }}>{fmt(log.created_at)}</td>
                   <td>
                     <span style={{ 
-                      fontSize: '0.6rem', fontWeight: 800,
+                      fontSize: '0.65rem', fontWeight: 600,
                       color: log.action === 'CREATE' ? '#22c55e' : 'var(--gold)',
                       background: log.action === 'CREATE' ? 'rgba(34,197,94,0.05)' : 'rgba(255,153,51,0.05)',
                       padding: '4px 10px', borderRadius: 4, border: '1px solid currentColor',
                       display: 'inline-block'
                     }}>
-                      {log.action}
+                      {log.action === 'CREATE' ? 'Created' : log.action === 'UPDATE' ? 'Updated' : log.action}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 600, color: 'white' }}>{log.field_name?.toUpperCase().replace(/_/g, ' ')}</td>
+                  <td style={{ fontWeight: 500, color: 'white' }}>
+                    {(log.field_name || '').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
+                  </td>
                   <td style={{ opacity: 0.3, fontStyle: 'italic' }}>{log.old_value ||'—'}</td>
                   <td style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{log.new_value || '—'}</td>
-                  <td style={{ textAlign: 'right', fontWeight: 600, opacity: 0.5, color: 'var(--gold)' }}>{log.changed_by_name?.toUpperCase()}</td>
+                  <td style={{ textAlign: 'right', fontWeight: 500, opacity: 0.5, color: 'var(--gold)' }}>{log.changed_by_name}</td>
                 </tr>
               ))}
               {history.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 80, opacity: 0.1, fontStyle: 'italic' }}>No audit telemetry indexed for this record.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: 80, opacity: 0.1, fontStyle: 'italic' }}>No audit telemetry indexed for this request.</td>
                 </tr>
               )}
             </tbody>

@@ -1,151 +1,286 @@
-import React, { useState } from 'react';
-import { mockApi } from '../lib/mockApi';
+import React, { useState, useEffect } from 'react';
+import { api } from '../lib/api';
 import type { Account } from '../types';
 
-/* ─── Shared UI Components ─── */
-const ModalShell = ({ title, sub, onClose, children }: { title: React.ReactNode; sub?: string; onClose: () => void; children: React.ReactNode }) => (
-  <div style={{
-    position: 'fixed', inset: 0, zIndex: 3000,
-    background: 'rgba(5, 10, 25, 0.88)', backdropFilter: 'blur(14px)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
-  }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-    <div 
-      style={{
-        background: 'rgba(13,27,62,0.85)', border: '1.5px solid rgba(255,255,255,0.1)',
-        borderRadius: 24, padding: 48, width: '100%', maxWidth: 640,
-        backdropFilter: 'blur(20px)', boxShadow: '0 40px 100px rgba(0,0,0,0.6)',
-        maxHeight: '90vh', overflowY: 'auto'
-      }}
-    >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}>
-        <div>
-          {sub && <div className="firm-intel-tag" style={{ marginBottom: 12 }}><span className="tag-line" /> {sub}</div>}
-          <h2 className="serif-title" style={{ fontSize: '2.2rem', color: 'white' }}>{title}</h2>
-        </div>
-        <button onClick={onClose} className="btn-portal-record-dots" style={{ width: 40, height: 40, fontSize: '1.5rem', background: 'rgba(255,255,255,0.05)' }}>×</button>
-      </div>
-      {children}
-    </div>
-  </div>
-);
+/* ─── DRAWER STYLES ─── */
+const drawerStyles = `
+  @keyframes drawerSlideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .crm-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(5, 8, 22, 0.6);
+    backdrop-filter: blur(4px);
+    animation: backdropFadeIn 0.25s ease;
+  }
+  .crm-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 560px;
+    max-width: 95vw;
+    z-index: 2001;
+    background: rgba(10, 18, 45, 0.97);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    box-shadow: -40px 0 80px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlideIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .crm-drawer-header {
+    padding: 28px 36px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    background: rgba(255,153,51,0.02);
+  }
+  .crm-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 36px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,153,51,0.2) transparent;
+  }
+  .crm-drawer-body::-webkit-scrollbar { width: 4px; }
+  .crm-drawer-body::-webkit-scrollbar-track { background: transparent; }
+  .crm-drawer-body::-webkit-scrollbar-thumb { background: rgba(255,153,51,0.2); border-radius: 4px; }
+  .crm-drawer-footer {
+    padding: 20px 36px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.2);
+  }
+  .crm-drawer-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.5);
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+  }
+  .crm-drawer-close:hover {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: #ef4444;
+  }
+  .crm-section-label {
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,153,51,0.5);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,153,51,0.08);
+  }
+`;
 
-const FormField = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="portal-form-group" style={{ marginBottom: 20 }}>
-    <label className="portal-form-label">{label}</label>
+const StyleInjector = () => {
+  useEffect(() => {
+    const id = 'crm-drawer-styles';
+    if (!document.getElementById(id)) {
+      const el = document.createElement('style');
+      el.id = id;
+      el.textContent = drawerStyles;
+      document.head.appendChild(el);
+    }
+  }, []);
+  return null;
+};
+
+const FF = ({ label, children, span }: { label: string; children: React.ReactNode; span?: boolean }) => (
+  <div style={{ gridColumn: span ? '1 / -1' : undefined, marginBottom: 16 }}>
+    <label className="portal-form-label" style={{ fontSize: '0.6rem', marginBottom: 6 }}>{label}</label>
     {children}
   </div>
 );
 
-/* ─── ACCOUNT MODAL ─── */
-export const AccountModal = ({ account, onClose, onSaved }: { account?: Account; onClose: () => void; onSaved: () => void }) => {
+/* ─── ACCOUNT MODAL (Drawer) ─── */
+export const AccountModal = ({
+  account,
+  onClose,
+  onSaved,
+}: {
+  account?: Account;
+  onClose: () => void;
+  onSaved: () => void;
+}) => {
   const [data, setData] = useState({
     account_name: account?.account_name || '',
-    cin_number: account?.cin_number || '',
-    pan_number: account?.pan_number || '',
+    cin_number:   account?.cin_number   || '',
+    pan_number:   account?.pan_number   || '',
     gstin_number: account?.gstin_number || '',
-    industry: account?.industry || '',
-    // Expanded Address Fields
-    house_no: account?.house_no || '',
-    street_1: account?.street_1 || '',
-    street_2: account?.street_2 || '',
-    street_3: account?.street_3 || '',
-    landmark: account?.landmark || '',
-    city: account?.city || '',
-    state: account?.state || '',
-    country: account?.country || '',
-    pincode: account?.pincode || ''
+    industry:     account?.industry     || '',
+    house_no:     account?.house_no     || '',
+    street_1:     account?.street_1     || '',
+    street_2:     account?.street_2     || '',
+    street_3:     account?.street_3     || '',
+    landmark:     account?.landmark     || '',
+    city:         account?.city         || '',
+    state:        account?.state        || '',
+    country:      account?.country      || 'India',
+    pincode:      account?.pincode      || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const set = (key: string, val: string) => setData(d => ({ ...d, [key]: val }));
+
   const handleSave = async () => {
-    if (!data.account_name) return;
+    if (!data.account_name.trim()) {
+      setError('Account Name is required.');
+      return;
+    }
     setError(null);
     setSaving(true);
     try {
-      if (account?.id) await mockApi.updateAccount(account.id, data);
-      else await mockApi.createAccount(data);
+      if (account?.id) await api.updateAccount(account.id, data);
+      else await api.createAccount(data);
       onSaved();
       onClose();
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
-    } finally { setSaving(false); }
+      setError(err.message || 'An unexpected error occurred. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
+  // Lock body scroll while drawer is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
-    <ModalShell title={account ? <>Update <em>Entity</em></> : <>New <em>Account</em></>} sub="ACCOUNT REGISTRATION" onClose={onClose}>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {error && (
-          <div style={{ padding: '14px 20px', background: 'rgba(255, 71, 87, 0.1)', border: '1px solid rgba(255, 71, 87, 0.2)', borderRadius: 12, color: '#ff4757', fontSize: '0.8rem', fontWeight: 600, marginBottom: 24 }}>
-            {error}
-          </div>
-        )}
-        
-        <div className="portal-panel" style={{ padding: 24, marginBottom: 24, background: 'rgba(255,255,255,0.02)' }}>
-          <div className="firm-intel-tag" style={{ marginBottom: 24 }}>CORE REGISTRY DATA</div>
-          <FormField label="Account Name">
-            <input className="portal-form-control" value={data.account_name} onChange={e => setData({...data, account_name: e.target.value})} placeholder="e.g. Adveris Advisors LLP" />
-          </FormField>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            <FormField label="Registration (CIN/LLPIN)">
-              <input className="portal-form-control font-mono" value={data.cin_number} onChange={e => setData({...data, cin_number: e.target.value})} placeholder="U1234..." />
-            </FormField>
-            <FormField label="Industry / Sector">
-              <input className="portal-form-control" value={data.industry} onChange={e => setData({...data, industry: e.target.value})} placeholder="e.g. Finance & Banking" />
-            </FormField>
-            <FormField label="PAN Number">
-              <input className="portal-form-control font-mono" value={data.pan_number} onChange={e => setData({...data, pan_number: e.target.value})} placeholder="ABCDE1234F" />
-            </FormField>
-            <FormField label="GSTIN Number">
-              <input className="portal-form-control font-mono" value={data.gstin_number} onChange={e => setData({...data, gstin_number: e.target.value})} placeholder="29XXXXX..." />
-            </FormField>
-          </div>
-        </div>
+    <>
+      <StyleInjector />
+      {/* Backdrop */}
+      <div className="crm-drawer-backdrop" onClick={onClose} />
 
-        <div className="portal-panel" style={{ padding: 24, background: 'rgba(255,153,51,0.02)', border: '1px solid rgba(255,153,51,0.05)' }}>
-          <div className="firm-intel-tag" style={{ marginBottom: 24 }}>ADMINISTRATIVE ADDRESS GRID</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 20px' }}>
-            <FormField label="House no">
-              <input className="portal-form-control" value={data.house_no} onChange={e => setData({...data, house_no: e.target.value})} />
-            </FormField>
-            <FormField label="Landmark">
-              <input className="portal-form-control" value={data.landmark} onChange={e => setData({...data, landmark: e.target.value})} />
-            </FormField>
-            <div style={{ gridColumn: 'span 2' }}>
-              <FormField label="Street 1">
-                <input className="portal-form-control" value={data.street_1} onChange={e => setData({...data, street_1: e.target.value})} />
-              </FormField>
+      {/* Drawer */}
+      <div className="crm-drawer">
+
+        {/* Header */}
+        <div className="crm-drawer-header">
+          <div>
+            <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'rgba(255,153,51,0.5)', marginBottom: 6 }}>
+              Account Registration
             </div>
-            <FormField label="Street 2">
-              <input className="portal-form-control" value={data.street_2} onChange={e => setData({...data, street_2: e.target.value})} />
-            </FormField>
-            <FormField label="Street 3">
-              <input className="portal-form-control" value={data.street_3} onChange={e => setData({...data, street_3: e.target.value})} />
-            </FormField>
-            <FormField label="City">
-              <input className="portal-form-control" value={data.city} onChange={e => setData({...data, city: e.target.value})} />
-            </FormField>
-            <FormField label="State">
-              <input className="portal-form-control" value={data.state} onChange={e => setData({...data, state: e.target.value})} />
-            </FormField>
-            <FormField label="Country">
-              <input className="portal-form-control" value={data.country} onChange={e => setData({...data, country: e.target.value})} />
-            </FormField>
-            <FormField label="Pincode">
-              <input className="portal-form-control font-mono" value={data.pincode} onChange={e => setData({...data, pincode: e.target.value})} />
-            </FormField>
+            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontWeight: 400, color: 'white', lineHeight: 1.1 }}>
+              {account ? <>Update <em style={{ fontStyle: 'italic', color: 'var(--saffron)' }}>Entity</em></> : <>New <em style={{ fontStyle: 'italic', color: 'var(--saffron)' }}>Account</em></>}
+            </h2>
           </div>
+          <button className="crm-drawer-close" onClick={onClose}>×</button>
         </div>
 
-        <div style={{ display: 'flex', gap: 16, marginTop: 32 }}>
-          <button onClick={onClose} className="btn-portal-outline" style={{ flex: 1 }}>CANCEL</button>
-          <button onClick={handleSave} disabled={saving || !data.account_name} className="btn-portal-primary" style={{ flex: 2 }}>
+        {/* Scrollable Body */}
+        <div className="crm-drawer-body">
+
+          {error && (
+            <div style={{
+              padding: '12px 16px', marginBottom: 24, borderRadius: 8,
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+              color: '#ef4444', fontSize: '0.8rem', fontWeight: 500
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* Section 1: Core Registry */}
+          <div className="crm-section-label">Core Registry Data</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <FF label="Account / Entity Name" span>
+              <input
+                className="portal-form-control"
+                value={data.account_name}
+                onChange={e => set('account_name', e.target.value)}
+                placeholder="e.g. Adveris Advisors LLP"
+                style={{ fontSize: '0.9rem' }}
+              />
+            </FF>
+            <FF label="Registration (CIN / LLPIN)">
+              <input className="portal-form-control font-mono" value={data.cin_number} onChange={e => set('cin_number', e.target.value)} placeholder="U12345MH2020..." />
+            </FF>
+            <FF label="Industry / Sector">
+              <input className="portal-form-control" value={data.industry} onChange={e => set('industry', e.target.value)} placeholder="e.g. Finance & Banking" />
+            </FF>
+            <FF label="PAN Number">
+              <input className="portal-form-control font-mono" value={data.pan_number} onChange={e => set('pan_number', e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} />
+            </FF>
+            <FF label="GSTIN Number">
+              <input className="portal-form-control font-mono" value={data.gstin_number} onChange={e => set('gstin_number', e.target.value.toUpperCase())} placeholder="29AAAAA0000A1Z5" />
+            </FF>
+          </div>
+
+          {/* Section 2: Address */}
+          <div className="crm-section-label" style={{ marginTop: 28 }}>Administrative Address</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+            <FF label="House / Flat No">
+              <input className="portal-form-control" value={data.house_no} onChange={e => set('house_no', e.target.value)} placeholder="e.g. 404B" />
+            </FF>
+            <FF label="Landmark">
+              <input className="portal-form-control" value={data.landmark} onChange={e => set('landmark', e.target.value)} placeholder="Near Metro Station..." />
+            </FF>
+            <FF label="Street / Road 1" span>
+              <input className="portal-form-control" value={data.street_1} onChange={e => set('street_1', e.target.value)} placeholder="Primary street address" />
+            </FF>
+            <FF label="Street / Area 2">
+              <input className="portal-form-control" value={data.street_2} onChange={e => set('street_2', e.target.value)} placeholder="Area / Colony" />
+            </FF>
+            <FF label="Street / Locality 3">
+              <input className="portal-form-control" value={data.street_3} onChange={e => set('street_3', e.target.value)} placeholder="Sub-locality" />
+            </FF>
+            <FF label="City / Town">
+              <input className="portal-form-control" value={data.city} onChange={e => set('city', e.target.value)} placeholder="Mumbai" />
+            </FF>
+            <FF label="State">
+              <input className="portal-form-control" value={data.state} onChange={e => set('state', e.target.value)} placeholder="Maharashtra" />
+            </FF>
+            <FF label="Pincode">
+              <input className="portal-form-control font-mono" value={data.pincode} onChange={e => set('pincode', e.target.value)} placeholder="400001" maxLength={6} />
+            </FF>
+            <FF label="Country">
+              <input className="portal-form-control" value={data.country} onChange={e => set('country', e.target.value)} />
+            </FF>
+          </div>
+
+        </div>
+
+        {/* Pinned Footer */}
+        <div className="crm-drawer-footer">
+          <button onClick={onClose} className="btn-portal-outline" style={{ flex: 1, fontSize: '0.65rem' }}>
+            CANCEL
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || !data.account_name.trim()}
+            className="btn-portal-primary"
+            style={{ flex: 2, fontSize: '0.65rem', opacity: (!data.account_name.trim() || saving) ? 0.5 : 1 }}
+          >
             {saving ? 'PROCESSING...' : account ? 'SAVE CHANGES' : 'CREATE ACCOUNT'}
           </button>
         </div>
+
       </div>
-    </ModalShell>
+    </>
   );
 };
-

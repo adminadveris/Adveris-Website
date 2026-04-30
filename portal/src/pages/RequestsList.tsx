@@ -1,31 +1,38 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import Pagination from '../components/Pagination';
-import type { ServiceRecord, Account } from '../types';
+import type { Request, Account } from '../types';
 
-const RecordsList = () => {
-  const { profile } = useAuth();
-  const [records, setRecords] = useState<ServiceRecord[]>([]);
+const RequestsList = () => {
+  const { user } = useAuth();
+  const [requests, setRequests] = useState<Request[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!profile) return;
-    Promise.all([mockApi.getRecords(), mockApi.getAccounts()]).then(([recs, accs]) => {
-      let filteredRecs = recs;
-      if (profile.role === 'client') {
-        filteredRecs = recs.filter(r => r.account_id === profile.account_id);
+    if (!user) return;
+    Promise.all([api.getRecords(), api.getAccounts()]).then(([requestsData, accs]) => {
+      let filteredRequests = requestsData;
+      if (user.role === 'client') {
+        filteredRequests = requestsData.filter(r => r.account_id === user.account_id);
+      } else if (user.role === 'employee') {
+        const expertise = user.expertise_tags || [];
+        if (expertise.includes('ALL (Global Access)')) {
+          filteredRequests = requestsData;
+        } else {
+          filteredRequests = requestsData.filter(r => expertise.includes(r.primary_service));
+        }
       }
-      setRecords(filteredRecs);
+      setRequests(filteredRequests);
       setAccounts(accs);
     });
-  }, [profile]);
+  }, [user]);
 
-  const paginatedRecords = records.slice(
+  const paginatedRequests = requests.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -34,9 +41,9 @@ const RecordsList = () => {
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40 }}>
       <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div style={{ paddingBottom: 0 }}>
-           <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.45em', opacity: 0.2, textTransform: 'uppercase' }}>
-             {records.length} ACTIVE RECORDS
-           </span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.3 }}>
+              {requests.length} Active Requests
+            </span>
         </div>
       </div>
 
@@ -46,28 +53,28 @@ const RecordsList = () => {
           <thead>
             <tr>
               <th style={{ paddingLeft: 60, width: 100 }}>Firm ID</th>
-              <th>Account Mandate</th>
+              <th>Service Request</th>
               <th>Account Name</th>
               <th>Created By</th>
               <th style={{ width: 90 }}>Priority</th>
-              <th style={{ width: 140 }}>Document Verification Status</th>
+              <th style={{ width: 140 }}>Verification</th>
               <th style={{ textAlign: 'right', paddingRight: 60, width: 90 }}>Status</th>
               <th style={{ textAlign: 'right', paddingRight: 60, width: 100 }}>Created Date</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedRecords.length > 0 ? paginatedRecords.map(record => {
+            {paginatedRequests.length > 0 ? paginatedRequests.map(record => {
               const account = accounts.find(a => a.id === record.account_id);
               return (
                 <tr 
                   key={record.id} 
-                  onClick={() => navigate(`/dashboard/records/${record.id}`)} 
+                  onClick={() => navigate(`/dashboard/requests/${record.id}`)} 
                   style={{ cursor: 'pointer' }}
                 >
                   <td data-label="Firm ID" style={{ paddingLeft: 60 }}>
                     <span style={{ opacity: 0.4 }}>{record.request_number}</span>
                   </td>
-                  <td data-label="Account Mandate">
+                  <td data-label="Service Request">
                     <div style={{ color: 'white', fontWeight: 500 }}>
                       {record.title || record.primary_service}
                     </div>
@@ -84,23 +91,29 @@ const RecordsList = () => {
                   </td>
                   <td data-label="Priority">
                      <span style={{ 
-                        fontWeight: 400, opacity: 0.5, fontSize: '0.7rem',
+                        fontWeight: 400, opacity: 0.5, fontSize: '0.75rem',
                         color: record.priority === 'Urgent' ? '#ef4444' : 'inherit'
                      }}>
-                        {record.priority?.toUpperCase() || 'STANDARD'}
+                        {record.priority || 'Standard'}
                      </span>
                   </td>
                   <td data-label="Verification">
-                     <span style={{ opacity: 0.3, fontSize: '0.7rem' }}>
-                        {record.verification_status || 'PENDING'}
+                     <span style={{ opacity: 0.3, fontSize: '0.75rem' }}>
+                        {record.verification_status || 'Pending'}
                      </span>
                   </td>
                   <td data-label="Status" style={{ textAlign: 'right', paddingRight: 60 }}>
                     <span style={{ 
-                      fontWeight: 500, 
-                      color: 'var(--saffron)', opacity: 0.8
+                      fontWeight: 600, 
+                      fontSize: '0.65rem',
+                      color: (record.status === 'rejected' || record.status === 'closed') ? '#ef4444' : '#4ade80',
+                      background: (record.status === 'rejected' || record.status === 'closed') ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
+                      padding: '4px 12px',
+                      borderRadius: 4,
+                      border: `1px solid ${(record.status === 'rejected' || record.status === 'closed') ? 'rgba(239,68,68,0.2)' : 'rgba(74,222,128,0.2)'}`,
+                      display: 'inline-block'
                     }}>
-                      {record.status?.toUpperCase() || 'ACTIVE'}
+                      {(record.status === 'rejected' || record.status === 'closed') ? 'Closed' : 'Active'}
                     </span>
                   </td>
                   <td data-label="Date" style={{ textAlign: 'right', paddingRight: 60 }}>
@@ -122,7 +135,7 @@ const RecordsList = () => {
         
         <Pagination 
           currentPage={currentPage}
-          totalItems={records.length}
+          totalItems={requests.length}
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
@@ -132,11 +145,11 @@ const RecordsList = () => {
       {/* FOOTER NOTE */}
       <div style={{ marginTop: 60, textAlign: 'center' }}>
          <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em' }}>
-            All records are time-stamped and governed by the Adveris Professional Protocol. Proprietary intellectual asset tracking enabled.
+            All requests are time-stamped and governed by the Adveris Professional Protocol. Proprietary intellectual asset tracking enabled.
          </p>
       </div>
     </div>
   );
 };
 
-export default RecordsList;
+export default RequestsList;

@@ -1,15 +1,10 @@
-/* ============================================================
-   ADVERIS HYPER-AESTHETIC V3 (SPECULAR MATERIALS)
-   Focus: Material Fidelity, Whisper Typography, Calligraphic Soul
-   ============================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@100;200;300;400;500;600;700&display=swap');
 
 :root {
   --saffron: #FF9933;
   --gold: #C9A84C;
-  --navy-deep: #03050C; /* Absolute depth for specular contrast */
   --navy: #0D1B3E;
+  --navy-deep: #03050C;
   --glass-reflection: rgba(255, 255, 255, 0.05);
   --glass-inner-edge: rgba(255, 255, 255, 0.08);
   --glass-subtle: rgba(255, 255, 255, 0.012);
@@ -25,17 +20,15 @@ html {
   font-size: 16px; 
   -webkit-font-smoothing: antialiased; 
   -moz-osx-font-smoothing: grayscale;
-  background: var(--navy-deep);
+  background: var(--navy);
 }
 
 body {
   font-family: var(--font-sans);
-  font-weight: 200; /* Whisper Baseline */
-  letter-spacing: 0.01em;
+  font-weight: 300;
   color: white;
   min-height: 100vh;
-  overflow-x: hidden;
-  background: radial-gradient(circle at 0% 0%, #111B35 0%, #03050C 100%);
+  background: var(--navy);
 }
 
 /* FILM GRAIN ENGINE */
@@ -116,18 +109,17 @@ h1, h2, h3, .serif-title {
   font-family: var(--font-sans);
   font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.45em; /* Extremely wide tracking */
   color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
+  text-transform: none;
   margin-top: 4px;
 }
 
 /* --- WHISPER NAVIGATION --- */
 .portal-nav-pill-v2 {
-  font-size: 0.62rem;
-  font-weight: 400;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: none;
   color: rgba(255,255,255,0.35);
   transition: all 0.6s var(--ease);
   padding: 12px 0;
@@ -135,7 +127,7 @@ h1, h2, h3, .serif-title {
 
 .portal-nav-pill-v2:hover, .portal-nav-pill-v2.active {
   color: white;
-  letter-spacing: 0.45em;
+  letter-spacing: 0.06em;
   opacity: 1;
 }
 
@@ -164,13 +156,8 @@ h1, h2, h3, .serif-title {
   pointer-events: none;
 }
 
-.portal-panel:hover {
-  background: rgba(255, 255, 255, 0.025);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
-    0 20px 60px -15px rgba(0,0,0,0.6);
-}
+/* Hover effects removed for institutional elegance */
+
 
 /* --- MINIMALIST TABLE REFACTION --- */
 .portal-table-v2 {
@@ -181,23 +168,24 @@ h1, h2, h3, .serif-title {
 .portal-table-v2 th {
   padding: 14px 24px;
   text-align: left;
-  font-family: var(--font-serif);
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.4em; /* Institutional tracking */
-  color: rgba(255,255,255,0.2);
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.3);
+  text-transform: none;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   background: rgba(255,255,255,0.01);
 }
 
 .portal-table-v2 td {
-  padding: 12px 24px;
-  font-size: 0.92rem;
+  padding: 14px 24px;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
   font-weight: 300;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.6);
   border-bottom: 1px solid rgba(255,255,255,0.01);
-  transition: none !important;
+  transition: all 0.3s ease;
 }
 
 /* Table Styles Managed in portal.css */
@@ -209,11 +197,11 @@ h1, h2, h3, .serif-title {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.4em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--gold);
-  text-transform: uppercase;
+  text-transform: none;
   opacity: 0.8;
 }
 
@@ -239,12 +227,12 @@ h1, h2, h3, .serif-title {
 
 .portal-form-label {
   display: block;
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.5em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
-  margin-bottom: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 12px;
   font-family: var(--font-sans);
 }
 

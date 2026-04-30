@@ -1,0 +1,26 @@
+[
+  {
+    "id": "cs",
+    "title": "Company Secretary (CS)",
+    "description": "Lead ROC filings, board governance, AGM/EGM management and MCA compliance for our corporate clients.",
+    "type": "Full Time",
+    "experience": "2–4 Years",
+    "qualification": "ICSI Qualified"
+  },
+  {
+    "id": "legal",
+    "title": "Legal Associate",
+    "description": "Draft and review commercial contracts, assist in M&A due diligence, and support senior partners on corporate law mandates.",
+    "type": "Full Time",
+    "experience": "1–2 Years",
+    "qualification": "LLB Required"
+  },
+  {
+    "id": "analyst",
+    "title": "Compliance Analyst",
+    "description": "Monitor and manage regulatory compliance calendars for clients under SEBI, RBI and MCA frameworks. Freshers welcome.",
+    "type": "Full Time",
+    "experience": "0–1 Years",
+    "qualification": "Freshers OK"
+  }
+]

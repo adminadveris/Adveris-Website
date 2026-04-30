@@ -12,7 +12,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  */
 export const getUserRole = async (userId: string) => {
   const { data, error } = await supabase
-    .from('profiles')
+    .from('User')
     .select('role, expertise_tags')
     .eq('id', userId)
     .single();

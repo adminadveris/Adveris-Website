@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 interface SidebarProps {
   role: 'admin' | 'employee' | 'client';
@@ -9,7 +9,7 @@ interface SidebarProps {
 const navItems = [
   { name: 'Overview', path: '/dashboard', icon: 'grid', roles: ['admin', 'employee', 'client'] },
   { name: 'New Request', path: '/dashboard/new-request', icon: 'plus-circle', roles: ['client', 'admin'] },
-  { name: 'My Mandates', path: '/dashboard/records', icon: 'folder', roles: ['client'] },
+  { name: 'My Mandates', path: '/dashboard/requests', icon: 'folder', roles: ['client'] },
   { name: 'Service Hub', path: '/dashboard/service-hub', icon: 'shield', roles: ['admin', 'employee'] },
   { name: 'Timesheets', path: '/dashboard/timesheets', icon: 'clock', roles: ['admin', 'employee'] },
   { name: 'Expenses', path: '/dashboard/expenses', icon: 'file-text', roles: ['admin', 'employee', 'client'] },

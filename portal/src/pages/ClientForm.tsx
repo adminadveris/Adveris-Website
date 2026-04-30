@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import type { Account } from '../types';
 
 const ClientForm = () => {
@@ -37,11 +37,11 @@ const ClientForm = () => {
   });
 
   const loadData = async () => {
-    const accs = await mockApi.getAccounts();
+    const accs = await api.getAccounts();
     setAccounts(accs);
 
     if (isEdit) {
-      const client = await mockApi.getClientById(id);
+      const client = await api.getClientById(id);
       if (client) {
         setFormData({
           client_name: client.client_name || '',
@@ -86,9 +86,9 @@ const ClientForm = () => {
     setSaving(true);
     try {
       if (isEdit) {
-        await mockApi.updateClient(id, formData);
+        await api.updateClient(id, formData);
       } else {
-        await mockApi.createClient(formData);
+        await api.createClient(formData);
       }
       navigate(formData.account_id ? `/dashboard/crm/accounts/${formData.account_id}` : '/dashboard/crm');
     } catch (err) {
@@ -115,10 +115,10 @@ const ClientForm = () => {
             className="btn-portal-outline" 
             style={{ padding: '6px 12px', fontSize: '0.65rem', marginBottom: 16 }}
           >
-             ← ABORT & RETURN
+             ← Abort & Return
           </button>
           <div className="firm-intel-tag">
-            <span className="tag-line" /> {isEdit ? 'PROFILE PRIVILEGED REFINEMENT' : 'ACCOUNT ONBOARDING'}
+            <span className="tag-line" /> {isEdit ? 'User Privileged Refinement' : 'Account Onboarding'}
           </div>
         </div>
       </div>
@@ -127,7 +127,7 @@ const ClientForm = () => {
         
         {/* SECTION 1: IDENTITY */}
         <div className="portal-panel" style={{ padding: 48 }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.4, marginBottom: 32, textTransform: 'uppercase' }}>
+          <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 32 }}>
             Personal Identification
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
@@ -178,7 +178,7 @@ const ClientForm = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
           
           <div className="portal-panel" style={{ padding: 40 }}>
-            <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.4, marginBottom: 32, textTransform: 'uppercase' }}>
+            <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 32 }}>
               Digital Channels (Email)
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -216,7 +216,7 @@ const ClientForm = () => {
           </div>
 
           <div className="portal-panel" style={{ padding: 40 }}>
-            <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.4, marginBottom: 32, textTransform: 'uppercase' }}>
+            <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 32 }}>
               Telephonic Channels (Phone)
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -257,12 +257,12 @@ const ClientForm = () => {
 
         {/* SECTION 3: ADDRESS */}
         <div className="portal-panel" style={{ padding: 48 }}>
-          <h3 style={{ fontSize: '0.75rem', fontWeight: 800, letterSpacing: '0.15em', opacity: 0.4, marginBottom: 32, textTransform: 'uppercase' }}>
+          <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 32 }}>
              Administrative Address Grid
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 32px' }}>
             <div className="portal-form-group">
-              <label className="portal-form-label">House no</label>
+              <label className="portal-form-label">House No</label>
               <input className="portal-form-control" value={formData.house_no} onChange={e => setFormData({...formData, house_no: e.target.value})} />
             </div>
             <div className="portal-form-group">
@@ -308,7 +308,7 @@ const ClientForm = () => {
             className="btn-portal-outline" 
             style={{ width: 'auto', padding: '14px 40px' }}
           >
-            DISCARD CHANGES
+            Discard Changes
           </button>
           <button 
             type="submit" 
@@ -316,7 +316,7 @@ const ClientForm = () => {
             className="btn-portal-primary"
             style={{ width: 'auto', padding: '14px 60px' }}
           >
-            {saving ? 'PROCESSING...' : (isEdit ? 'AUTHORIZE REFINEMENT' : 'AUTHORIZE ONBOARDING')}
+            {saving ? 'Processing...' : (isEdit ? 'Authorize Refinement' : 'Authorize Onboarding')}
           </button>
         </div>
 

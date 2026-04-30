@@ -75,8 +75,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .brand-main {
@@ -114,9 +114,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.25em;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
   color: rgba(255,255,255,0.4);
 }
 
@@ -131,9 +131,9 @@
 .portal-action-link {
   background: none;
   border: none;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: normal;
   color: white;
   cursor: pointer;
   transition: var(--t);
@@ -179,29 +179,44 @@
 /* ——— INSTITUTIONAL TABS (Flow-Aesthetic) ——— */
 .portal-tab-group {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  gap: 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   margin-bottom: 40px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.portal-tab-group::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+@media (min-width: 1024px) {
+  .portal-tab-group {
+    justify-content: center;
+    gap: 12px;
+    overflow-x: visible;
+  }
 }
 
 .portal-tab-item {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 16px 24px;
-  background: none !important; /* Force Institutional Transparency */
+  padding: 16px 14px;
+  background: none !important;
   border: none !important;
   border-bottom: 2px solid transparent !important;
   color: rgba(255, 255, 255, 0.3);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
   text-decoration: none;
   cursor: pointer;
-  transition: none !important; /* Absolute silence */
+  transition: none !important;
 }
 
 .portal-tab-item svg {
@@ -259,8 +274,8 @@
   flex-shrink: 0;
 }
 
-.portal-user-info p { font-size: 0.78rem; color: white; font-weight: 600; }
-.portal-user-info span { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.15em; color: rgba(255,255,255,0.35); }
+.portal-user-info p { font-size: 0.85rem; color: white; font-weight: 500; }
+.portal-user-info span { font-size: 0.65rem; text-transform: none; letter-spacing: 0.02em; color: rgba(255,255,255,0.35); }
 
 .portal-logout-btn {
   display: flex;
@@ -272,12 +287,12 @@
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.4);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
   cursor: pointer;
-  transition: all 0.3s var(--ease-in-out);
+  transition: all 0.3s var(--ease);
 }
 .portal-logout-btn:hover {
   color: #f87171;
@@ -306,7 +321,7 @@
 .portal-content {
   position: relative;
   z-index: 1;
-  padding: 24px 40px;
+  padding: 32px 48px;
   max-width: 1400px;
 }
 
@@ -370,12 +385,12 @@
 .portal-stat-card:hover { border-color: rgba(255,255,255,0.12); }
 
 .portal-stat-label {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.35);
-  margin-bottom: 24px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 12px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -391,12 +406,13 @@
 
 /* === PORTAL GLASS PANEL (same as website card-wrap) === */
 .portal-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  box-shadow: 0 40px 100px -30px rgba(0,0,0,0.4);
 }
 
 .portal-panel-header {
@@ -423,24 +439,24 @@
 
 .portal-form-label {
   display: block;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 12px;
 }
 
 .portal-form-control {
   width: 100%;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  padding: 14px 20px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
   font-family: var(--font-sans);
   font-size: 0.95rem;
   color: white;
-  transition: all 0.3s var(--ease-in-out);
+  transition: all 0.3s var(--ease);
   outline: none;
 }
 
@@ -484,29 +500,34 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 }
 
 .portal-table-v2 th {
+  padding: 18px 24px;
   text-align: left;
-  padding: 20px 24px;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.4);
+  text-transform: none;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .portal-table-v2 td {
-  padding: 24px;
-  font-size: 0.9rem;
+  padding: 16px 24px;
   font-family: var(--font-sans);
-  color: rgba(255, 255, 255, 0.65);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  vertical-align: middle;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: rgba(255,255,255,0.65);
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  transition: all 0.2s var(--ease);
 }
 
-.portal-table-v2 tr:last-child td { border-bottom: none; }
+.portal-table-v2 tr:last-child td {
+  border-bottom: none;
+}
 
-.portal-table-v2 tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+.portal-table-v2 tr:hover td {
+  /* No highlight */
 }
 
 /* === STABILIZED PORTAL CHECKBOX === */
@@ -556,38 +577,7 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   border-bottom-color: rgba(255, 153, 51, 0.1);
 }
 
-/* === APPLE-STANDARD TABLE ARCHITECTURE === */
-.portal-table-v2 {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-sans);
-}
 
-.portal-table-v2 th {
-  padding: 12px 24px;
-  text-align: left;
-  font-size: 0.94rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.015);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.portal-table-v2 td {
-  padding: 12px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s var(--ease);
-}
-
-.portal-table-v2 tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
-  color: white;
-}
-
-.portal-table-v2 tr:last-child td { border-bottom: none; }
 
 .portal-badge {
   display: inline-flex;
@@ -595,10 +585,10 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   gap: 6px;
   padding: 4px 12px;
   border-radius: var(--radius-pill);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .portal-badge--pending {
@@ -616,15 +606,15 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 
 .portal-record-id {
   font-family: var(--font-sans);
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--saffron);
   background: rgba(255, 153, 51, 0.08);
   padding: 4px 12px;
   border-radius: 4px;
   border: 1px solid rgba(255, 153, 51, 0.25);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 /* === PORTAL TIMELINE === */
@@ -818,10 +808,13 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   color: var(--navy);
   border: 2px solid var(--saffron);
   display: inline-flex; align-items: center; gap: 10px;
-  padding: 14px 32px; border-radius: var(--radius-pill);
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; 
-  transition: none !important; /* Force Institutional Silence */
+  padding: 14px 28px; border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  transition: none !important;
   cursor: pointer; width: 100%; justify-content: center;
 }
 /* ——— TYPOGRAPHY ——— */
@@ -850,16 +843,16 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .step-tracker {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: normal;
   color: rgba(255,255,255,0.15);
 }
 
@@ -923,17 +916,17 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 
 /* ——— FORM CONTROLS ——— */
 .portal-form-group {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .portal-form-label {
   display: block;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.3);
-  margin-bottom: 10px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 8px;
 }
 
 .portal-form-control {
@@ -977,12 +970,13 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 .btn-portal-saffron-solid {
   background: #8B5E34;
   color: white;
-  padding: 15px 32px;
+  padding: 14px 28px;
   border-radius: var(--radius-pill);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   transition: none !important;
   cursor: pointer;
   border: none;
@@ -996,11 +990,13 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   background: transparent;
   border: 1px solid rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.6);
-  padding: 14px 32px;
+  padding: 14px 28px;
   border-radius: var(--radius-pill);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   transition: none !important;
   cursor: pointer;
 }
@@ -1013,12 +1009,13 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 .btn-portal-saffron {
   background: var(--saffron);
   color: var(--navy);
-  padding: 14px 32px;
+  padding: 14px 28px;
   border-radius: var(--radius-pill);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   transition: none !important;
   cursor: pointer;
   border: none;
@@ -1041,12 +1038,12 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--saffron);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .tag-line {
@@ -1058,10 +1055,10 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 
 /* --- RECORD BUTTONS --- */
 .btn-portal-record-view {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  text-transform: none;
   color: rgba(255,255,255,0.4);
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
@@ -1101,10 +1098,11 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-pill);
   color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   cursor: pointer;
   transition: none !important;
 }
@@ -1138,12 +1136,12 @@ select.portal-form-control { appearance: none; cursor: pointer; }
 }
 
 .portal-dropdown-header {
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.25em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: normal;
   color: rgba(255, 255, 255, 0.25);
   padding: 12px 16px;
-  text-transform: uppercase;
+  text-transform: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   margin-bottom: 8px;
 }
@@ -1302,11 +1300,11 @@ footer {
 }
 
 .batch-label {
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.25em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: normal;
   color: var(--saffron);
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .batch-actions {
@@ -1321,10 +1319,11 @@ footer {
   gap: 8px;
   padding: 10px 20px;
   border-radius: var(--radius-pill);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
   cursor: pointer;
   border: none;
   transition: none !important;
@@ -1361,11 +1360,11 @@ footer {
   background: none;
   border: none;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: normal;
   cursor: pointer;
-  text-transform: uppercase;
+  text-transform: none;
   padding: 8px;
 }
 
@@ -1391,18 +1390,18 @@ footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 60px;
-  background: rgba(255, 255, 255, 0.01);
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 20px 60px;
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.02);
   font-family: var(--font-sans);
 }
 
 .pagination-telemetry {
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.25em;
-  color: rgba(255, 255, 255, 0.2);
-  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: none;
 }
 
 .telemetry-focus {
@@ -1423,10 +1422,10 @@ footer {
 }
 
 .selector-label {
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .portal-select-minimal {

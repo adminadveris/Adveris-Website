@@ -1,0 +1,306 @@
+/* ============================================================
+   ADVERIS — ANIMATIONS & TRANSITIONS
+   NKF-inspired: consistent ease-in-out, graceful entrances
+   ============================================================ */
+
+/* ============================================================
+   SCROLL REVEAL — Intersection Observer powered
+   Slower, more graceful than before (0.7s → 0.9s, expo-out)
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-scale.visible { opacity: 1; transform: scale(1); }
+
+/* Staggered children — wider delays for a graceful cascade */
+.stagger > *:nth-child(1)  { transition-delay: 0.06s; }
+.stagger > *:nth-child(2)  { transition-delay: 0.14s; }
+.stagger > *:nth-child(3)  { transition-delay: 0.22s; }
+.stagger > *:nth-child(4)  { transition-delay: 0.30s; }
+.stagger > *:nth-child(5)  { transition-delay: 0.38s; }
+.stagger > *:nth-child(6)  { transition-delay: 0.46s; }
+.stagger > *:nth-child(7)  { transition-delay: 0.54s; }
+.stagger > *:nth-child(8)  { transition-delay: 0.62s; }
+
+/* ============================================================
+   HERO INTRO ANIMATION — staggered, slow, premium
+   ============================================================ */
+.hero__badge   { animation: fadeSlideDown 1.0s cubic-bezier(0.16,1,0.3,1) 0.1s both; }
+.hero__title   { animation: fadeSlideUp   1.1s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+.hero__sub     { animation: fadeSlideUp   1.0s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
+.hero__actions { animation: fadeSlideUp   1.0s cubic-bezier(0.16,1,0.3,1) 0.7s both; }
+
+.page-hero__label { animation: fadeSlideDown 0.9s cubic-bezier(0.16,1,0.3,1) 0.2s both; }
+.page-hero__title { animation: fadeSlideUp   1.1s cubic-bezier(0.16,1,0.3,1) 0.35s both; }
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================================
+   NAV — smooth color + bg transitions (NKF: same easing everywhere)
+   ============================================================ */
+.nav { transition: background 0.5s cubic-bezier(0.37,0,0.63,1),
+                   box-shadow 0.5s cubic-bezier(0.37,0,0.63,1),
+                   border-color 0.5s cubic-bezier(0.37,0,0.63,1); }
+
+.nav .logo-name,
+.nav .logo-tagline,
+.nav__crumb,
+.nav__menu-btn { transition: color 0.45s cubic-bezier(0.37,0,0.63,1); }
+
+/* ============================================================
+   CARD HOVER — gentle lift + shadow deepening
+   NKF feel: not jarring, just a whisper of elevation
+   ============================================================ */
+.svc-card,
+.team-card,
+.insight-card,
+.role-card,
+.value-card,
+.svc-detail-card {
+  will-change: transform;
+  transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.svc-card:hover,
+.role-card:hover { transform: translateY(-5px); }
+
+.team-card:hover { transform: translateY(-4px); }
+
+.insight-card:hover { transform: translateY(-4px); }
+
+.value-card:hover { transform: translateY(-3px); }
+
+/* ============================================================
+   LINK HOVER — sliding underline (NKF signature)
+   ============================================================ */
+.menu-primary-link,
+.footer-col a,
+.arrow-link span:not(.line):not(.arr) {
+  position: relative;
+}
+.footer-col a::after,
+.menu-primary-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0;
+  width: 0; height: 1px;
+  background: currentColor;
+  transition: width 0.4s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.footer-col a:hover::after,
+.menu-primary-link:hover::after { width: 100%; }
+
+/* ============================================================
+   BUTTON — ripple + smooth bg transition
+   ============================================================ */
+.btn {
+  position: relative; overflow: hidden;
+  transition: background 0.4s cubic-bezier(0.37,0,0.63,1),
+              color 0.4s cubic-bezier(0.37,0,0.63,1),
+              transform 0.35s cubic-bezier(0.37,0,0.63,1),
+              box-shadow 0.4s cubic-bezier(0.37,0,0.63,1),
+              border-color 0.4s cubic-bezier(0.37,0,0.63,1);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+/* ============================================================
+   ARROW LINK — smooth icon slide
+   ============================================================ */
+.arrow-link .arr {
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.arrow-link:hover .arr { transform: translateX(5px); }
+.arrow-link .line {
+  transition: width 0.4s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.arrow-link:hover .line { width: 32px; }
+
+/* ============================================================
+   STAT COUNTER ANIMATION
+   ============================================================ */
+.stat-num {
+  animation: countUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   FLOATING LOGO IN BACKGROUND (decorative)
+   ============================================================ */
+.bg-logo-ghost {
+  position: absolute;
+  right: -60px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-serif);
+  font-size: 18rem; font-weight: 700;
+  color: rgba(255,153,51,0.04);
+  line-height: 1; pointer-events: none;
+  user-select: none; white-space: nowrap;
+}
+
+/* ============================================================
+   PAGE TRANSITION — navy curtain fade (NKF-style)
+   ============================================================ */
+.page-transition-overlay {
+  position: fixed; inset: 0;
+  background: var(--navy);
+  z-index: 9999; pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.page-transition-overlay.show { opacity: 1; }
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed; top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  z-index: 1100; width: 0%;
+  transition: width 0.15s linear;
+}
+
+/* ============================================================
+   INSIGHT TAG PULSE ON HOVER
+   ============================================================ */
+.insight-card .insight-tag {
+  transition: background 0.4s cubic-bezier(0.37,0,0.63,1),
+              color 0.4s cubic-bezier(0.37,0,0.63,1);
+}
+.insight-card:hover .insight-tag {
+  background: var(--saffron);
+  color: var(--navy);
+}
+
+/* ============================================================
+   MENU OVERLAY — smooth open/close
+   ============================================================ */
+.menu-overlay {
+  transition: opacity 0.55s cubic-bezier(0.37, 0, 0.63, 1),
+              visibility 0.55s cubic-bezier(0.37, 0, 0.63, 1);
+}
+
+/* ============================================================
+   SAFFRON / GOLD SECTION DIVIDER
+   ============================================================ */
+.sec-divider {
+  width: 64px; height: 3px;
+  background: linear-gradient(90deg, var(--saffron), var(--gold));
+  border-radius: 2px;
+  margin: 20px 0 32px;
+}
+.sec-divider-center { margin: 20px auto 32px; }
+
+/* ============================================================
+   FORM SUCCESS STATE
+   ============================================================ */
+.form-success {
+  display: none;
+  background: rgba(255,153,51,0.08);
+  border: 1px solid var(--saffron-border);
+  border-radius: var(--radius-sm);
+  padding: 20px 28px;
+  color: var(--saffron-hover);
+  font-weight: 600; text-align: center;
+  animation: fadeIn 0.5s cubic-bezier(0.37,0,0.63,1);
+}
+.form-success.show { display: block; }
+
+/* ============================================================
+   LOADING SKELETON
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   BACK TO TOP BUTTON
+   ============================================================ */
+.back-to-top {
+  position: fixed; bottom: 36px; right: 36px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--saffron); color: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; z-index: 900;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.45s cubic-bezier(0.37,0,0.63,1),
+              transform 0.45s cubic-bezier(0.37,0,0.63,1),
+              background 0.35s cubic-bezier(0.37,0,0.63,1),
+              box-shadow 0.35s cubic-bezier(0.37,0,0.63,1);
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(255,153,51,0.35);
+  cursor: pointer; border: none;
+}
+.back-to-top.visible {
+  opacity: 1; transform: translateY(0);
+  pointer-events: all;
+}
+.back-to-top:hover {
+  background: var(--saffron-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px rgba(255,153,51,0.45);
+}
+
+/* ============================================================
+   NAVBAR ACTIVE LINK
+   ============================================================ */
+.menu-nav a.active-page { color: var(--saffron); }
+
+/* ============================================================
+   MOBILE REFINEMENTS
+   ============================================================ */
+@media (max-width: 768px) {
+  .menu-overlay { padding: 28px 24px; }
+  .menu-nav a { font-size: clamp(1.8rem, 8vw, 3rem); padding: 10px 0; }
+}

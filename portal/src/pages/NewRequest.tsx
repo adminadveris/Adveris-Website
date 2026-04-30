@@ -2,22 +2,26 @@ import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { servicesData } from '../data/servicesData';
-import { mockApi } from '../lib/mockApi';
+import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
-import type { Account, ServiceRecord } from '../types';
+import type { Account, Request, User } from '../types';
 
 type Step = 'pan' | 'register' | 'scoping' | 'spec' | 'full';
 
 const NewRequest = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { user } = useAuth();
   const [step, setStep] = useState<Step>(id ? 'full' : 'pan');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [staff, setStaff] = useState<User[]>([]);
+
+  const isAdmin = user?.role === 'admin' || user?.role === 'employee';
 
   // Account Data
   const [pan, setPan] = useState('');
@@ -45,8 +49,8 @@ const NewRequest = () => {
   const [additionalInfo, setAdditionalInfo] = useState('');
   
   // High-Level Admin/Staff Operational Fields
-  const [priority, setPriority] = useState<ServiceRecord['priority']>('Standard');
-  const [status, setStatus] = useState<ServiceRecord['status']>('active');
+  const [priority, setPriority] = useState<Request['priority']>('Standard');
+  const [status, setStatus] = useState<Request['status']>('active');
   const [dueDate, setDueDate] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
@@ -55,15 +59,15 @@ const NewRequest = () => {
   const [selectedSubServices, setSelectedSubServices] = useState<string[]>([]);
   
   // Governance Fields
-  const [verificationStatus, setVerificationStatus] = useState<ServiceRecord['verification_status']>('Pending');
+  const [verificationStatus, setVerificationStatus] = useState<Request['verification_status']>('Pending');
   const [verificationRemarks, setVerificationRemarks] = useState('');
+  const [litigationScan, setLitigationScan] = useState<'CLEAN' | 'PENDING' | 'FLAGGED' | 'SEVERE'>('CLEAN');
   
-  // Performance Metrics [NEW]
+  // Performance Metrics
   const [approvedDate, setApprovedDate] = useState('');
   const [daysLeft, setDaysLeft] = useState<number | string>('');
-  const [hoursConsumed, setHoursConsumed] = useState<number | string>('');
 
-  // Documentation [NEW]
+  // Documentation
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [existingFileInfo, setExistingFileInfo] = useState<{name: string, size: number} | null>(null);
 
@@ -71,52 +75,84 @@ const NewRequest = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (!profile) return;
-      const accs = await mockApi.getAccounts();
-      setAccounts(accs);
-      
-      if (id) {
-        const records = await mockApi.getRecords();
-        const existing = records.find((r: ServiceRecord) => r.id === id);
-        if (existing) {
-          setAccountId(existing.account_id);
-          setAccountName(existing.account_name);
-          setSelectedService(existing.primary_service || '');
-          setAdditionalInfo(existing.description || '');
-          setPriority(existing.priority || 'Standard');
-          setStatus(existing.status || 'active');
-          setDueDate(existing.due_date || '');
-          setAssignedTo(existing.assigned_to || '');
-          setInternalNotes(existing.internal_notes || '');
-          setClientComms(existing.client_comms || '');
-          setRequestNumber(existing.request_number);
-          setSelectedSubServices(existing.sub_services || []);
-          setVerificationStatus(existing.verification_status || 'Pending');
-          setVerificationRemarks(existing.verification_remarks || '');
-          setApprovedDate(existing.approved_date || '');
-          setDaysLeft(existing.days_left || '');
-          setHoursConsumed(existing.hours_consumed || '');
-          if (existing.attached_file) {
-            setExistingFileInfo(existing.attached_file);
+      if (!user) return;
+      try {
+        const [accs, staffList] = await Promise.all([
+          api.getAccounts(),
+          api.getStaffProfiles()
+        ]);
+        setAccounts(accs);
+        setStaff(staffList);
+        
+        if (id) {
+          const requests = await api.getRecords();
+          const existing = requests.find((r: Request) => r.id === id);
+          if (existing) {
+            setAccountId(existing.account_id);
+            setAccountName(existing.account_name);
+            setPan(accs.find(a => a.id === existing.account_id)?.pan_number || '');
+            setSelectedService(existing.primary_service || '');
+            setAdditionalInfo(existing.description || '');
+            setPriority(existing.priority || 'Standard');
+            setStatus(existing.status || 'active');
+            setDueDate(existing.due_date || '');
+            setAssignedTo(existing.assigned_to || '');
+            setInternalNotes(existing.internal_notes || '');
+            setClientComms(existing.client_comms || '');
+            setRequestNumber(existing.request_number);
+            setSelectedSubServices(existing.sub_services || (existing.additional_services ? existing.additional_services.split(', ') : []));
+            setVerificationStatus(existing.verification_status || 'Pending');
+            setVerificationRemarks(existing.verification_remarks || '');
+            setApprovedDate(existing.approved_date || '');
+            setDaysLeft(existing.days_left || '');
+            if (existing.attached_file) {
+              setExistingFileInfo(existing.attached_file);
+            }
+            setStep('full');
           }
+        } else if (user.role === 'admin' || user.role === 'employee') {
           setStep('full');
         }
-      } else if (profile.role === 'admin' || profile.role === 'employee') {
-        setStep('full');
+      } catch (err) {
+        console.error("Initialization error:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     init();
-  }, [id, profile]);
+  }, [id, user]);
+
+  // Bi-directional PAN/Account Sync for Admins
+  useEffect(() => {
+    if (isAdmin && pan.length === 10) {
+      const match = accounts.find(a => a.pan_number.toUpperCase() === pan.toUpperCase());
+      if (match && match.id !== accountId) {
+        setAccountId(match.id);
+        setAccountName(match.account_name);
+        setLitigationScan(match.litigation_scan || 'CLEAN');
+      }
+    }
+  }, [pan, accounts, isAdmin]);
+
+  const validatePan = (val: string) => {
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    return panRegex.test(val);
+  };
 
   const handlePanCheck = async (e: FormEvent) => {
     e.preventDefault();
     if (!pan) return;
+    
+    if (!validatePan(pan)) {
+      setError('Invalid PAN format. Expected: ABCDE1234F');
+      return;
+    }
+
     setLoading(true);
     setError('');
     
     try {
-      const existing = await mockApi.findAccountByPAN(pan);
+      const existing = await api.findAccountByPAN(pan);
       if (existing) {
         setAccountId(existing.id);
         setAccountName(existing.account_name);
@@ -131,40 +167,49 @@ const NewRequest = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!selectedService || !accountName) {
-      setError('Please ensure account selection and service domain are complete.');
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    
+    const errors: string[] = [];
+    if (isAdmin && !accountId) errors.push('accountId');
+    if (!accountName) errors.push('accountName');
+    if (!selectedService) errors.push('selectedService');
+    if (!pan) errors.push('pan');
+    
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setError('Please ensure all mandatory fields (Account, Service Domain, PAN) are complete.');
       return;
     }
 
     setSubmitting(true);
     setError('');
-    try {
-      // DUPLICATE CHECK
-      const duplicate = await mockApi.findAccountByPAN(pan);
-      if (duplicate && !accountId) {
-        setAccountId(duplicate.id);
-        setAccountName(duplicate.account_name);
-        setError('Entity matched in registry. Linking to existing account...');
-      }
+    setValidationErrors([]);
 
+    try {
       let finalAccountId = accountId;
       if (!finalAccountId && !isAdmin) {
-        const newAcc = await mockApi.createAccount({
+        const newAcc = await api.createAccount({
           account_name: accountName,
-          pan_number: pan
+          pan_number: pan,
+          litigation_scan: litigationScan
         });
         finalAccountId = newAcc.id;
+      } else if (finalAccountId && isAdmin) {
+        await api.updateAccount(finalAccountId, {
+          litigation_scan: litigationScan
+        });
       }
 
-      const payload: Partial<ServiceRecord> = {
+      const payload: Partial<Request> = {
         account_id: finalAccountId || '',
         account_name: accountName,
         title: selectedService,
         primary_service: selectedService,
+        sub_service: selectedSubServices.join(', ') || 'General', // Fixing Not-Null Constraint
         description: additionalInfo,
         additional_services: selectedSubServices.join(', '),
+        sub_services: selectedSubServices,
         client_comms: clientComms,
       };
 
@@ -179,7 +224,6 @@ const NewRequest = () => {
         payload.verification_remarks = verificationRemarks;
         payload.approved_date = approvedDate;
         payload.days_left = daysLeft;
-        payload.hours_consumed = hoursConsumed;
       }
 
       if (attachedFile) {
@@ -192,53 +236,67 @@ const NewRequest = () => {
       }
 
       if (id) {
-        await mockApi.updateRecord(id, payload);
+        await api.updateRecord(id, payload);
       } else {
-        await mockApi.createRecord(payload);
+        await api.createRecord(payload);
       }
 
       setSuccess(true);
-      setTimeout(() => navigate(`/dashboard/records${id ? `/${id}` : ''}`), 1800);
+      setTimeout(() => navigate(`/dashboard/requests${id ? `/${id}` : ''}`), 1800);
     } catch (err: any) {
-      setError(err.message || 'Submission failed');
+      console.error("Save error:", err);
+      setError(err.message || 'Submission failed. Please check network connectivity.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) return null;
-
-  if (success) return (
-    <div className="portal-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-      <div style={{ color: 'var(--saffron)', marginBottom: 8 }}>
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <h2 className="serif-title" style={{ fontSize: '3rem' }}>Mandate <em>Initialized</em></h2>
-      <p style={{ opacity: 0.4 }}>Strategic request has been logged into the account registry.</p>
+  if (loading) return (
+    <div className="portal-content" style={{ display: 'flex', height: '60vh', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="portal-loader" />
     </div>
   );
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'employee';
+  if (success) return (
+    <div className="portal-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+      <div style={{ color: 'var(--emerald)', marginBottom: 8 }}>
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 className="serif-title" style={{ fontSize: '3.3rem' }}>Request <em>Saved</em></h2>
+      <p style={{ opacity: 0.4 }}>Administrative request has been successfully committed to the governance vault.</p>
+    </div>
+  );
+
+
+  const getInputStyle = (field: string) => ({
+    border: validationErrors.includes(field) ? '1px solid var(--saffron)' : '1px solid rgba(255,255,255,0.1)',
+    transition: 'border 0.3s ease'
+  });
 
   return (
     <div className="theater-container" style={{ paddingTop: 20, paddingBottom: 80 }}>
-      {/* HEADER SECTION CLEANUP */}
       <div style={{ marginBottom: 24 }} />
 
       <div>
-        {/* CLIENT FLOW (Same path, just within Theater) */}
         {!isAdmin && (
            <div className="portal-request-grid-center">
               {step === 'pan' && (
                 <div className="portal-panel" style={{ maxWidth: 600, padding: 40, textAlign: 'center' }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Identity <em>Verification</em></h2>
-                  <p style={{ opacity: 0.4, marginBottom: 24 }}>Identify the legal entity via Permanent Account Number.</p>
+                  <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Entity <em>Identity</em></h2>
+                  <p style={{ opacity: 0.4, marginBottom: 24 }}>Verify the legal entity via Permanent Account Number.</p>
                   <form onSubmit={handlePanCheck}>
                     <div className="portal-form-group">
                       <label className="portal-form-label">PAN Identifier</label>
-                      <input required className="portal-form-control" style={{ textAlign: 'center', fontSize: '2rem' }} value={pan} onChange={e => setPan(e.target.value.toUpperCase())} />
+                      <input 
+                        required 
+                        className="portal-form-control" 
+                        style={{ textAlign: 'center', fontSize: '2rem', ...getInputStyle('pan') }} 
+                        value={pan} 
+                        onChange={e => setPan(e.target.value.toUpperCase())} 
+                        placeholder="ABCDE1234F"
+                      />
                     </div>
-                    <button type="submit" className="btn-portal-primary" style={{ width: '100%', marginTop: 20 }}>VERIFY IDENTITY</button>
+                    <button type="submit" className="btn-portal-primary" style={{ width: '100%', marginTop: 20 }}>Verify & Proceed</button>
                     {error && <p style={{ color: 'var(--saffron)', fontSize: '0.75rem', marginTop: 16 }}>{error}</p>}
                   </form>
                 </div>
@@ -246,14 +304,14 @@ const NewRequest = () => {
 
               {step === 'register' && (
                 <div className="portal-panel" style={{ maxWidth: 900, padding: 40 }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 12, textAlign: 'center' }}>Entity <em>Registration</em></h2>
-                  <p style={{ opacity: 0.4, marginBottom: 32, textAlign: 'center' }}>No record found for PAN <strong>{pan}</strong>. Please initialize the account registry.</p>
+                  <h2 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 12, textAlign: 'center' }}>New Entity <em>Registry</em></h2>
+                  <p style={{ opacity: 0.4, marginBottom: 32, textAlign: 'center' }}>Identity <strong>{pan}</strong> not found. Initialize professional registration.</p>
                   
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     setLoading(true);
                     try {
-                      const newAcc = await mockApi.createAccount({ 
+                      const newAcc = await api.createAccount({ 
                         account_name: accountName, 
                         pan_number: pan,
                         cin_number: cin,
@@ -278,28 +336,24 @@ const NewRequest = () => {
                     }
                   }}>
                     <div className="portal-form-grid-2" style={{ gap: 40 }}>
-                      {/* COLUMN 1: STATUTORY */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                        <div className="firm-intel-tag" style={{ marginBottom: 8 }}>STATUTORY IDENTIFIERS</div>
-                        
+                        <div className="firm-intel-tag" style={{ marginBottom: 8 }}>Statutory Identifiers</div>
                         <div className="portal-form-group">
-                          <label className="portal-form-label">LEGAL ENTITY NAME</label>
-                          <input required className="portal-form-control" value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Full Company Name..." />
+                          <label className="portal-form-label">Legal Entity Name</label>
+                          <input required className="portal-form-control" style={getInputStyle('accountName')} value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="Full Legal Name..." />
                         </div>
-
                         <div className="portal-form-grid-2" style={{ gap: 16 }}>
                           <div className="portal-form-group">
-                            <label className="portal-form-label">CIN NUMBER</label>
+                            <label className="portal-form-label">CIN Number</label>
                             <input className="portal-form-control" value={cin} onChange={e => setCin(e.target.value)} placeholder="U1234..." />
                           </div>
                           <div className="portal-form-group">
-                            <label className="portal-form-label">GSTIN NUMBER</label>
+                            <label className="portal-form-label">GSTIN Number</label>
                             <input className="portal-form-control" value={gstin} onChange={e => setGstin(e.target.value)} placeholder="29AA..." />
                           </div>
                         </div>
-
                         <div className="portal-form-group">
-                          <label className="portal-form-label">INDUSTRY SECTOR</label>
+                          <label className="portal-form-label">Industry Sector</label>
                           <select className="portal-form-control" value={industry} onChange={e => setIndustry(e.target.value)}>
                             <option value="">Select Sector...</option>
                             <option value="Venture Capital">Venture Capital</option>
@@ -310,16 +364,12 @@ const NewRequest = () => {
                           </select>
                         </div>
                       </div>
-
-                      {/* COLUMN 2: ADDRESS GRID */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        <div className="firm-intel-tag" style={{ marginBottom: 8 }}>ADMINISTRATIVE ADDRESS GRID</div>
-                        
+                        <div className="firm-intel-tag" style={{ marginBottom: 8 }}>Address Grid</div>
                         <div className="portal-form-group">
-                          <label className="portal-form-label">House no / Flat / Unit</label>
+                          <label className="portal-form-label">House No / Flat / Unit</label>
                           <input className="portal-form-control" value={houseNo} onChange={e => setHouseNo(e.target.value)} />
                         </div>
-
                         <div className="portal-form-grid-2" style={{ gap: 16 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">Street 1</label>
@@ -330,18 +380,6 @@ const NewRequest = () => {
                             <input className="portal-form-control" value={street2} onChange={e => setStreet2(e.target.value)} />
                           </div>
                         </div>
-
-                        <div className="portal-form-grid-2" style={{ gap: 16 }}>
-                          <div className="portal-form-group">
-                            <label className="portal-form-label">Street 3</label>
-                            <input className="portal-form-control" value={street3} onChange={e => setStreet3(e.target.value)} />
-                          </div>
-                          <div className="portal-form-group">
-                            <label className="portal-form-label">Landmark</label>
-                            <input className="portal-form-control" value={landmark} onChange={e => setLandmark(e.target.value)} />
-                          </div>
-                        </div>
-
                         <div className="portal-form-grid-3" style={{ gap: 12 }}>
                           <div className="portal-form-group">
                             <label className="portal-form-label">City</label>
@@ -358,10 +396,9 @@ const NewRequest = () => {
                         </div>
                       </div>
                     </div>
-
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 40 }}>
-                      <button type="submit" className="btn-portal-primary" style={{ width: '100%' }}>INITIALIZE ENTITY & PROCEED</button>
-                      <button type="button" onClick={() => setStep('pan')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', width: '100%', fontSize: '0.7rem', cursor: 'pointer' }}>← CANCEL AND USE DIFFERENT PAN</button>
+                      <button type="submit" className="btn-portal-primary" style={{ width: '100%' }}>Initialize Entity</button>
+                      <button type="button" onClick={() => setStep('pan')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', width: '100%', fontSize: '0.7rem', cursor: 'pointer' }}>← Back</button>
                     </div>
                     {error && <p style={{ color: 'var(--saffron)', fontSize: '0.75rem', marginTop: 16, textAlign: 'center' }}>{error}</p>}
                   </form>
@@ -370,58 +407,51 @@ const NewRequest = () => {
 
               {step === 'scoping' && (
                  <div className="portal-panel" style={{ maxWidth: 800, padding: 40 }}>
-                    <div className="firm-intel-tag" style={{ marginBottom: 20 }}>MANDATE INITIALIZATION</div>
+                    <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Service Scoping</div>
                     <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 32 }}>Scope of <em>Engagement</em></h2>
-                    
-                    <div style={{ marginBottom: 32, padding: 20, background: 'rgba(255,153,51,0.05)', borderRadius: 8, border: '1px solid rgba(255,153,51,0.1)' }}>
-                       <p style={{ fontSize: '0.6rem', fontWeight: 800, opacity: 0.5, marginBottom: 4 }}>AUTHORIZED ENTITY</p>
-                       <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 600 }}>{accountName}</p>
+                    <div style={{ marginBottom: 32, padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                       <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 4 }}>Authorized Entity</p>
+                       <p style={{ fontSize: '1.2rem', color: 'white', fontWeight: 600 }}>{accountName}</p>
                        <p style={{ fontSize: '0.7rem', opacity: 0.4, marginTop: 4 }}>PAN: {pan}</p>
                     </div>
-
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                        <div className="portal-form-group">
-                          <label className="portal-form-label">Service Type</label>
-                          <select required className="portal-form-control" value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+                          <label className="portal-form-label">Service Domain</label>
+                          <select required className="portal-form-control" style={getInputStyle('selectedService')} value={selectedService} onChange={e => setSelectedService(e.target.value)}>
                              <option value="">Select Domain...</option>
                              {servicesData.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                           </select>
                        </div>
-
                        {selectedService && (
                           <div className="portal-form-group" style={{ animation: 'fadeIn 0.5s ease' }}>
-                             <label className="portal-form-label">Opted Sub-Services</label>
-                             <div className="portal-sub-service-grid" style={{ padding: '16px 24px', gap: 12, background: 'rgba(255,255,255,0.01)' }}>
+                             <label className="portal-form-label">Opted Sub-Services <span style={{ opacity: 0.3, marginLeft: 8 }}>(Multi-Select)</span></label>
+                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, padding: '24px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
                                 {servicesData.find(s => s.name === selectedService)?.subServices.map(sub => (
-                                   <label key={sub} className={`portal-sub-service-item ${selectedSubServices.includes(sub) ? 'selected' : ''}`} style={{ fontSize: '0.85rem' }}>
+                                   <label key={sub} style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, background: selectedSubServices.includes(sub) ? 'rgba(255,153,51,0.08)' : 'transparent', border: '1px solid transparent', transition: 'all 0.2s ease' }}>
                                       <input 
                                          type="checkbox" 
-                                         className="portal-checkbox"
+                                         style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--gold)' }}
                                          checked={selectedSubServices.includes(sub)}
                                          onChange={() => setSelectedSubServices(prev => prev.includes(sub) ? prev.filter(x => x !== sub) : [...prev, sub])}
                                       />
-                                      <span>{sub}</span>
+                                      <span style={{ fontSize: '0.8rem', color: selectedSubServices.includes(sub) ? 'var(--gold)' : 'rgba(255,255,255,0.6)' }}>{sub}</span>
                                    </label>
                                 ))}
                              </div>
                           </div>
                        )}
-
                        <div className="portal-form-group">
-                          <label className="portal-form-label">Additional Services / Scope Clarification</label>
-                          <textarea className="portal-form-control" style={{ minHeight: 100 }} value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} />
+                          <label className="portal-form-label">Additional Request</label>
+                          <input className="portal-form-control" placeholder="Reference Request No..." value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} />
                        </div>
-
                        <div className="portal-form-group">
                           <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(MAX 20MB)</span></label>
                           <input type="file" onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
                        </div>
-
                        <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
-                          <button onClick={handleSubmit} disabled={submitting} className="btn-portal-primary" style={{ flex: 1 }}>
-                             {submitting ? 'PROCESSING...' : 'INITIALIZE MANDATE'}
+                          <button onClick={() => handleSubmit()} disabled={submitting} className="btn-portal-primary" style={{ flex: 1 }}>
+                             {submitting ? 'Processing...' : 'Initialize Request'}
                           </button>
-                          <button type="button" onClick={() => setStep('pan')} className="btn-portal-outline" style={{ width: 'auto' }}>RESET</button>
                        </div>
                     </div>
                  </div>
@@ -429,341 +459,129 @@ const NewRequest = () => {
            </div>
         )}
 
-        {/* ADMIN COMMAND CENTER: ELEGANCE V4 OVERHAUL */}
         {isAdmin && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 800px), 1fr))', gap: 32, alignItems: 'start' }}>
-            
-            {/* LEFT: ENGINEERING FORM */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              
-              {/* SECTION 1: GENERAL INFORMATION */}
-              <div className="portal-panel" style={{ padding: '20px 32px' }}>
-                <div className="firm-intel-tag" style={{ marginBottom: 20 }}>GENERAL INFORMATION</div>
-                
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                   
-                   {/* IDENTITY & REFERENCE - Standardized to 2 columns */}
-                   <div className="portal-form-grid-2" style={{ gap: '16px 40px' }}>
+              <div className="portal-panel" style={{ padding: '24px 32px' }}>
+                <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Service Parameters</div>
+                <form style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                   <div className="portal-form-grid-2" style={{ gap: '20px 40px' }}>
                       <div className="portal-form-group">
-                         <label className="portal-form-label">Reference No</label>
-                         <input readOnly className="portal-form-control" style={{ opacity: 0.6, cursor: 'not-allowed' }} value={requestNumber} />
+                         <label className="portal-form-label">Request Reference</label>
+                         <input readOnly className="portal-form-control" style={{ opacity: 0.6, color: 'var(--gold)', fontWeight: 700 }} value={id ? requestNumber : 'ADV-0000'} />
                       </div>
                       <div className="portal-form-group">
-                         <label className="portal-form-label">PAN Number</label>
-                         <input 
-                            required 
-                            className="portal-form-control" 
-                            value={pan} 
-                            onChange={e => setPan(e.target.value.toUpperCase())}
-                            readOnly={!!id && !isAdmin}
-                         />
+                         <label className="portal-form-label">PAN Identifier</label>
+                         <input required className="portal-form-control" style={getInputStyle('pan')} value={pan} onChange={e => setPan(e.target.value.toUpperCase())} />
                       </div>
                       <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
-                         <label className="portal-form-label">Account Name</label>
-                         {isAdmin ? (
-                            <SearchableSelect 
-                               options={accounts.map(acc => ({ id: acc.id, label: acc.account_name, sublabel: acc.industry }))}
-                               value={accountId || ''}
-                               onChange={val => {
-                                 const acc = accounts.find(a => a.id === val);
-                                 setAccountId(val);
-                                 setAccountName(acc?.account_name || '');
-                                 setPan(acc?.pan_number || '');
-                               }}
-                               placeholder="Select Entity..."
-                            />
-                         ) : (
-                            <input readOnly className="portal-form-control" style={{ opacity: 0.6 }} value={accountName} />
-                         )}
+                         <label className="portal-form-label">Associated Account</label>
+                         <SearchableSelect 
+                            options={accounts.map(acc => ({ id: acc.id, label: acc.account_name, sublabel: acc.pan_number }))}
+                            value={accountId || ''}
+                            error={validationErrors.includes('accountId')}
+                            onChange={val => {
+                              const acc = accounts.find(a => a.id === val);
+                              setAccountId(val);
+                              setAccountName(acc?.account_name || '');
+                              setPan(acc?.pan_number || '');
+                              setLitigationScan(acc?.litigation_scan || 'CLEAN');
+                            }}
+                            placeholder="Search Entity Database..."
+                         />
                       </div>
                    </div>
 
-                   {/* DOMAIN SELECTION */}
                    <div className="portal-form-group">
-                      <label className="portal-form-label">Service Type</label>
-                      <select 
-                        required 
-                        className="portal-form-control" 
-                        value={selectedService} 
-                        onChange={e => {
-                          setSelectedService(e.target.value);
-                          setSelectedSubServices([]);
-                        }}
-                        disabled={!!id && !isAdmin}
-                      >
-                         <option value="">Select Service Domain...</option>
+                      <label className="portal-form-label">Service Domain</label>
+                      <select required className="portal-form-control" style={getInputStyle('selectedService')} value={selectedService} onChange={e => setSelectedService(e.target.value)}>
+                         <option value="">Select Domain...</option>
                          {servicesData.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                       </select>
                    </div>
 
-                   {/* SCOPING */}
                    {selectedService && (
-                      <div className="portal-form-group" style={{ animation: 'fadeIn 0.5s ease' }}>
+                      <div className="portal-form-group">
                          <label className="portal-form-label">Opted Sub-Services <span style={{ opacity: 0.3, marginLeft: 8 }}>(Multi-Select)</span></label>
-                         <div className="portal-sub-service-grid" style={{ padding: '16px 24px', gap: 12, background: 'rgba(255,255,255,0.01)' }}>
+                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, padding: '20px', background: 'rgba(255,255,255,0.01)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
                             {servicesData.find(s => s.name === selectedService)?.subServices.map(sub => (
-                               <label key={sub} className={`portal-sub-service-item ${selectedSubServices.includes(sub) ? 'selected' : ''}`} style={{ fontSize: '0.85rem' }}>
+                               <label key={sub} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 6, background: selectedSubServices.includes(sub) ? 'rgba(255,153,51,0.05)' : 'transparent' }}>
                                   <input 
                                      type="checkbox" 
-                                     className="portal-checkbox"
+                                     style={{ width: 16, height: 16, accentColor: 'var(--gold)' }}
                                      checked={selectedSubServices.includes(sub)}
-                                     disabled={!!id && !isAdmin}
-                                     onChange={() => {
-                                        if (!!id && !isAdmin) return;
-                                        setSelectedSubServices(prev => 
-                                           prev.includes(sub) ? prev.filter(x => x !== sub) : [...prev, sub]
-                                        );
-                                     }}
+                                     onChange={() => setSelectedSubServices(prev => prev.includes(sub) ? prev.filter(x => x !== sub) : [...prev, sub])}
                                   />
-                                  <span>{sub}</span>
+                                  <span style={{ fontSize: '0.75rem', opacity: selectedSubServices.includes(sub) ? 1 : 0.5 }}>{sub}</span>
                                </label>
                             ))}
                          </div>
                       </div>
                    )}
 
-                   {/* CLIENT INPUTS */}
-                   <div className="portal-form-grid-2" style={{ gap: 32 }}>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Additional Services</label>
-                         <textarea 
-                           className="portal-form-control" 
-                           style={{ minHeight: 80 }}
-                           value={additionalInfo} 
-                           onChange={e => setAdditionalInfo(e.target.value)}
-                           readOnly={!!id && !isAdmin}
-                         />
-                      </div>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Client Remarks</label>
-                         <textarea 
-                           className="portal-form-control" 
-                           style={{ minHeight: 80 }}
-                           value={clientComms} 
-                           onChange={e => setClientComms(e.target.value)}
-                           readOnly={!!id && !isAdmin}
-                         />
-                      </div>
+                   <div className="portal-form-group">
+                      <label className="portal-form-label">Additional Request</label>
+                      <input className="portal-form-control" value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} placeholder="Ref No..." />
                    </div>
 
-                   {/* DOCUMENTATION HUB [NEW] */}
-                   <div className="portal-form-group" style={{ marginTop: 12, padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <label className="portal-form-label" style={{ color: 'var(--gold)', marginBottom: 16 }}>Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(MAX 20MB)</span></label>
-                      
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                         <div style={{ flex: 1 }}>
-                            <input 
-                              type="file" 
-                              id="mandate-file-upload"
-                              style={{ display: 'none' }}
-                              onChange={(e) => {
-                                 const file = e.target.files?.[0];
-                                 if (file) {
-                                    if (file.size > 20 * 1024 * 1024) {
-                                       setError('File exceeds 20MB limit. Please optimize the asset.');
-                                       e.target.value = '';
-                                       return;
-                                    }
-                                    setAttachedFile(file);
-                                    setError('');
-                                 }
-                              }}
-                            />
-                            <button 
-                              type="button" 
-                              onClick={() => document.getElementById('mandate-file-upload')?.click()}
-                              className="btn-portal-outline"
-                              style={{ width: 'auto', padding: '10px 24px', fontSize: '0.65rem' }}
-                            >
-                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                               {attachedFile ? attachedFile.name : existingFileInfo ? existingFileInfo.name : 'UPLOAD DOCUMENT'}
-                            </button>
-                         </div>
-
-                         {(attachedFile || existingFileInfo) && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                               <button 
-                                 type="button"
-                                 onClick={() => {
-                                    const fileUrl = attachedFile ? URL.createObjectURL(attachedFile) : (existingFileInfo as any).url;
-                                    const link = document.createElement('a');
-                                    link.href = fileUrl;
-                                    link.download = attachedFile ? attachedFile.name : existingFileInfo?.name || 'document';
-                                    link.click();
-                                 }}
-                                 className="btn-batch btn-batch--approve"
-                                 style={{ padding: '8px 20px', height: 'auto', fontSize: '0.6rem' }}
-                               >
-                                  DOWNLOAD ASSET
-                               </button>
-                               <button 
-                                 type="button"
-                                 onClick={() => {
-                                    setAttachedFile(null);
-                                    setExistingFileInfo(null);
-                                 }}
-                                 style={{ background: 'none', border: 'none', color: 'rgba(255,153,51,0.5)', cursor: 'pointer', fontSize: '0.6rem', textDecoration: 'underline' }}
-                               >
-                                  REMOVE
-                               </button>
-                            </div>
-                         )}
+                   <div className="portal-form-group" style={{ padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
+                      <label className="portal-form-label" style={{ color: 'var(--gold)' }}>Documentation Asset</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 12 }}>
+                         <input type="file" id="admin-file" style={{ display: 'none' }} onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
+                         <button type="button" onClick={() => document.getElementById('admin-file')?.click()} className="btn-portal-outline" style={{ width: 'auto', padding: '8px 20px', fontSize: '0.65rem' }}>Upload File</button>
+                         {(attachedFile || existingFileInfo) && <span style={{ fontSize: '0.7rem', opacity: 0.4 }}>{attachedFile?.name || existingFileInfo?.name}</span>}
                       </div>
-                      <p style={{ fontSize: '0.65rem', opacity: 0.2, marginTop: 12 }}>Encrypted storage protocol active. Assets are parsed upon mandate certification.</p>
                    </div>
-
-                   {error && <p style={{ color: 'var(--saffron)', fontSize: '0.75rem', marginTop: 12, textAlign: 'right', fontStyle: 'italic', opacity: 0.8 }}>{error}</p>}
-
                 </form>
               </div>
 
-              {/* SECTION 2: ADMINISTRATIVE SECTION */}
-              <div className="portal-panel" style={{ padding: '20px 32px', background: 'rgba(255,153,51,0.02)', border: '1px solid rgba(255,153,51,0.08)' }}>
-                <div className="firm-intel-tag" style={{ marginBottom: 20 }}>ADMINISTRATIVE SECTION</div>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                   {/* Balanced 2-column grid */}
-                   <div className="portal-form-grid-2" style={{ gap: '16px 40px' }}>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Priority</label>
-                         <select 
-                           className="portal-form-control" 
-                           value={priority} 
-                           onChange={e => setPriority(e.target.value as ServiceRecord['priority'])}
-                           disabled={!isAdmin}
-                         >
-                            <option value="Low">Low</option>
-                            <option value="Standard">Standard</option>
-                            <option value="High">High</option>
-                            <option value="Urgent">Urgent</option>
-                         </select>
-                      </div>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Target Milestone Due</label>
-                         <input 
-                           type="date" 
-                           className="portal-form-control" 
-                           value={dueDate} 
-                           onChange={e => {
-                             setDueDate(e.target.value);
-                             if (approvedDate) {
-                               const start = new Date(approvedDate);
-                               const end = new Date(e.target.value);
-                               setDaysLeft(Math.floor((start.getTime() - end.getTime()) / (1000 * 60 * 60 * 24)));
-                             }
-                           }}
-                           readOnly={!isAdmin} 
-                         />
-                      </div>
-                      <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
-                         <label className="portal-form-label">Assigned To</label>
-                         <input 
-                           className="portal-form-control" 
-                           value={assignedTo} 
-                           onChange={e => setAssignedTo(e.target.value)}
-                           readOnly={!isAdmin}
-                         />
-                      </div>
+              <div className="portal-panel" style={{ padding: '24px 32px', border: '1px solid rgba(255,153,51,0.1)' }}>
+                <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Administrative Governance</div>
+                <div className="portal-form-grid-2" style={{ gap: '20px 40px' }}>
+                   <div className="portal-form-group">
+                      <label className="portal-form-label">Priority Tier</label>
+                      <select className="portal-form-control" value={priority} onChange={e => setPriority(e.target.value as any)}>
+                         <option value="Low">Standard (Low)</option>
+                         <option value="Standard">Business (Standard)</option>
+                         <option value="High">Strategic (High)</option>
+                         <option value="Urgent">Critical (Urgent)</option>
+                      </select>
                    </div>
-
-                   {isAdmin && (
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Internal Notes</label>
-                         <textarea className="portal-form-control" value={internalNotes} onChange={e => setInternalNotes(e.target.value)} />
-                      </div>
-                   )}
-
-                   {/* PERFORMANCE METRICS - Standardized to 2 columns */}
-                   <div className="portal-form-grid-2" style={{ gap: '16px 40px', padding: 20, background: 'rgba(255,153,51,0.03)', borderRadius: 8 }}>
-                      <div className="portal-form-group" style={{ marginBottom: 0 }}>
-                         <label className="portal-form-label">Approved Date</label>
-                         <input 
-                           type="date" 
-                           className="portal-form-control" 
-                           value={approvedDate} 
-                           onChange={e => {
-                             setApprovedDate(e.target.value);
-                             if (dueDate && e.target.value) {
-                               const start = new Date(e.target.value);
-                               const end = new Date(dueDate);
-                               setDaysLeft(Math.floor((start.getTime() - end.getTime()) / (1000 * 60 * 60 * 24)));
-                             } else if (!e.target.value) {
-                               setDaysLeft('');
-                             }
-                           }}
-                           readOnly={!isAdmin}
-                         />
-                      </div>
-                      <div className="portal-form-group" style={{ marginBottom: 0 }}>
-                         <label className="portal-form-label">No of Days Left</label>
-                         <input readOnly className="portal-form-control" style={{ opacity: 0.6 }} value={daysLeft} />
-                      </div>
-                      <div className="portal-form-group" style={{ gridColumn: '1 / -1', marginBottom: 0 }}>
-                         <label className="portal-form-label">No of Hours Consumed</label>
-                         <input 
-                           type="number" 
-                           className="portal-form-control" 
-                           value={hoursConsumed} 
-                           onChange={e => setHoursConsumed(e.target.value)}
-                           readOnly={!isAdmin}
-                         />
-                      </div>
+                   <div className="portal-form-group">
+                      <label className="portal-form-label">Deadline</label>
+                      <input type="date" className="portal-form-control" value={dueDate} onChange={e => setDueDate(e.target.value)} />
                    </div>
-
-                   <div className="portal-form-grid-2" style={{ gap: 40, marginTop: 8 }}>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Document Verification Status</label>
-                         <select 
-                           className="portal-form-control" 
-                           value={verificationStatus} 
-                           onChange={e => {
-                             setVerificationStatus(e.target.value as ServiceRecord['verification_status']);
-                             if (e.target.value === 'Approved') {
-                               const today = new Date().toISOString().split('T')[0];
-                               setApprovedDate(today);
-                               if (dueDate) {
-                                 const start = new Date(today);
-                                 const end = new Date(dueDate);
-                                 setDaysLeft(Math.floor((start.getTime() - end.getTime()) / (1000 * 60 * 60 * 24)));
-                               }
-                             } else {
-                               setApprovedDate('');
-                               setDaysLeft('');
-                             }
-                           }}
-                           disabled={!isAdmin}
-                         >
-                            <option value="Pending">Pending</option>
-                            <option value="Verified">Verified</option>
-                            <option value="Rejected">Rejected</option>
-                         </select>
-                      </div>
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Document Verification Remarks</label>
-                         <textarea 
-                           className="portal-form-control" 
-                           rows={1} 
-                           value={verificationRemarks} 
-                           onChange={e => setVerificationRemarks(e.target.value)}
-                           readOnly={!isAdmin}
-                         />
-                      </div>
+                   <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="portal-form-label">Assigned Professional</label>
+                      <select className="portal-form-control" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
+                         <option value="">Select Staff Member...</option>
+                         {staff.map(s => <option key={s.id} value={s.full_name}>{s.full_name} ({s.role.charAt(0).toUpperCase() + s.role.slice(1)})</option>)}
+                      </select>
                    </div>
                 </div>
+
+                <div className="portal-form-grid-2" style={{ gap: '20px 40px', marginTop: 20, padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
+                   <div className="portal-form-group">
+                      <label className="portal-form-label">Verification Status</label>
+                      <select className="portal-form-control" value={verificationStatus} onChange={e => setVerificationStatus(e.target.value as any)}>
+                         <option value="Pending">Pending Review</option>
+                         <option value="Verified">Verified & Active</option>
+                         <option value="Rejected">Rejected / Closed</option>
+                         <option value="Re-submission required">Re-submission Required</option>
+                      </select>
+                   </div>
+                   <div className="portal-form-group">
+                      <label className="portal-form-label">Internal Briefing</label>
+                      <textarea className="portal-form-control" style={{ minHeight: 60 }} value={internalNotes} onChange={e => setInternalNotes(e.target.value)} />
+                   </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
+                   <button disabled={submitting} type="button" onClick={() => handleSubmit()} className="btn-portal-primary" style={{ padding: '16px 48px', fontSize: '0.7rem' }}>
+                      {submitting ? 'Committing...' : id ? 'Update Request' : 'Save New Request'}
+                   </button>
+                </div>
               </div>
-
-              {isAdmin && (
-                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16 }}>
-                    <button disabled={submitting} type="button" onClick={handleSubmit} className="btn-portal-primary" style={{ padding: '16px 60px', fontSize: '0.65rem' }}>
-                       {submitting ? 'PROCESSING...' : id ? 'UPDATE ACCOUNT MANDATE' : 'INITIALIZE ACCOUNT MANDATE'}
-                    </button>
-                 </div>
-              )}
-            </div>
-
-            {/* RIGHT SIDEBAR: CURRENTLY VACATED FOR CLEANER INITIALIZATION FLOW */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 60 }}>
-               {/* Redundant Entity Archive removed as per request */}
             </div>
           </div>
         )}

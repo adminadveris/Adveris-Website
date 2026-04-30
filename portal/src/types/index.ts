@@ -2,12 +2,20 @@ export const AdverisTypesCanary = "V1.0";
 
 export type UserRole = 'admin' | 'employee' | 'client';
 
-export interface Profile {
+export interface User {
   id: string;
   full_name: string;
+  first_name?: string;
+  last_name?: string;
+  sex?: 'Male' | 'Female' | 'Other';
+  dob?: string;
+  phone?: string;
   role: UserRole;
+  email: string;
+  status: 'pending' | 'approved' | 'rejected';
   expertise_tags?: string[];
   account_id?: string;
+  created_at: string;
 }
 
 export interface Address {
@@ -29,6 +37,7 @@ export interface Account extends Address {
   cin_number?: string;
   gstin_number?: string;
   industry?: string;
+  litigation_scan?: 'CLEAN' | 'PENDING' | 'FLAGGED' | 'SEVERE';
   created_at: string;
   created_by_name: string;
   updated_at: string;
@@ -52,28 +61,27 @@ export interface Client extends Address {
   updated_by_name: string;
 }
 
-export interface ServiceRecord {
+export interface Request {
   id: string;
   account_id: string;
   account_name: string;
   request_number: string;
   title: string;
   primary_service: string;
-  sub_service: string;
+  sub_service: string; // Ensuring this is filled to avoid DB errors
   status: 'pending' | 'active' | 'completed' | 'on_hold';
   priority: 'Standard' | 'High' | 'Urgent';
   assigned_to?: string;
   submitted_by: string;
   submitted_by_name: string;
   description?: string;
-  verification_status: 'Pending' | 'Verified' | 'Rejected';
+  verification_status: 'Pending' | 'Verified' | 'Rejected' | 'Re-submission required';
   verification_remarks?: string;
   additional_services?: string;
   sub_services?: string[];
   due_date?: string;
   approved_date?: string;
   days_left?: number | string;
-  hours_consumed?: number | string;
   attached_file?: { name: string; size: number; type: string; url: string };
   internal_notes?: string;
   client_comms?: string;
@@ -97,6 +105,7 @@ export interface TimesheetEntry {
   created_by_name: string;
   updated_at: string;
   updated_by_name: string;
+  timesheet_number?: string;
 }
 
 export interface ExpenseEntry {
@@ -114,6 +123,7 @@ export interface ExpenseEntry {
   created_by_name: string;
   updated_at: string;
   updated_by_name: string;
+  expense_number?: string;
 }
 
 export interface AuditLog {
@@ -140,4 +150,18 @@ export interface UIHistoryItem {
   user_name: string;
   record_id: string;
   table_name: string;
+}
+
+/* ——— NOTIFICATIONS ——— */
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'request' | 'timesheet' | 'expense' | 'system' | 'account';
+  related_id?: string;
+  is_read: boolean;
+  created_at: string;
+  sender_name?: string;
+  sender_avatar?: string;
 }
