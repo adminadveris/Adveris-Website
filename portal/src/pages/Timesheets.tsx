@@ -41,6 +41,7 @@ const Timesheets = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [desc, setDesc] = useState('');
   const [timesheetNumber, setTimesheetNumber] = useState('');
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
 
   const loadData = async () => {
     if (!user) return;
@@ -101,12 +102,12 @@ const Timesheets = () => {
   const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!selectedAccountId || !hours || !date || !task) {
+    if (!selectedAccountId || !hours || !date || !desc) {
       const errs = [];
       if (!selectedAccountId) errs.push('accountId');
       if (!hours) errs.push('hours');
       if (!date) errs.push('date');
-      if (!task) errs.push('task');
+      if (!desc) errs.push('desc');
       setValidationErrors(errs);
       alert("Validation Error: Please ensure Account, Hours, Date, and Task description are all completed.");
       return;
@@ -114,14 +115,15 @@ const Timesheets = () => {
 
     setLoading(true);
     setValidationErrors([]);
+    setSubmitStatus(null);
     try {
       const account = accounts.find(a => a.id === selectedAccountId);
       const payload = {
-        record_id: selectedRecordId || null,
+        record_id: selectedRecordId ? (isNaN(Number(selectedRecordId)) ? selectedRecordId : Number(selectedRecordId)) : null,
         account_id: selectedAccountId,
         account_name: account?.account_name || 'Individual',
         hours: Number(hours),
-        task,
+        task_details: desc,
         date,
         status: 'pending'
       };
@@ -132,17 +134,20 @@ const Timesheets = () => {
         await api.createTimesheet(payload);
       }
 
-      alert("Timesheet record successfully committed to ledger.");
-      setShowForm(false);
-      setEditingId(null);
-      setHours('');
-      setTask('');
-      setSelectedAccountId('');
-      setSelectedRecordId('');
+      setSubmitStatus({ type: 'success', msg: "Timesheet record successfully committed to ledger." });
+      setTimeout(() => {
+        setShowForm(false);
+        setEditingId(null);
+        setHours('');
+        setDesc('');
+        setSelectedAccountId('');
+        setSelectedRecordId('');
+        setSubmitStatus(null);
+      }, 2000);
       await loadData();
     } catch (err: any) {
       console.error("TIMESHEET_SUBMIT_ERROR:", err);
-      alert("Submission Failed: " + (err.message || "Unknown server error"));
+      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown server error") });
     } finally {
       setLoading(false);
     }
@@ -211,8 +216,22 @@ const Timesheets = () => {
                 <textarea required className="portal-form-control" style={{ minHeight: 140, ...getInputStyle('desc') }} placeholder="Strategic context of the work performed..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
               <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
+                {submitStatus && (
+                  <div style={{ 
+                    gridColumn: '1 / -1',
+                    marginBottom: 16,
+                    padding: '12px 20px',
+                    borderRadius: 8,
+                    fontSize: '0.8rem',
+                    background: submitStatus.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    color: submitStatus.type === 'success' ? '#10b981' : '#ef4444',
+                    border: `1px solid ${submitStatus.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+                  }}>
+                    {submitStatus.msg}
+                  </div>
+                )}
 
-                <button disabled={loading || !selectedAccountId} type="submit" className="btn-portal-primary w-full h-48">
+                <button disabled={loading} type="submit" className="btn-portal-primary w-full h-48">
                   {loading ? 'Syncing...' : editingId ? 'Update Timesheet' : 'Create Timesheet'}
                 </button>
               </div>

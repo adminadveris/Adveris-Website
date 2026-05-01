@@ -186,19 +186,29 @@ export const api = {
   },
 
   getNextSequenceNumber: async (table: string, prefix: string): Promise<string> => {
+    const colName = table === 'Request' ? 'request_number' : 
+                    table === 'expenses' ? 'expense_number' : 
+                    table === 'timesheets' ? 'timesheet_number' : null;
+    
+    if (!colName) return `${prefix}-0001`;
+
     const { data, error } = await supabase
       .from(table)
-      .select('request_number, expense_number, timesheet_number')
+      .select(colName)
       .order('created_at', { ascending: false })
       .limit(1);
     
-    if (error) return `${prefix}-0001`;
+    if (error) {
+      console.error(`Error getting sequence for ${table}:`, error);
+      return `${prefix}-0001`;
+    }
     
-    const lastNum = data?.[0]?.request_number || data?.[0]?.expense_number || data?.[0]?.timesheet_number;
+    const lastNum = data?.[0]?.[colName];
     if (!lastNum) return `${prefix}-0001`;
     
     const parts = lastNum.split('-');
     const currentSeq = parseInt(parts[parts.length - 1]);
+    if (isNaN(currentSeq)) return `${prefix}-0001`;
     return `${prefix}-${(currentSeq + 1).toString().padStart(4, '0')}`;
   },
 

@@ -57,6 +57,7 @@ const Expenses = () => {
   const [url, setUrl] = useState('');
   const [currentStatus, setCurrentStatus] = useState('submitted');
   const [expenseNumber, setExpenseNumber] = useState('');
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
 
   const loadData = async () => {
     if (!user) return;
@@ -149,20 +150,21 @@ const Expenses = () => {
 
     setLoading(true);
     setValidationErrors([]);
+    setSubmitStatus(null);
     try {
       const account = accounts.find(a => a.id === selectedAccountId);
       const payload = {
-        record_id: selectedRecordId || null,
+        record_id: selectedRecordId ? (isNaN(Number(selectedRecordId)) ? selectedRecordId : Number(selectedRecordId)) : null,
         account_id: selectedAccountId,
         account_name: account?.account_name || 'N/A',
         amount: Number(amount),
         category,
         date,
         description: desc,
-        url
+        url,
+        status: currentStatus
       };
 
-      console.log("EXPENSE_SUBMIT_PAYLOAD:", payload);
 
       if (editingId) {
         await api.updateExpense(editingId, payload);
@@ -170,18 +172,21 @@ const Expenses = () => {
         await api.createExpense(payload);
       }
 
-      alert("Expense record successfully committed to ledger.");
-      setShowForm(false);
-      setEditingId(null);
-      setAmount('');
-      setDesc('');
-      setUrl('');
-      setSelectedAccountId('');
-      setSelectedRecordId('');
+      setSubmitStatus({ type: 'success', msg: "Expense record successfully committed to ledger." });
+      setTimeout(() => {
+        setShowForm(false);
+        setEditingId(null);
+        setAmount('');
+        setDesc('');
+        setUrl('');
+        setSelectedAccountId('');
+        setSelectedRecordId('');
+        setSubmitStatus(null);
+      }, 2000);
       await loadData();
     } catch (err: any) {
       console.error("EXPENSE_SUBMIT_ERROR:", err);
-      alert("Submission Failed: " + (err.message || "Unknown server error"));
+      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown server error") });
     } finally {
       setLoading(false);
     }
@@ -196,6 +201,7 @@ const Expenses = () => {
     setSelectedAccountId('');
     setSelectedRecordId('');
     setExpenseNumber('');
+    setSubmitStatus(null);
   };
 
   if (showForm) {
@@ -271,44 +277,56 @@ const Expenses = () => {
                 <textarea required className="portal-form-control" style={{ minHeight: 120, ...getInputStyle('desc') }} placeholder="Detailed reason for this disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
 
-              <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
-                 
-                  {editingId && isAdmin && (
-                     <div className="portal-form-grid-2">
-                       <button 
-                         type="button"
-                         onClick={() => handleBulkStatus('approved', [editingId])}
-                         className="btn-batch btn-batch--approve" 
-                         style={{ 
-                           width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
-                           border: currentStatus === 'approved' ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.05)',
-                           background: currentStatus === 'approved' ? 'rgba(34,197,94,0.15)' : undefined,
-                           boxShadow: currentStatus === 'approved' ? '0 0 15px rgba(34,197,94,0.1)' : 'none',
-                           opacity: currentStatus === 'approved' ? 1 : 0.4
-                         }}
-                       >
-                          Approve
-                       </button>
-                       <button 
-                         type="button"
-                         onClick={() => handleBulkStatus('rejected', [editingId])}
-                         className="btn-batch btn-batch--reject"
-                         style={{ 
-                           width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
-                           border: currentStatus === 'rejected' ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.05)',
-                           background: currentStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : undefined,
-                           boxShadow: currentStatus === 'rejected' ? '0 0 15px rgba(239,68,68,0.1)' : 'none',
-                           opacity: currentStatus === 'rejected' ? 1 : 0.4
-                         }}
-                       >
-                          Reject
-                       </button>
-                     </div>
-                  )}
+              {editingId && isAdmin && (
+                <div className="portal-form-grid-2" style={{ marginTop: 16 }}>
+                  <button 
+                    type="button"
+                    onClick={() => handleBulkStatus('approved', [editingId])}
+                    className="btn-batch btn-batch--approve" 
+                    style={{ 
+                      width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
+                      border: currentStatus === 'approved' ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.05)',
+                      background: currentStatus === 'approved' ? 'rgba(34,197,94,0.15)' : undefined,
+                      boxShadow: currentStatus === 'approved' ? '0 0 15px rgba(34,197,94,0.1)' : 'none',
+                      opacity: currentStatus === 'approved' ? 1 : 0.4
+                    }}
+                  >
+                    Approve
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => handleBulkStatus('rejected', [editingId])}
+                    className="btn-batch btn-batch--reject"
+                    style={{ 
+                      width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
+                      border: currentStatus === 'rejected' ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.05)',
+                      background: currentStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : undefined,
+                      boxShadow: currentStatus === 'rejected' ? '0 0 15px rgba(239,68,68,0.1)' : 'none',
+                      opacity: currentStatus === 'rejected' ? 1 : 0.4
+                    }}
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
 
-                 <button disabled={loading || !selectedAccountId} type="submit" className="btn-portal-primary" style={{ width: '100%', height: 48 }}>
-                   {loading ? 'Posting...' : editingId ? 'Update Expense' : 'Create Expense'}
-                 </button>
+              <div style={{ marginTop: 16 }}>
+                {submitStatus && (
+                  <div style={{ 
+                    marginBottom: 16,
+                    padding: '12px 20px',
+                    borderRadius: 8,
+                    fontSize: '0.8rem',
+                    background: submitStatus.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                    color: submitStatus.type === 'success' ? '#10b981' : '#ef4444',
+                    border: `1px solid ${submitStatus.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+                  }}>
+                    {submitStatus.msg}
+                  </div>
+                )}
+                <button type="submit" className="btn-portal-primary w-full h-48">
+                  {loading ? 'Syncing...' : editingId ? 'Update Expense' : 'Create Expense'}
+                </button>
               </div>
             </form>
           </div>
