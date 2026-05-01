@@ -574,17 +574,34 @@ export const api = {
   },
 
   updateProfile: async (id: string, updates: Partial<User>): Promise<void> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+
+    // Security: Only admins can update role or status
+    if (updates.role || updates.status) {
+      const { data: adminCheck } = await supabase
+        .from('User')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (adminCheck?.role !== 'admin') {
+        throw new Error("Governance restriction: Only administrators can modify roles or access status.");
+      }
+    }
+
     const { error } = await supabase
       .from('User')
       .update(updates)
       .eq('id', id);
     if (error) throw error;
+
     await api.createAuditLog({
       table_name: 'User',
       record_id: id,
       action: 'UPDATE_PROFILE',
       field_name: 'details',
-      new_value: `Updated governance currentUser for: ${id}`
+      new_value: `Updated governance profile for: ${id}. ${updates.role ? `Role -> ${updates.role}` : ''} ${updates.status ? `Status -> ${updates.status}` : ''}`
     });
   },
 
