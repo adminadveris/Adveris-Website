@@ -132,17 +132,18 @@ const Expenses = () => {
     }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     
     const errors: string[] = [];
-    if (!selectedAccountId) errors.push('selectedAccountId');
-    if (!amount) errors.push('amount');
-    if (!date) errors.push('date');
-    if (!desc) errors.push('desc');
-
-    if (errors.length > 0) {
-      setValidationErrors(errors);
+    if (!selectedAccountId || !amount || !category || !date) {
+      const errs = [];
+      if (!selectedAccountId) errs.push('accountId');
+      if (!amount) errs.push('amount');
+      if (!category) errs.push('category');
+      if (!date) errs.push('date');
+      setValidationErrors(errs);
+      alert("Validation Error: Please ensure Account, Amount, Category, and Date are all completed.");
       return;
     }
 
@@ -161,12 +162,15 @@ const Expenses = () => {
         url
       };
 
+      console.log("EXPENSE_SUBMIT_PAYLOAD:", payload);
+
       if (editingId) {
         await api.updateExpense(editingId, payload);
       } else {
         await api.createExpense(payload);
       }
 
+      alert("Expense record successfully committed to ledger.");
       setShowForm(false);
       setEditingId(null);
       setAmount('');
@@ -175,7 +179,12 @@ const Expenses = () => {
       setSelectedAccountId('');
       setSelectedRecordId('');
       await loadData();
-    } finally { setLoading(false); }
+    } catch (err: any) {
+      console.error("EXPENSE_SUBMIT_ERROR:", err);
+      alert("Submission Failed: " + (err.message || "Unknown server error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelForm = () => {

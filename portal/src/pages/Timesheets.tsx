@@ -98,17 +98,17 @@ const Timesheets = () => {
 
   const isAdmin = user.role === 'admin' || user.role === 'employee';
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
 
-    const errors: string[] = [];
-    if (!selectedAccountId) errors.push('selectedAccountId');
-    if (!hours) errors.push('hours');
-    if (!date) errors.push('date');
-    if (!desc) errors.push('desc');
-
-    if (errors.length > 0) {
-      setValidationErrors(errors);
+    if (!selectedAccountId || !hours || !date || !task) {
+      const errs = [];
+      if (!selectedAccountId) errs.push('accountId');
+      if (!hours) errs.push('hours');
+      if (!date) errs.push('date');
+      if (!task) errs.push('task');
+      setValidationErrors(errs);
+      alert("Validation Error: Please ensure Account, Hours, Date, and Task description are all completed.");
       return;
     }
 
@@ -119,10 +119,11 @@ const Timesheets = () => {
       const payload = {
         record_id: selectedRecordId || null,
         account_id: selectedAccountId,
-        account_name: account?.account_name || 'N/A',
+        account_name: account?.account_name || 'Individual',
         hours: Number(hours),
+        task,
         date,
-        task_details: desc
+        status: 'pending'
       };
 
       if (editingId) {
@@ -131,14 +132,20 @@ const Timesheets = () => {
         await api.createTimesheet(payload);
       }
 
+      alert("Timesheet record successfully committed to ledger.");
       setShowForm(false);
       setEditingId(null);
       setHours('');
-      setDesc('');
-      setSelectedRecordId('');
+      setTask('');
       setSelectedAccountId('');
+      setSelectedRecordId('');
       await loadData();
-    } finally { setLoading(false); }
+    } catch (err: any) {
+      console.error("TIMESHEET_SUBMIT_ERROR:", err);
+      alert("Submission Failed: " + (err.message || "Unknown server error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const cancelForm = () => {
