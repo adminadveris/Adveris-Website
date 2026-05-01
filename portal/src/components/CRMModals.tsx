@@ -17,7 +17,8 @@ const drawerStyles = `
     inset: 0;
     z-index: 2000;
     background: rgba(5, 8, 22, 0.6);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(60px);
+    -webkit-backdrop-filter: blur(60px);
     animation: backdropFadeIn 0.25s ease;
   }
   .crm-drawer {

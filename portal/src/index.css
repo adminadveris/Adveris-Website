@@ -134,7 +134,8 @@ h1, h2, h3, .serif-title {
 /* --- SPECULAR GLASS PANELS --- */
 .portal-panel {
   background: var(--glass-subtle);
-  backdrop-filter: blur(80px) saturate(160%);
+  backdrop-filter: blur(60px) saturate(160%);
+  -webkit-backdrop-filter: blur(60px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.03);
   /* The Specular Edge */
   box-shadow: 
@@ -322,8 +323,8 @@ textarea.portal-form-control {
   /* Table Responsiveness (Card Stack Mode) */
   .portal-table-v2 { border: 0; }
   .portal-table-v2 thead { border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
-  .portal-table-v2 tr { display: block; margin-bottom: 24px; background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.03); border-radius: 4px; padding: 12px; }
-  .portal-table-v2 td { border-bottom: 1px solid rgba(255,255,255,0.02); display: block; font-size: .8rem; text-align: right; padding: 12px 8px; }
+  .portal-table-v2 tr { display: block; margin-bottom: 24px; background: rgba(255,255,255,0.01); border: none; border-radius: 4px; padding: 12px; }
+  .portal-table-v2 td { border-bottom: none; display: block; font-size: .8rem; text-align: right; padding: 12px 8px; }
   .portal-table-v2 td::before { content: attr(data-label); float: left; font-weight: 700; color: var(--gold); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.4; }
   .portal-table-v2 td:last-child { border-bottom: 0; }
 

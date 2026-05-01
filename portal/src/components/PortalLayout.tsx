@@ -173,8 +173,8 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     style={{ 
-                      position: 'absolute', top: '100%', right: 0, width: 360, background: 'rgba(30, 41, 59, 0.95)', 
-                      backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
+                      position: 'absolute', top: '100%', right: 0, width: 360, background: 'rgba(13, 27, 62, 0.95)', 
+                      backdropFilter: 'blur(60px)', WebkitBackdropFilter: 'blur(60px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
                       marginTop: 12, zIndex: 2000, boxShadow: '0 20px 50px rgba(0,0,0,0.5)', overflow: 'hidden'
                     }}
                   >
@@ -234,8 +234,8 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     style={{ 
-                      position: 'absolute', top: '100%', right: 0, width: 240, background: 'rgba(30, 41, 59, 0.95)', 
-                      backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
+                      position: 'absolute', top: '100%', right: 0, width: 240, background: 'rgba(13, 27, 62, 0.95)', 
+                      backdropFilter: 'blur(60px)', WebkitBackdropFilter: 'blur(60px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, 
                       marginTop: 12, zIndex: 2000, boxShadow: '0 20px 50px rgba(0,0,0,0.5)', overflow: 'hidden'
                     }}
                   >
