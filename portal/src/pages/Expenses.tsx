@@ -192,9 +192,9 @@ const Expenses = () => {
   if (showForm) {
     return (
       <div className="portal-content">
-        <div className="portal-page-header-row" style={{ justifyContent: 'flex-end', marginBottom: 20 }}>
+        <div className="portal-page-header-row" style={{ justifyContent: 'flex-start', marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            
+            <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
             {editingId && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.4 }}>Status</span>
@@ -203,7 +203,6 @@ const Expenses = () => {
                 </span>
               </div>
             )}
-            <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
           </div>
         </div>
         
@@ -377,7 +376,7 @@ const Expenses = () => {
                     />
                   </th>
                 )}
-                <th style={{ width: 90, paddingLeft: user?.role === 'admin' ? 0 : 60 }}>Date</th>
+                <th style={{ width: 100, paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>Date</th>
                 <th style={{ width: 140 }}>Category</th>
                 <th style={{ width: 140 }}>Account Name</th>
                 <th style={{ width: 100 }}>Exp-Ref</th>
@@ -403,7 +402,7 @@ const Expenses = () => {
                       />
                     </td>
                   )}
-                  <td data-label="Date" style={{ paddingLeft: user?.role === 'admin' ? 0 : 60 }}>{new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Date" style={{ paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>{new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
                   <td data-label="Category" style={{ color: 'white', fontSize: '0.85rem' }}>{e.category}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{e.account_name}</td>
                   <td data-label="Exp-Ref" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{e.expense_number || 'Exp-Temp'}</td>

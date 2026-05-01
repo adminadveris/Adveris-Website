@@ -59,7 +59,7 @@ const RequestsList = () => {
               <th style={{ width: 90 }}>Priority</th>
               <th style={{ width: 140 }}>Verification</th>
               <th style={{ textAlign: 'right', paddingRight: 60, width: 90 }}>Status</th>
-              <th style={{ textAlign: 'right', paddingRight: 60, width: 100 }}>Created Date</th>
+              <th style={{ textAlign: 'right', paddingRight: 60, width: 100, whiteSpace: 'nowrap' }}>Created Date</th>
             </tr>
           </thead>
           <tbody>
@@ -116,7 +116,7 @@ const RequestsList = () => {
                       {(record.status === 'rejected' || record.status === 'closed') ? 'Closed' : 'Active'}
                     </span>
                   </td>
-                  <td data-label="Date" style={{ textAlign: 'right', paddingRight: 60 }}>
+                  <td data-label="Date" style={{ textAlign: 'right', paddingRight: 60, whiteSpace: 'nowrap' }}>
                     <span style={{ opacity: 0.4, fontSize: '0.75rem' }}>
                       {new Date(record.created_at).toLocaleDateString()}
                     </span>

@@ -421,9 +421,9 @@
   background: rgba(255, 255, 255, 0.012);
   backdrop-filter: blur(60px);
   -webkit-backdrop-filter: blur(60px);
-  border: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
   border-radius: var(--radius-sm);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 40px 100px -30px rgba(0,0,0,0.4);
   transition: all 0.5s var(--ease);
 }
@@ -529,7 +529,7 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   letter-spacing: 0.05em;
   color: rgba(255,255,255,0.4);
   text-transform: none;
-  border-bottom: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(60px);
   -webkit-backdrop-filter: blur(60px);
@@ -541,7 +541,7 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   font-size: 0.92rem;
   font-weight: 400;
   color: rgba(255,255,255,0.65);
-  border-bottom: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
   transition: all 0.3s var(--ease);
 }
 
@@ -960,15 +960,11 @@ select.portal-form-control { appearance: none; cursor: pointer; }
   margin-bottom: 8px;
 }
 
-.portal-table-v2 { border: 0; }
-.portal-table-v2 thead { border: none; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
-.portal-table-v2 tr { display: block; margin-bottom: 24px; background: rgba(255,255,255,0.01); border: none; border-radius: 4px; padding: 12px; }
-.portal-table-v2 td { border-bottom: none; display: block; font-size: .8rem; text-align: right; padding: 12px 8px; }
 
 .portal-form-control {
   width: 100%;
-  background: rgba(255,255,255,0.03);
-  border: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 14px 18px;
   color: white;

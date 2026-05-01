@@ -154,9 +154,8 @@ const Timesheets = () => {
   if (showForm) {
     return (
       <div className="portal-content">
-        <div className="portal-page-header-row" style={{ justifyContent: 'flex-end', marginBottom: 20 }}>
+        <div className="portal-page-header-row" style={{ justifyContent: 'flex-start', marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-
             <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
           </div>
         </div>
@@ -235,7 +234,7 @@ const Timesheets = () => {
           <table className="portal-table-v2">
             <thead>
               <tr>
-                <th style={{ width: 100, paddingLeft: 60 }}>Date</th>
+                <th style={{ width: 100, paddingLeft: 60, whiteSpace: 'nowrap' }}>Date</th>
                 <th style={{ width: 140 }}>Created By</th>
                 <th>Account Name</th>
                 <th style={{ width: 120 }}>Time-Ref</th>
@@ -251,7 +250,7 @@ const Timesheets = () => {
                   style={{ cursor: 'pointer' }}
                   className={selectedIds.includes(log.id) ? 'selected' : ''}
                 >
-                  <td data-label="Date" style={{ paddingLeft: 60 }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Date" style={{ paddingLeft: 60, whiteSpace: 'nowrap' }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
                   <td data-label="Created By" style={{ color: 'white', fontSize: '0.85rem' }}>{log.logged_by || 'Admin'}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{log.account_name || 'Individual'}</td>
                   <td data-label="Time-Ref" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{log.timesheet_number || 'Time-Temp'}</td>

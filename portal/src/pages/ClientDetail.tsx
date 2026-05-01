@@ -82,7 +82,7 @@ const ClientDetail = () => {
     <div className="portal-content">
       <div className="portal-page-header-row">
         <div className="portal-page-header" style={{ border: 'none', padding: 0 }}>
-          <button onClick={() => navigate('/dashboard/crm')} className="btn-portal-outline" style={{ padding: '6px 12px', fontSize: '0.65rem', marginBottom: 16 }}>
+          <button onClick={() => navigate('/dashboard/crm')} className="btn-portal-outline" style={{ padding: '6px 12px', fontSize: '0.65rem', marginBottom: 16, width: 'auto', textAlign: 'left' }}>
              ← Back to Hub
           </button>
            <h1 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 8 }}>{client.client_name}</h1>

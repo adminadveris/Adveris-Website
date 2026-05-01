@@ -398,7 +398,7 @@ const NewRequest = () => {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 40 }}>
                       <button type="submit" className="btn-portal-primary" style={{ width: '100%' }}>Initialize Entity</button>
-                      <button type="button" onClick={() => setStep('pan')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', width: '100%', fontSize: '0.7rem', cursor: 'pointer' }}>← Back</button>
+                      <button type="button" onClick={() => setStep('pan')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', width: 'auto', textAlign: 'left', fontSize: '0.7rem', cursor: 'pointer', padding: '10px 0' }}>← Back</button>
                     </div>
                     {error && <p style={{ color: 'var(--saffron)', fontSize: '0.75rem', marginTop: 16, textAlign: 'center' }}>{error}</p>}
                   </form>

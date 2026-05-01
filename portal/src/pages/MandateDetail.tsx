@@ -117,7 +117,7 @@ const MandateDetail = () => {
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40, fontFamily: 'var(--font-sans)' }}>
       {/* HEADER: COMPACT NAVIGATION & ACTIONS */}
       <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 24 }}>
           <button 
             onClick={() => navigate('/dashboard/requests')} 
             style={{ 
@@ -125,7 +125,8 @@ const MandateDetail = () => {
               fontSize: '0.85rem', letterSpacing: 'normal', fontWeight: 600, 
               opacity: 0.3, cursor: 'pointer',
               transition: 'opacity 0.3s',
-              fontFamily: 'var(--font-sans)'
+              fontFamily: 'var(--font-sans)',
+              padding: 0
             }}
             onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
             onMouseOut={(e) => e.currentTarget.style.opacity = '0.3'}
