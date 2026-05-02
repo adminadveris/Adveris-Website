@@ -204,7 +204,7 @@ const NewRequest = () => {
       const payload: Partial<Request> = {
         account_id: finalAccountId || '',
         account_name: accountName,
-        title: selectedService,
+        title: additionalInfo || selectedService, // Use description as title if provided
         primary_service: selectedService,
         sub_service: selectedSubServices.join(', ') || 'General', // Fixing Not-Null Constraint
         description: additionalInfo,
