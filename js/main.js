@@ -348,4 +348,26 @@
   /* Wait for layout.js to finish injecting HTML before init */
   document.addEventListener('layoutReady', init);
 
+  /* ----------------------------------------------------------------
+     BFCACHE FIX — Clear overlay & restore state on back/forward
+  ---------------------------------------------------------------- */
+  window.addEventListener('pageshow', (event) => {
+    // 1. Clear Transition Overlay
+    const overlay = document.getElementById('pageTransition');
+    if (overlay) overlay.classList.remove('show');
+
+    // 2. Restore Scrollability (in case it was locked by menu or transition)
+    document.body.style.overflow = '';
+    if (window.__lenisStart) window.__lenisStart();
+
+    // 3. Ensure Menu is Closed
+    const menuOverlay = document.getElementById('menuOverlay');
+    if (menuOverlay) menuOverlay.classList.remove('open');
+    const menuBtn = document.getElementById('menuBtn');
+    if (menuBtn) {
+      menuBtn.setAttribute('aria-expanded', 'false');
+      menuBtn.classList.remove('menu-open-state');
+    }
+  });
+
 })();
