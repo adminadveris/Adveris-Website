@@ -294,7 +294,30 @@ export const api = {
         old_value: oldRecord?.status,
         new_value: data.status,
       });
+
+      // Notify Submitter
+      await api.createNotification({
+        user_id: data.submitted_by,
+        title: 'Mandate Status Updated',
+        message: `${data.request_number}: ${data.title} is now ${data.status.replace('_', ' ')}.`,
+        type: 'request',
+        related_id: data.id,
+        sender_name: currentUser?.full_name || 'System'
+      });
     }
+
+    // Notify Assigned Professional if changed
+    if (record.assigned_to && record.assigned_to !== oldRecord?.assigned_to) {
+      await api.createNotification({
+        user_id: record.assigned_to,
+        title: 'Mandate Assigned',
+        message: `You have been assigned to Mandate: ${data.request_number}.`,
+        type: 'request',
+        related_id: data.id,
+        sender_name: currentUser?.full_name || 'System'
+      });
+    }
+
     return data as Request;
   },
 
@@ -364,6 +387,10 @@ export const api = {
         old_value: oldEntry?.status,
         new_value: data.status,
       });
+
+      // Notify logged_by (we need their user_id, but current schema stores logged_by name. 
+      // For now, we'll notify the person who logged it if we can find their ID)
+      // Note: Real implementation would use user_id in timesheets table.
     }
     return data as TimesheetEntry;
   },
@@ -432,6 +459,24 @@ export const api = {
       field_name: 'expense_number',
       new_value: expense_number,
     });
+
+    // Notify Admin if High Value (> 10000 for example)
+    if (parseFloat(data.amount?.toString()) > 10000) {
+      const { data: admins } = await supabase.from('User').select('id').eq('role', 'admin');
+      if (admins) {
+        for (const admin of admins) {
+          await api.createNotification({
+            user_id: admin.id,
+            title: 'High-Value Expense Alert',
+            message: `${expense_number}: ${data.amount} for ${data.category}.`,
+            type: 'expense',
+            related_id: data.id,
+            sender_name: currentUser?.full_name || 'System'
+          });
+        }
+      }
+    }
+
     return data as ExpenseEntry;
   },
 
@@ -595,6 +640,17 @@ export const api = {
       .update(updates)
       .eq('id', id);
     if (error) throw error;
+
+    // Notify User of Verification Change
+    if (updates.status) {
+      await api.createNotification({
+        user_id: id,
+        title: updates.status === 'approved' ? 'Account Verified' : 'Account Update',
+        message: updates.status === 'approved' ? 'Welcome! Your account has been approved.' : `Your account status is now ${updates.status}.`,
+        type: 'system',
+        sender_name: 'System Governance'
+      });
+    }
 
     await api.createAuditLog({
       table_name: 'User',
