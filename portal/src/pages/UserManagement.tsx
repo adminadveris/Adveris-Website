@@ -118,6 +118,15 @@ const UserManagement = () => {
     }
   };
 
+  useEffect(() => {
+    if (showExpertiseModal) {
+      document.body.classList.add('portal-modal-active');
+    } else {
+      document.body.classList.remove('portal-modal-active');
+    }
+    return () => document.body.classList.remove('portal-modal-active');
+  }, [showExpertiseModal]);
+
   if (loading) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div className="intelligence-pulse">Mapping governance ecosystem...</div>

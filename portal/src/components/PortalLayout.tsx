@@ -135,6 +135,15 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
     }
   ].filter(item => item.roles.includes(user.role));
 
+  useEffect(() => {
+    if (isSupportOpen) {
+      document.body.classList.add('portal-modal-active');
+    } else {
+      document.body.classList.remove('portal-modal-active');
+    }
+    return () => document.body.classList.remove('portal-modal-active');
+  }, [isSupportOpen]);
+
   return (
     <div className="portal-aura-container">
       <div className="portal-aurora-bg" aria-hidden="true">
@@ -285,42 +294,50 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
         </div>
       </header>
 
-      {/* SUPPORT MODAL */}
+      {/* SUPPORT MODAL (Full-Screen Immersive Style) */}
       <AnimatePresence>
         {isSupportOpen && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="portal-modal-overlay"
             onClick={() => setIsSupportOpen(false)}
-            style={{ zIndex: 3000 }}
           >
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               className="portal-modal-card"
               onClick={e => e.stopPropagation()}
-              style={{ maxWidth: 500, padding: 48 }}
+              style={{ maxWidth: 600, padding: '60px 80px', textAlign: 'center' }}
             >
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,153,51,0.1)', color: 'var(--saffron)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 32 }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div style={{ 
+                width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,153,51,0.1)', 
+                color: 'var(--saffron)', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                margin: '0 auto 40px' 
+              }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
-              <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Concierge Support</h2>
-              <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.6, marginBottom: 40 }}>Our institutional support team is available for strategic assistance and technical guidance.</p>
               
-              <div style={{ display: 'grid', gap: 24 }}>
-                <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12 }}>
-                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.02em', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>General Inquiries</p>
-                  <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 500, margin: 0 }}>connect@adveris.in</p>
+              <h2 className="serif-title" style={{ fontSize: '3rem', marginBottom: 16 }}>Concierge Support</h2>
+              <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, fontSize: '1rem', marginBottom: 48, maxWidth: 400, margin: '0 auto 48px' }}>
+                Our institutional support team is available for strategic assistance and technical guidance.
+              </p>
+              
+              <div style={{ display: 'grid', gap: 24, textAlign: 'left' }}>
+                <div style={{ padding: '24px 32px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16 }}>
+                  <p style={{ fontSize: '0.7rem', letterSpacing: '0.05em', fontWeight: 600, opacity: 0.3, textTransform: 'uppercase', marginBottom: 10 }}>General Inquiries</p>
+                  <p style={{ fontSize: '1.2rem', color: 'white', fontWeight: 500, margin: 0 }}>connect@adveris.in</p>
                 </div>
-                <div style={{ padding: '20px 24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12 }}>
-                  <p style={{ fontSize: '0.75rem', letterSpacing: '0.02em', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>Institutional Hotline</p>
-                  <p style={{ fontSize: '1.1rem', color: 'white', fontWeight: 500, margin: 0 }}>+91 80 4951 8888</p>
+                <div style={{ padding: '24px 32px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16 }}>
+                  <p style={{ fontSize: '0.7rem', letterSpacing: '0.05em', fontWeight: 600, opacity: 0.3, textTransform: 'uppercase', marginBottom: 10 }}>Institutional Hotline</p>
+                  <p style={{ fontSize: '1.2rem', color: 'white', fontWeight: 500, margin: 0 }}>+91 80 4951 8888</p>
                 </div>
               </div>
 
               <button 
                 onClick={() => setIsSupportOpen(false)}
                 className="btn-portal-primary"
-                style={{ width: '100%', marginTop: 48, padding: '20px 0' }}
+                style={{ width: '100%', marginTop: 56, padding: '20px 0', fontSize: '0.9rem' }}
               >
                 Close Support
               </button>
