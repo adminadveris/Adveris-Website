@@ -218,16 +218,16 @@ export const AccountModal = ({
                 style={{ fontSize: '0.9rem' }}
               />
             </FF>
-            <FF label="Registration (Cin / Llpin)">
+            <FF label="Registration (CIN / LLPIN)">
               <input className="portal-form-control font-mono" value={data.cin_number} onChange={e => set('cin_number', e.target.value)} placeholder="U12345MH2020..." />
             </FF>
             <FF label="Industry / Sector">
               <input className="portal-form-control" value={data.industry} onChange={e => set('industry', e.target.value)} placeholder="e.g. Finance & Banking" />
             </FF>
-            <FF label="Pan Number">
+            <FF label="PAN Number">
               <input className="portal-form-control font-mono" value={data.pan_number} onChange={e => set('pan_number', e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} />
             </FF>
-            <FF label="Gstin Number">
+            <FF label="GSTIN Number">
               <input className="portal-form-control font-mono" value={data.gstin_number} onChange={e => set('gstin_number', e.target.value.toUpperCase())} placeholder="29AAAAA0000A1Z5" />
             </FF>
           </div>

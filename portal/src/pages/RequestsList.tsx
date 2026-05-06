@@ -11,6 +11,8 @@ const RequestsList = () => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,22 +34,74 @@ const RequestsList = () => {
     });
   }, [user]);
 
-  const paginatedRequests = requests.slice(
+  const filteredData = requests.filter(r => {
+    const matchesSearch = (r.request_number + (r.title || '') + (r.account_name || '')).toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' ? true : 
+                         statusFilter === 'Active' ? (r.status !== 'completed' && r.status !== 'on_hold') :
+                         statusFilter === 'Closed' ? (r.status === 'completed') :
+                         statusFilter === 'On Hold' ? (r.status === 'on_hold') : true;
+    return matchesSearch && matchesStatus;
+  });
+
+  const paginatedRequests = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
   return (
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40 }}>
-      <div style={{ marginBottom: 40, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+             <input 
+               type="text" 
+               placeholder="Search Mandates (ID, Title, Account)..." 
+               value={searchQuery}
+               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+               style={{ 
+                 width: '100%', 
+                 background: 'rgba(255,255,255,0.03)', 
+                 border: '1px solid rgba(255,255,255,0.08)', 
+                 borderRadius: 8, 
+                 padding: '12px 16px 12px 40px',
+                 color: 'white',
+                 fontSize: '0.85rem',
+                 fontFamily: 'var(--font-ui)'
+               }} 
+             />
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
+               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+             </svg>
+          </div>
+          
+          <select 
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            style={{ 
+              background: 'rgba(255,255,255,0.03)', 
+              border: '1px solid rgba(255,255,255,0.08)', 
+              borderRadius: 8, 
+              padding: '12px 16px',
+              color: 'white',
+              fontSize: '0.85rem',
+              minWidth: 140,
+              fontFamily: 'var(--font-ui)'
+            }}
+          >
+            <option>All</option>
+            <option>Active</option>
+            <option>Closed</option>
+            <option>On Hold</option>
+          </select>
+        </div>
+
         <div style={{ paddingBottom: 0 }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.3 }}>
-              {requests.length} Active Requests
+            <span style={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.3, fontFamily: 'var(--font-ui)' }}>
+              {filteredData.length} Indexed Requests
             </span>
         </div>
       </div>
 
-      {/* TABLE SECTION — Standardized High-Density UI */}
       <div className="portal-panel" style={{ padding: 0, overflow: 'visible' }}>
         <table className="portal-table-v2">
           <thead>
@@ -106,14 +160,14 @@ const RequestsList = () => {
                     <span style={{ 
                       fontWeight: 600, 
                       fontSize: '0.65rem',
-                      color: (record.status === 'rejected' || record.status === 'closed') ? '#ef4444' : '#4ade80',
-                      background: (record.status === 'rejected' || record.status === 'closed') ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
+                      color: (record.status === 'rejected' || record.status === 'completed') ? '#ef4444' : '#4ade80',
+                      background: (record.status === 'rejected' || record.status === 'completed') ? 'rgba(239,68,68,0.1)' : 'rgba(74,222,128,0.1)',
                       padding: '4px 12px',
                       borderRadius: 4,
-                      border: `1px solid ${(record.status === 'rejected' || record.status === 'closed') ? 'rgba(239,68,68,0.2)' : 'rgba(74,222,128,0.2)'}`,
+                      border: `1px solid ${(record.status === 'rejected' || record.status === 'completed') ? 'rgba(239,68,68,0.2)' : 'rgba(74,222,128,0.2)'}`,
                       display: 'inline-block'
                     }}>
-                      {(record.status === 'rejected' || record.status === 'closed') ? 'Closed' : 'Active'}
+                      {(record.status === 'rejected' || record.status === 'completed') ? 'Closed' : 'Active'}
                     </span>
                   </td>
                   <td data-label="Date" style={{ textAlign: 'right', paddingRight: 60, whiteSpace: 'nowrap' }}>
@@ -125,8 +179,8 @@ const RequestsList = () => {
               );
             }) : (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '160px 0', opacity: 0.1 }}>
-                  <p className="serif-title" style={{ fontSize: '1.8rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Operational Ledger Is Empty...</p>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '160px 0', opacity: 0.1 }}>
+                  <p style={{ fontSize: '1.2rem', fontFamily: 'var(--font-ui)', fontWeight: 600 }}>Operational Ledger Is Empty...</p>
                 </td>
               </tr>
             )}
@@ -135,16 +189,15 @@ const RequestsList = () => {
         
         <Pagination 
           currentPage={currentPage}
-          totalItems={requests.length}
+          totalItems={filteredData.length}
           pageSize={pageSize}
           onPageChange={setCurrentPage}
           onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
         />
       </div>
 
-      {/* FOOTER NOTE */}
       <div style={{ marginTop: 60, textAlign: 'center' }}>
-         <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em' }}>
+         <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em', fontFamily: 'var(--font-ui)' }}>
             All Requests Are Time-Stamped And Governed By The Adveris Professional Protocol. Proprietary Intellectual Asset Tracking Enabled.
          </p>
       </div>

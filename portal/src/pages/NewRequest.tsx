@@ -262,7 +262,7 @@ const NewRequest = () => {
       <div style={{ color: 'var(--emerald)', marginBottom: 8 }}>
         <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2 className="serif-title" style={{ fontSize: '3.3rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Request <em>Saved</em></h2>
+      <h2 className="serif-title" style={{ fontWeight: 600 }}>Request <em>Saved</em></h2>
       <p style={{ opacity: 0.4 }}>Administrative Request Has Been Successfully Committed To The Governance Vault.</p>
     </div>
   );
@@ -282,7 +282,7 @@ const NewRequest = () => {
            <div className="portal-request-grid-center">
               {step === 'pan' && (
                 <div className="portal-panel" style={{ maxWidth: 600, padding: 40, textAlign: 'center' }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Entity <em>Identity</em></h2>
+                  <h2 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Entity <em>Identity</em></h2>
                   <p style={{ opacity: 0.4, marginBottom: 24 }}>Verify The Legal Entity Via Permanent Account Number.</p>
                   <form onSubmit={handlePanCheck}>
                     <div className="portal-form-group">
@@ -304,7 +304,7 @@ const NewRequest = () => {
 
               {step === 'register' && (
                 <div className="portal-panel" style={{ maxWidth: 900, padding: 40 }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 12, textAlign: 'center', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>New Entity <em>Registry</em></h2>
+                  <h2 className="serif-title" style={{ marginBottom: 12, textAlign: 'center', fontWeight: 600 }}>New Entity <em>Registry</em></h2>
                   <p style={{ opacity: 0.4, marginBottom: 32, textAlign: 'center' }}>Identity <strong>{pan}</strong> Not Found. Initialize Professional Registration.</p>
                   
                   <form onSubmit={async (e) => {
@@ -440,10 +440,17 @@ const NewRequest = () => {
                              </div>
                           </div>
                        )}
-                       <div className="portal-form-group">
-                          <label className="portal-form-label">Additional Request</label>
-                          <input className="portal-form-control" placeholder="Reference Request No..." value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} />
-                       </div>
+                        <div className="portal-form-group">
+                           <label className="portal-form-label">Additional Request</label>
+                           <textarea 
+                              className="portal-form-control" 
+                              rows={2}
+                              style={{ minHeight: 'auto', padding: '12px 0' }}
+                              placeholder="Specify Any Supplemental Parameters Or Reference Numbers..." 
+                              value={additionalInfo} 
+                              onChange={e => setAdditionalInfo(e.target.value)} 
+                           />
+                        </div>
                         <div className="portal-form-group">
                            <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(Max 20Mb)</span></label>
                           <input type="file" onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
@@ -468,7 +475,7 @@ const NewRequest = () => {
                    <div className="portal-form-grid-2" style={{ gap: '20px 40px' }}>
                       <div className="portal-form-group">
                          <label className="portal-form-label">Request Reference</label>
-                         <input readOnly className="portal-form-control" style={{ opacity: 0.6, color: 'var(--gold)', fontWeight: 700 }} value={id ? requestNumber : 'ADV-0000'} />
+                          <input readOnly className="portal-form-control" style={{ opacity: 0.8, color: 'var(--gold)', fontWeight: 700 }} value={requestNumber} />
                       </div>
                       <div className="portal-form-group">
                          <label className="portal-form-label">PAN Identifier</label>
@@ -519,10 +526,17 @@ const NewRequest = () => {
                       </div>
                    )}
 
-                   <div className="portal-form-group">
-                      <label className="portal-form-label">Additional Request</label>
-                      <input className="portal-form-control" value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} placeholder="Ref No..." />
-                   </div>
+                    <div className="portal-form-group">
+                       <label className="portal-form-label">Additional Request</label>
+                       <textarea 
+                          className="portal-form-control" 
+                          rows={2}
+                          style={{ minHeight: 'auto', padding: '12px 0' }}
+                          value={additionalInfo} 
+                          onChange={e => setAdditionalInfo(e.target.value)} 
+                          placeholder="Supplemental Information..." 
+                       />
+                    </div>
 
                    <div className="portal-form-group" style={{ padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
                       <label className="portal-form-label" style={{ color: 'var(--gold)' }}>Documentation Asset</label>

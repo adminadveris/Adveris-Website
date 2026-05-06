@@ -13,7 +13,7 @@ const Overview = () => {
     pendingLastMonth: 0,
     currWeekHours: 0,
     lastWeekHours: 0,
-    pendingTimesheets: 0,
+    currMonthHours: 0,
     totalAdmins: 0,
     totalStaff: 0,
     totalClients: 0
@@ -75,25 +75,25 @@ const Overview = () => {
           fClis = clis.filter(c => c.account_id === user.account_id);
         }
 
-        // 1. Operations
+        // 1. Operations & Verification
         const pendingVerifications = fRecs.filter(r => r.verification_status === 'Pending').length;
-        const activeMandates = fRecs.filter(r => r.status !== 'completed').length;
+        const activeMandates = fRecs.filter(r => r.status !== 'completed' && r.status !== 'on_hold').length;
         const totalRegistry = fAccs.length + fClis.length;
 
-        // 2. Financials
+        // 2. Financials (Expenses)
         const paidThisMonth = fElogs
-          .filter(e => e.status === 'paid' && new Date(e.date).getTime() >= startOfThisMonth)
+          .filter(e => (e.status === 'paid' || e.status === 'approved') && new Date(e.date).getTime() >= startOfThisMonth)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
         const pendingCurrMonth = fElogs
-          .filter(e => e.status !== 'paid' && new Date(e.date).getTime() >= startOfThisMonth)
+          .filter(e => e.status === 'submitted' && new Date(e.date).getTime() >= startOfThisMonth)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
         const pendingLastMonth = fElogs
-          .filter(e => e.status !== 'paid' && new Date(e.date).getTime() >= startOfLastMonth && new Date(e.date).getTime() <= endOfLastMonth)
+          .filter(e => e.status === 'submitted' && new Date(e.date).getTime() >= startOfLastMonth && new Date(e.date).getTime() <= endOfLastMonth)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
-        // 3. Timesheets
+        // 3. Timesheets (Hours)
         const currWeekHours = fTlogs
           .filter(t => new Date(t.date).getTime() >= startOfThisWeek)
           .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
@@ -102,7 +102,11 @@ const Overview = () => {
           .filter(t => new Date(t.date).getTime() >= startOfLastWeek && new Date(t.date).getTime() < startOfThisWeek)
           .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
 
-        const pendingTimesheets = fTlogs.filter(t => t.status === 'submitted').length;
+        const currMonthHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfThisMonth)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+
+
 
         // 4. Governance (All Users)
         const totalAdmins = allUsers.filter(u => u.role === 'admin').length;
@@ -112,7 +116,7 @@ const Overview = () => {
         setStats({
           pendingVerifications, activeMandates, totalAccounts: totalRegistry,
           paidThisMonth, pendingCurrMonth, pendingLastMonth,
-          currWeekHours, lastWeekHours, pendingTimesheets,
+          currWeekHours, lastWeekHours, currMonthHours,
           totalAdmins, totalStaff, totalClients
         });
       } catch (err) {
@@ -154,7 +158,7 @@ const Overview = () => {
       cards: [
         { label: 'This Week Hours', value: stats.currWeekHours.toFixed(1), suffix: 'Hrs', accent: 'gold', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> },
         { label: 'Last Week Hours', value: stats.lastWeekHours.toFixed(1), suffix: 'Hrs', accent: 'dim', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> },
-        { label: 'Pending Approval', value: stats.pendingTimesheets.toString(), suffix: 'Logs', accent: 'saffron', icon: <><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></> }
+        { label: 'Monthly Hours', value: stats.currMonthHours.toFixed(1), suffix: 'Hrs', accent: 'saffron', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> }
       ]
     }
   ];
@@ -179,8 +183,8 @@ const Overview = () => {
                   </svg>
                   {c.label}
                 </div>
-                <div style={{ fontFamily: "var(--font-sans)", fontSize: '2.8rem', fontWeight: 600, lineHeight: 0.9, color: 'white' }}>
-                  {c.value}<span style={{ fontSize: '0.85rem', verticalAlign: 'top', opacity: 0.3, marginLeft: 8, fontWeight: 600 }}>{c.suffix}</span>
+                <div style={{ fontFamily: "var(--font-ui)", fontSize: '2rem', fontWeight: 600, lineHeight: 0.9, color: 'white' }}>
+                  {c.value}<span style={{ fontSize: '0.85rem', verticalAlign: 'top', opacity: 0.3, marginLeft: 8, fontWeight: 600, fontFamily: "var(--font-ui)" }}>{c.suffix}</span>
                 </div>
                 <div style={{
                   position: 'absolute', top: 0, left: 0, width: '100%', height: '2px',

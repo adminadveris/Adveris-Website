@@ -261,7 +261,7 @@ const UserManagement = () => {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 60 }}>
                 <div>
-                  <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 8, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>{selectedUser.full_name}</h1>
+                  <h1 className="serif-title" style={{ marginBottom: 8, fontWeight: 600 }}>{selectedUser.full_name}</h1>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                     <span style={{ fontSize: '1rem', color: 'var(--gold)', fontWeight: 300, opacity: 0.6 }}>{selectedUser.email}</span>
                     <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
@@ -530,7 +530,7 @@ const UserManagement = () => {
               onClick={e => e.stopPropagation()}
               style={{ padding: 48, maxWidth: 800 }}
             >
-              <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Authorizations</h2>
+              <h2 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Authorizations</h2>
               <p style={{ opacity: 0.4, marginBottom: 40 }}>Assign Service-Level Expertise Tags For <strong>{selectedUser.full_name}</strong>. These Define The Operational Visibility Of Firm Records.</p>
 
               <div style={{

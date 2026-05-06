@@ -60,32 +60,49 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
       {label && <label className="portal-form-label">{label}</label>}
 
       <div
-        onClick={() => setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          background: 'rgba(0,0,0,0.25)',
-          border: error ? '1px solid var(--saffron)' : `1px solid ${isOpen ? 'var(--saffron)' : 'rgba(255,255,255,0.08)'}`,
-          borderRadius: 8,
-          padding: '14px 20px',
-          color: selectedOption ? 'white' : 'rgba(255,255,255,0.3)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '0.88rem',
-          transition: 'all 0.2s ease',
-          boxShadow: error ? '0 0 0 3px rgba(255,153,51,0.08)' : (isOpen ? '0 0 0 3px rgba(255,153,51,0.1)' : 'none'),
-          ...style
+          position: 'relative'
         }}
       >
-        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {selectedOption ? selectedOption.label : placeholder}
-        </div>
+        <input
+          type="text"
+          value={isOpen ? searchTerm : (selectedOption ? selectedOption.label : searchTerm)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            if (!isOpen) setIsOpen(true);
+          }}
+          onFocus={() => {
+            setIsOpen(true);
+            if (selectedOption) setSearchTerm(selectedOption.label);
+          }}
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            background: 'rgba(0,0,0,0.25)',
+            border: error ? '1px solid var(--saffron)' : `1px solid ${isOpen ? 'var(--saffron)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: 8,
+            padding: '14px 40px 14px 20px',
+            color: 'white',
+            fontSize: '0.88rem',
+            transition: 'all 0.2s ease',
+            outline: 'none',
+            boxShadow: error ? '0 0 0 3px rgba(255,153,51,0.08)' : (isOpen ? '0 0 0 3px rgba(255,153,51,0.1)' : 'none'),
+            ...style
+          }}
+        />
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s', opacity: 0.5 }}
+          style={{ 
+            position: 'absolute',
+            right: 16,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            opacity: 0.3,
+            pointerEvents: 'none'
+          }}
         >
-          <polyline points="6 9 12 15 18 9" />
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </div>
 
@@ -105,35 +122,6 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           overflow: 'hidden',
           animation: 'fadeInScale 0.15s ease-out'
         }}>
-          {/* Search Input */}
-          <div style={{ padding: 12, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ position: 'relative' }}>
-              <input
-                autoFocus
-                type="text"
-                placeholder="Type To Filter..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 6,
-                  padding: '8px 12px 8px 32px',
-                  color: 'white',
-                  fontSize: '0.8rem',
-                  outline: 'none'
-                }}
-              />
-              <svg
-                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,153,51,0.5)" strokeWidth="2"
-                style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}
-              >
-                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </div>
-          </div>
-
           {/* List */}
           <div style={{ maxHeight: 240, overflowY: 'auto', padding: 4 }}>
             {filteredOptions.length > 0 ? filteredOptions.map(option => (

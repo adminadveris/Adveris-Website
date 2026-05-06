@@ -48,7 +48,7 @@ const UserProfile = () => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 60 }}>
           <div>
-            <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Personal Identity</h1>
+            <h1 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Personal Identity</h1>
             <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Manage Your Portal Credentials</p>
           </div>
           

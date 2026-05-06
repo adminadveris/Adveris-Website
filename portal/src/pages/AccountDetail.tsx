@@ -55,6 +55,7 @@ const AccountDetail = () => {
   // ── Edit mode state ──
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<Account>>({});
+  const [showFullHistory, setShowFullHistory] = useState(false);
 
   const set = (key: keyof Account, val: string) =>
     setDraft(d => ({ ...d, [key]: val }));
@@ -130,7 +131,8 @@ const AccountDetail = () => {
   const a = account as any;
 
   return (
-    <div className="portal-content">
+    <>
+      <div className="portal-content">
 
       {/* ── Header ── */}
       <div className="portal-page-header-row">
@@ -200,9 +202,9 @@ const AccountDetail = () => {
               {editing && <span style={{ fontSize: '0.65rem', color: 'var(--saffron)', opacity: 0.6 }}>● Edit Mode</span>}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
-              <Field label="Registration (Cin/Llpin)" value={a.cin_number}  editing={editing} inputValue={d.cin_number  ?? ''} onChange={v => set('cin_number',  v)} mono />
-              <Field label="Pan Number"               value={a.pan_number}  editing={editing} inputValue={d.pan_number  ?? ''} onChange={v => set('pan_number',  v.toUpperCase())} mono placeholder="ABCDE1234F" />
-              <Field label="Gstin Number"             value={a.gstin_number} editing={editing} inputValue={d.gstin_number ?? ''} onChange={v => set('gstin_number', v.toUpperCase())} mono />
+              <Field label="Registration (CIN / LLPIN)" value={a.cin_number}  editing={editing} inputValue={d.cin_number  ?? ''} onChange={v => set('cin_number',  v)} mono />
+              <Field label="PAN Number"               value={a.pan_number}  editing={editing} inputValue={d.pan_number  ?? ''} onChange={v => set('pan_number',  v.toUpperCase())} mono placeholder="ABCDE1234F" />
+              <Field label="GSTIN Number"             value={a.gstin_number} editing={editing} inputValue={d.gstin_number ?? ''} onChange={v => set('gstin_number', v.toUpperCase())} mono />
               <Field label="Industry / Sector"        value={a.industry}    editing={editing} inputValue={d.industry    ?? ''} onChange={v => set('industry',    v)} placeholder="E.g. Finance & Banking" />
             </div>
           </div>
@@ -243,26 +245,63 @@ const AccountDetail = () => {
 
           {/* Modification Log */}
           <div className="portal-panel" style={{ padding: 32 }}>
-            <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 24 }}>Modification Log</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4 }}>Modification Log</h3>
+              {history.length > 5 && (
+                <button 
+                  onClick={() => setShowFullHistory(true)}
+                  style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', opacity: 0.8 }}
+                >
+                  View Full History →
+                </button>
+              )}
+            </div>
+
             {history.length === 0 ? (
               <p style={{ opacity: 0.2, fontSize: '0.8rem', fontStyle: 'italic' }}>No Modifications Recorded Yet.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {history.slice(0, 6).map(log => (
+                {history.slice(0, 5).map(log => (
                   <div key={log.id} style={{ padding: '14px 16px', background: 'rgba(255,153,51,0.03)', border: '1px solid rgba(255,153,51,0.05)', borderRadius: 8 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>{log.action === 'CREATE' ? 'Created' : log.action === 'UPDATE' ? 'Updated' : log.action}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {log.field_name || 'Action'}
+                        </span>
+                        <span style={{ fontSize: '0.65rem', opacity: 0.3 }}>•</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'white' }}>
+                          {log.action === 'CREATE_ACCOUNT' ? 'Initialized' : 'Modified'}
+                        </span>
+                      </div>
                       <span style={{ fontSize: '0.65rem', opacity: 0.4 }}>{new Date(log.created_at).toLocaleDateString()}</span>
                     </div>
                     {log.old_value && (
-                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)' }}>
-                        <span style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '2px 6px', borderRadius: 4, marginRight: 8 }}>Prev: {log.old_value}</span>
-                        <span style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', padding: '2px 6px', borderRadius: 4 }}>New: {log.new_value}</span>
-                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                        <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.03)', padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <span style={{ opacity: 0.5, marginRight: 4 }}>Was:</span> {log.old_value}
+                        </div>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginTop: 6, opacity: 0.2 }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--gold)', background: 'rgba(201, 168, 76, 0.05)', padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(201, 168, 76, 0.1)' }}>
+                          <span style={{ opacity: 0.5, marginRight: 4 }}>Now:</span> {log.new_value}
+                        </div>
+                      </div>
                     )}
-                    <p style={{ fontSize: '0.7rem', opacity: 0.35, fontStyle: 'italic', marginTop: 4 }}>by {log.changed_by_name}</p>
+                    {!log.old_value && log.new_value && (
+                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>{log.new_value}</p>
+                    )}
+                    <p style={{ fontSize: '0.65rem', opacity: 0.25, fontStyle: 'italic', marginTop: 8 }}>Logged by {log.changed_by_name}</p>
                   </div>
                 ))}
+                
+                {history.length > 5 && (
+                   <button 
+                    onClick={() => setShowFullHistory(true)}
+                    className="btn-portal-outline" 
+                    style={{ width: '100%', marginTop: 8, fontSize: '0.65rem', borderStyle: 'dashed', opacity: 0.4 }}
+                   >
+                     Show {history.length - 5} Older Modifications...
+                   </button>
+                )}
               </div>
             )}
           </div>
@@ -332,6 +371,77 @@ const AccountDetail = () => {
         </div>
       </div>
     </div>
+    
+      {/* ── Full History Modal ── */}
+      {showFullHistory && (
+        <div style={{ 
+          position: 'fixed', inset: 0, zIndex: 9999, 
+          display: 'flex', alignItems: 'center', justifyContent: 'center', 
+          background: 'rgba(3, 5, 12, 0.8)', backdropFilter: 'blur(10px)' 
+        }}>
+          <div className="portal-panel" style={{ 
+            width: 'min(90vw, 800px)', maxHeight: '85vh', 
+            padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <div style={{ padding: '32px 40px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 className="serif-title" style={{ fontSize: '1.5rem', marginBottom: 4, fontWeight: 600 }}>Master <em>Audit Trail</em></h2>
+                <p style={{ fontSize: '0.75rem', opacity: 0.4 }}>Complete Professional Governance Ledger for {account.account_name}</p>
+              </div>
+              <button 
+                onClick={() => setShowFullHistory(false)}
+                className="btn-portal-outline" 
+                style={{ width: 'auto', padding: '10px 20px', borderRadius: 100 }}
+              >
+                Close Trail
+              </button>
+            </div>
+            
+            <div style={{ padding: '40px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {history.map(log => (
+                <div key={log.id} style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12 }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          {log.field_name || 'Action'}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', opacity: 0.2 }}>|</span>
+                        <span style={{ fontSize: '0.85rem', color: 'white' }}>{log.action.replace(/_/g, ' ')}</span>
+                      </div>
+                      <span style={{ fontSize: '0.7rem', opacity: 0.4, fontVariantNumeric: 'tabular-nums' }}>{new Date(log.created_at).toLocaleString()}</span>
+                    </div>
+                    {log.old_value && (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 20, alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 8 }}>
+                        <div>
+                          <p style={{ fontSize: '0.6rem', opacity: 0.3, textTransform: 'uppercase', marginBottom: 4 }}>Previous State</p>
+                          <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>{log.old_value}</p>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.5" style={{ opacity: 0.5 }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        <div>
+                          <p style={{ fontSize: '0.6rem', opacity: 0.3, textTransform: 'uppercase', marginBottom: 4 }}>Updated State</p>
+                          <p style={{ fontSize: '0.9rem', color: 'var(--gold)', fontWeight: 500 }}>{log.new_value}</p>
+                        </div>
+                      </div>
+                    )}
+                    {!log.old_value && log.new_value && (
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)' }}>{log.new_value}</p>
+                    )}
+                    <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <span style={{ fontSize: '0.7rem', opacity: 0.4 }}>Record ID: <span style={{ opacity: 0.6 }}>{log.record_id?.substring(0, 8)}</span></span>
+                       <span style={{ fontSize: '0.7rem', color: 'white', opacity: 0.5 }}>Governance verified by <strong>{log.changed_by_name}</strong></span>
+                    </div>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ padding: '24px 40px', background: 'rgba(255,153,51,0.02)', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+              <p style={{ fontSize: '0.65rem', opacity: 0.3, letterSpacing: '0.1em' }}>PROPRIETARY AUDIT TRAIL — ADVERIS PROFESSIONAL GOVERNANCE</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 

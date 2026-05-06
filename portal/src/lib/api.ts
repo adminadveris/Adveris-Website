@@ -82,7 +82,11 @@ export const api = {
     const { data: { user } } = await supabase.auth.getUser();
     const { data: currentUser } = await supabase.from('User').select('full_name').eq('id', user?.id).single();
 
-    const { data, error } = await supabase
+    // 1. Fetch current state for diffing
+    const { data: oldAccount } = await supabase.from('accounts').select('*').eq('id', id).single();
+
+    // 2. Perform Update
+    const { data: newAccount, error } = await supabase
       .from('accounts')
       .update({
         ...account,
@@ -94,14 +98,31 @@ export const api = {
       .single();
     
     if (error) throw error;
-    await api.createAuditLog({
-      table_name: 'accounts',
-      record_id: id,
-      action: 'UPDATE_ACCOUNT',
-      field_name: 'details',
-      new_value: `Updated account details: ${data.account_name}`
-    });
-    return data as Account;
+
+    // 3. Granular Auditing
+    if (oldAccount && newAccount) {
+      const fieldsToWatch = Object.keys(account) as (keyof Account)[];
+      for (const field of fieldsToWatch) {
+        const oldVal = String(oldAccount[field] || '');
+        const newVal = String(newAccount[field] || '');
+        
+        if (oldVal !== newVal && field !== 'updated_at' && field !== 'updated_by_name') {
+          // Humanize field name (e.g., account_name -> Account Name)
+          const humanField = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          
+          await api.createAuditLog({
+            table_name: 'accounts',
+            record_id: id,
+            action: 'UPDATE_ACCOUNT',
+            field_name: humanField,
+            old_value: oldVal || 'None',
+            new_value: newVal || 'None'
+          });
+        }
+      }
+    }
+
+    return newAccount as Account;
   },
 
   // --- CLIENTS (CRM) ---

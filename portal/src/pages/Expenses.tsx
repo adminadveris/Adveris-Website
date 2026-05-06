@@ -40,6 +40,8 @@ const Expenses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
 
   const getInputStyle = (field: string) => ({
     border: validationErrors.includes(field) ? '1px solid var(--saffron)' : '1.5px solid rgba(255,255,255,0.1)',
@@ -82,7 +84,13 @@ const Expenses = () => {
   if (!user) return null;
   const isAdmin = user.role === 'admin' || user.role === 'employee';
 
-  const paginatedEntries = entries.slice(
+  const filteredData = entries.filter(e => {
+    const matchesSearch = (e.expense_number + e.category + e.account_name).toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' ? true : e.status === statusFilter.toLowerCase();
+    return matchesSearch && matchesStatus;
+  });
+
+  const paginatedEntries = filteredData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -162,7 +170,7 @@ const Expenses = () => {
         date,
         description: desc,
         url,
-        status: currentStatus
+        status: 'submitted'
       };
 
 
@@ -207,18 +215,16 @@ const Expenses = () => {
   if (showForm) {
     return (
       <div className="portal-content">
-        <div className="portal-page-header-row" style={{ justifyContent: 'flex-start', marginBottom: 20 }}>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
-            {editingId && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.4 }}>Status</span>
-                <span className="portal-badge" style={{ background: statusColors[currentStatus], color: statusText[currentStatus], border: 'none', padding: '6px 16px' }}>
-                  {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
-                </span>
-              </div>
-            )}
-          </div>
+        <div className="portal-page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
+          {editingId && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</span>
+              <span className="portal-badge" style={{ background: statusColors[currentStatus], color: statusText[currentStatus], border: 'none', padding: '6px 16px', borderRadius: 100, fontSize: '0.65rem', fontWeight: 700 }}>
+                {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
+              </span>
+            </div>
+          )}
         </div>
         
         <div className="portal-request-grid-center">
@@ -277,39 +283,6 @@ const Expenses = () => {
                 <textarea required className="portal-form-control" style={{ minHeight: 120, ...getInputStyle('desc') }} placeholder="Detailed Reason For This Disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
 
-              {editingId && isAdmin && (
-                <div className="portal-form-grid-2" style={{ marginTop: 16 }}>
-                  <button 
-                    type="button"
-                    onClick={() => handleBulkStatus('approved', [editingId])}
-                    className="btn-batch btn-batch--approve" 
-                    style={{ 
-                      width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
-                      border: currentStatus === 'approved' ? '2px solid #22c55e' : '1px solid rgba(255,255,255,0.05)',
-                      background: currentStatus === 'approved' ? 'rgba(34,197,94,0.15)' : undefined,
-                      boxShadow: currentStatus === 'approved' ? '0 0 15px rgba(34,197,94,0.1)' : 'none',
-                      opacity: currentStatus === 'approved' ? 1 : 0.4
-                    }}
-                  >
-                    Approve
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => handleBulkStatus('rejected', [editingId])}
-                    className="btn-batch btn-batch--reject"
-                    style={{ 
-                      width: '100%', justifyContent: 'center', height: 48, borderRadius: 8,
-                      border: currentStatus === 'rejected' ? '2px solid #ef4444' : '1px solid rgba(255,255,255,0.05)',
-                      background: currentStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : undefined,
-                      boxShadow: currentStatus === 'rejected' ? '0 0 15px rgba(239,68,68,0.1)' : 'none',
-                      opacity: currentStatus === 'rejected' ? 1 : 0.4
-                    }}
-                  >
-                    Reject
-                  </button>
-                </div>
-              )}
-
               <div style={{ marginTop: 16 }}>
                 {submitStatus && (
                   <div style={{ 
@@ -324,8 +297,63 @@ const Expenses = () => {
                     {submitStatus.msg}
                   </div>
                 )}
+
+                {editingId && user?.role === 'admin' && (
+                  <div style={{ 
+                    marginBottom: 32, 
+                    padding: 24, 
+                    background: 'rgba(255,255,255,0.02)', 
+                    borderRadius: 12, 
+                    border: '1px dashed rgba(255,255,255,0.1)' 
+                  }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 600, opacity: 0.3, textTransform: 'uppercase', marginBottom: 16, letterSpacing: '0.1em' }}>
+                      Administrative Governance
+                    </div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <button 
+                        type="button"
+                        onClick={() => handleBulkStatus('approved', [editingId])}
+                        disabled={loading}
+                        style={{ 
+                          flex: 1, 
+                          background: currentStatus === 'approved' ? 'rgba(34, 197, 94, 0.1)' : '#22c55e',
+                          color: 'white',
+                          border: currentStatus === 'approved' ? '1px solid #22c55e' : 'none',
+                          padding: '12px',
+                          borderRadius: 8,
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          opacity: currentStatus === 'approved' ? 0.5 : 1
+                        }}
+                      >
+                        {loading ? 'Processing...' : 'Approve Disbursement'}
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleBulkStatus('rejected', [editingId])}
+                        disabled={loading}
+                        style={{ 
+                          flex: 1, 
+                          background: 'transparent',
+                          color: '#ef4444',
+                          border: '1px solid #ef4444',
+                          padding: '12px',
+                          borderRadius: 8,
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          opacity: currentStatus === 'rejected' ? 0.5 : 1
+                        }}
+                      >
+                        {loading ? 'Processing...' : 'Reject Entry'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <button type="submit" className="btn-portal-primary w-full h-48">
-                  {loading ? 'Syncing...' : editingId ? 'Update Expense' : 'Create Expense'}
+                  {loading ? 'Processing...' : (editingId ? 'Commit Changes & Save' : 'Submit Disbursement')}
                 </button>
               </div>
             </form>
@@ -337,46 +365,55 @@ const Expenses = () => {
 
   return (
     <div className="portal-content">
-      {/* Action Bar (Top Relocation) */}
-      <AnimatePresence>
-        {selectedIds.length > 0 && user?.role === 'admin' && (
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="portal-batch-bar"
-          >
-            <div className="batch-content">
-              <span className="batch-label">{selectedIds.length} Disbursements Selected</span>
-              <div className="batch-actions">
-                <button 
-                  disabled={loading}
-                  onClick={() => handleBulkStatus('approved')} 
-                  className="btn-batch btn-batch--approve"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  Approve
-                </button>
-                <button 
-                  disabled={loading}
-                  onClick={() => handleBulkStatus('rejected')} 
-                  className="btn-batch btn-batch--reject"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  Reject
-                </button>
-                <div className="batch-divider" />
-                <button onClick={() => setSelectedIds([])} className="btn-batch-text">Cancel</button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
+        <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+             <input 
+               type="text" 
+               placeholder="Search Expenses (Ref, Category, Account)..." 
+               value={searchQuery}
+               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+               style={{ 
+                 width: '100%', 
+                 background: 'rgba(255,255,255,0.03)', 
+                 border: '1px solid rgba(255,255,255,0.08)', 
+                 borderRadius: 8, 
+                 padding: '12px 16px 12px 40px',
+                 color: 'white',
+                 fontSize: '0.85rem',
+                 fontFamily: 'var(--font-ui)'
+               }} 
+             />
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
+               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+             </svg>
+          </div>
+          
+          <select 
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+            style={{ 
+              background: 'rgba(255,255,255,0.03)', 
+              border: '1px solid rgba(255,255,255,0.08)', 
+              borderRadius: 8, 
+              padding: '12px 16px',
+              color: 'white',
+              fontSize: '0.85rem',
+              minWidth: 140,
+              fontFamily: 'var(--font-ui)'
+            }}
+          >
+            <option>All</option>
+            <option>Submitted</option>
+            <option>Approved</option>
+            <option>Paid</option>
+            <option>Rejected</option>
+          </select>
+        </div>
+
         <div style={{ paddingBottom: 0, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {user?.role === 'admin' && (
-            <ExportDropdown data={entries} filename="Adveris_Expenses" label="Export Expense" dateField="date" />
+            <ExportDropdown data={filteredData} filename="Adveris_Expenses" label="Export Expense" dateField="date" />
           )}
           <button 
             className="btn-portal-primary" 
@@ -387,6 +424,96 @@ const Expenses = () => {
           </button>
         </div>
       </div>
+
+        {/* BULK ACTION BAR */}
+        <AnimatePresence>
+          {selectedIds.length > 0 && user?.role === 'admin' && (
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              style={{
+                position: 'fixed',
+                bottom: 40,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 24,
+                padding: '16px 32px',
+                background: 'rgba(13, 27, 62, 0.95)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '16px',
+                border: '1.5px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                fontFamily: 'var(--font-ui)'
+              }}
+            >
+              <div style={{ color: 'white', fontSize: '0.85rem', fontWeight: 500 }}>
+                {selectedIds.length} <span style={{ opacity: 0.5 }}>Disbursements Selected</span>
+              </div>
+              
+              <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.1)' }} />
+              
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button 
+                  onClick={() => handleBulkStatus('approved')}
+                  disabled={loading}
+                  style={{
+                    padding: '8px 24px',
+                    borderRadius: 8,
+                    background: '#22c55e',
+                    color: 'white',
+                    border: 'none',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
+                  onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
+                >
+                  {loading ? 'Approving...' : 'Approve Entries'}
+                </button>
+                <button 
+                  onClick={() => handleBulkStatus('rejected')}
+                  disabled={loading}
+                  style={{
+                    padding: '8px 24px',
+                    borderRadius: 8,
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    border: '1px solid #ef4444',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                  onMouseOut={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                >
+                  {loading ? 'Rejecting...' : 'Reject Entries'}
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setSelectedIds([])}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'white',
+                  opacity: 0.3,
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  marginLeft: 12
+                }}
+              >
+                Cancel
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       <div className="portal-panel" style={{ padding: 0, overflow: 'visible' }}>
         <div className="portal-table-wrap">
@@ -457,7 +584,7 @@ const Expenses = () => {
           
           <Pagination 
             currentPage={currentPage}
-            totalItems={entries.length}
+            totalItems={filteredData.length}
             pageSize={pageSize}
             onPageChange={setCurrentPage}
             onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}

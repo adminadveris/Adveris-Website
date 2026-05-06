@@ -106,9 +106,9 @@ const CRMHub = () => {
       )
     },
     { header: 'Industry / Sector', key: 'industry', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.industry || 'General'}</span> },
-    { header: 'Pan Number', key: 'pan_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.pan_number || '—'}</span> },
-    { header: 'Registration (Cin/Llpin)', key: 'cin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.cin_number || '—'}</span> },
-    { header: 'Gstin Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
+    { header: 'PAN Number', key: 'pan_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.pan_number || '—'}</span> },
+    { header: 'Registration (CIN / LLPIN)', key: 'cin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.cin_number || '—'}</span> },
+    { header: 'GSTIN Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
   ];
 
   const clientCols: ColDef<Client>[] = [
