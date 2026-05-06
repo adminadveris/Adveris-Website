@@ -239,7 +239,7 @@ export const api = {
 
     const request_number = await api.getNextSequenceNumber('Request', 'ADV');
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('Request')
       .insert({
         ...record,
@@ -252,6 +252,29 @@ export const api = {
       .select()
       .single();
     
+    // Fallback if attached_files column is missing
+    if (error && (error.message?.includes('attached_files') || error.code === '42703')) {
+      console.warn("Retrying without attached_files column...");
+      const { attached_files, ...safeRecord } = record as any;
+      const fallbackDesc = attached_files ? `\n\n[ATTACHMENTS]: ${JSON.stringify(attached_files)}` : '';
+      
+      const retry = await supabase
+        .from('Request')
+        .insert({
+          ...safeRecord,
+          description: (safeRecord.description || '') + fallbackDesc,
+          request_number,
+          submitted_by: user?.id,
+          submitted_by_name: currentUser?.full_name || 'System',
+          created_by_name: currentUser?.full_name || 'System',
+          updated_by_name: currentUser?.full_name || 'System'
+        })
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) throw error;
 
     // 1. Log Audit
@@ -292,7 +315,7 @@ export const api = {
     // Get old values for audit
     const { data: oldRecord } = await supabase.from('Request').select('*').eq('id', id).single();
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('Request')
       .update({
         ...record,
@@ -303,6 +326,27 @@ export const api = {
       .select()
       .single();
     
+    // Fallback if attached_files column is missing
+    if (error && (error.message?.includes('attached_files') || error.code === '42703')) {
+      console.warn("Retrying update without attached_files column...");
+      const { attached_files, ...safeRecord } = record as any;
+      const fallbackDesc = attached_files ? `\n\n[ATTACHMENTS_UPDATE]: ${JSON.stringify(attached_files)}` : '';
+
+      const retry = await supabase
+        .from('Request')
+        .update({
+          ...safeRecord,
+          description: (safeRecord.description || '') + fallbackDesc,
+          updated_at: new Date().toISOString(),
+          updated_by_name: currentUser?.full_name || 'System'
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) throw error;
 
     // Log individual field changes if needed, but for now simple update log
@@ -732,21 +776,17 @@ export const api = {
     const filePath = `mandates/${fileName}`;
     const bucketName = 'mandate-files';
 
-    let { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from(bucketName)
       .upload(filePath, file);
 
-    // Self-healing: Try to create bucket if missing
-    if (uploadError && (uploadError as any).message?.includes('not found')) {
-      await supabase.storage.createBucket(bucketName, { public: true });
-      // Retry upload
-      const { error: retryError } = await supabase.storage
-        .from(bucketName)
-        .upload(filePath, file);
-      uploadError = retryError;
+    if (uploadError) {
+      console.error("Supabase Storage Error:", uploadError);
+      if (uploadError.message?.includes('bucket not found') || uploadError.message?.includes('not found')) {
+        throw new Error("Infrastructure Error: The 'mandate-files' storage bucket has not been created in the Supabase Dashboard. Please create it and set it to 'Public' to enable document uploads.");
+      }
+      throw new Error(`Storage Error: ${uploadError.message || 'Upload failed'}`);
     }
-
-    if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
       .from(bucketName)

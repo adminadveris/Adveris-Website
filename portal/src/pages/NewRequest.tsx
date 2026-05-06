@@ -246,9 +246,11 @@ const NewRequest = () => {
           if (!payload.attached_file && uploadedAssets.length > 0) {
             payload.attached_file = uploadedAssets[0];
           }
-        } catch (uploadErr) {
+        } catch (uploadErr: any) {
           console.error("FileUploadError:", uploadErr);
-          throw new Error("Critical: System failed to persist documentation assets. Please check storage bucket permissions.");
+          setError(uploadErr.message || "Critical: System failed to persist documentation assets. Please check storage bucket permissions.");
+          setSubmitting(false);
+          return; // Stop the save process if upload fails
         }
       } else if (existingFiles && existingFiles.length > 0) {
         payload.attached_files = existingFiles;
