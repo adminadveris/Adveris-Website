@@ -782,8 +782,15 @@ export const api = {
 
     if (uploadError) {
       console.error("Supabase Storage Error:", uploadError);
-      if (uploadError.message?.includes('bucket not found') || uploadError.message?.includes('not found')) {
-        throw new Error("Infrastructure Error: The 'mandate-files' storage bucket has not been created in the Supabase Dashboard. Please create it and set it to 'Public' to enable document uploads.");
+      if (uploadError.message?.toLowerCase().includes('not found')) {
+        console.warn("Storage bucket 'mandate-files' not found. Falling back to Base64 data URI persistence.");
+        // Fallback: Convert file to Base64 so it saves directly in the database
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = error => reject(new Error("Failed to encode file for fallback storage."));
+        });
       }
       throw new Error(`Storage Error: ${uploadError.message || 'Upload failed'}`);
     }
