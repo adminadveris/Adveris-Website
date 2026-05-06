@@ -54,27 +54,6 @@ const UserProfile = () => {
           
           <div>
             <div style={{ display: 'flex', gap: 12 }}>
-              <button 
-                onClick={async () => {
-                  try {
-                    await api.createNotification({
-                      user_id: user.id,
-                      title: 'System Diagnostic',
-                      message: 'This is a test notification to verify your database connection.',
-                      type: 'system',
-                      sender_name: 'Adveris Support'
-                    });
-                    setSuccess("Test Notification Sent! Check The Bell Icon.");
-                    setTimeout(() => setSuccess(null), 5000);
-                  } catch (e) {
-                    setError("Failed To Send Test Notification. Check Sql Console.");
-                  }
-                }}
-                className="btn-portal-outline"
-                style={{ padding: '16px 24px', opacity: 0.6 }}
-              >
-                Test Notification
-              </button>
               {!isEditing ? (
                 <button 
                   onClick={() => setIsEditing(true)} 
