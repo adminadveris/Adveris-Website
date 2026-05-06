@@ -83,6 +83,7 @@ export interface Request {
   approved_date?: string;
   days_left?: number | string;
   attached_file?: { name: string; size: number; type: string; url: string };
+  attached_files?: { name: string; size: number; type: string; url: string }[];
   internal_notes?: string;
   client_comms?: string;
   created_at: string;

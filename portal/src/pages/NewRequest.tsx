@@ -68,8 +68,9 @@ const NewRequest = () => {
   const [daysLeft, setDaysLeft] = useState<number | string>('');
 
   // Documentation
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [existingFileInfo, setExistingFileInfo] = useState<{name: string, size: number} | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [existingFiles, setExistingFiles] = useState<Request['attached_files']>([]);
+  const [existingFileInfo, setExistingFileInfo] = useState<Request['attached_file']>(null);
 
   const [success, setSuccess] = useState(false);
 
@@ -107,6 +108,9 @@ const NewRequest = () => {
             setDaysLeft(existing.days_left || '');
             if (existing.attached_file) {
               setExistingFileInfo(existing.attached_file);
+            }
+            if (existing.attached_files) {
+              setExistingFiles(existing.attached_files);
             }
             setStep('full');
           }
@@ -226,19 +230,28 @@ const NewRequest = () => {
         payload.days_left = daysLeft;
       }
 
-      if (attachedFile) {
+      if (attachedFiles.length > 0) {
         try {
-          const publicUrl = await api.uploadFile(attachedFile);
-          payload.attached_file = {
-            name: attachedFile.name,
-            size: attachedFile.size,
-            type: attachedFile.type,
-            url: publicUrl
-          };
+          const uploadPromises = attachedFiles.map(file => api.uploadFile(file).then(url => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            url
+          })));
+          
+          const uploadedAssets = await Promise.all(uploadPromises);
+          payload.attached_files = [...(existingFiles || []), ...uploadedAssets];
+          
+          // For legacy compatibility, set the first file as attached_file
+          if (!payload.attached_file && uploadedAssets.length > 0) {
+            payload.attached_file = uploadedAssets[0];
+          }
         } catch (uploadErr) {
           console.error("FileUploadError:", uploadErr);
-          throw new Error("Critical: System failed to persist documentation asset. Please check storage bucket permissions.");
+          throw new Error("Critical: System failed to persist documentation assets. Please check storage bucket permissions.");
         }
+      } else if (existingFiles && existingFiles.length > 0) {
+        payload.attached_files = existingFiles;
       }
 
       if (id) {
@@ -551,20 +564,49 @@ const NewRequest = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               
               <div className="portal-panel" style={{ padding: 24, borderLeft: '3px solid var(--gold)' }}>
-                <div className="firm-intel-tag" style={{ marginBottom: 16 }}>Documentation Asset</div>
+                <div className="firm-intel-tag" style={{ marginBottom: 16 }}>Documentation Assets</div>
                 <div style={{ padding: 20, background: 'rgba(255,153,51,0.02)', border: '1px dashed rgba(255,153,51,0.2)', borderRadius: 12, textAlign: 'center' }}>
-                    <input type="file" id="admin-file" style={{ display: 'none' }} onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
+                    <input 
+                      type="file" 
+                      id="admin-file" 
+                      multiple 
+                      style={{ display: 'none' }} 
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        setAttachedFiles(prev => [...prev, ...files]);
+                      }} 
+                    />
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5" style={{ marginBottom: 12, opacity: 0.5 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
                     <p style={{ fontSize: '0.7rem', opacity: 0.4, marginBottom: 16 }}>Authorized Evidence Upload</p>
                     <button type="button" onClick={() => document.getElementById('admin-file')?.click()} className="btn-portal-primary" style={{ width: 'auto', padding: '8px 24px', fontSize: '0.65rem' }}>
-                      {attachedFile || existingFileInfo ? 'Change File' : 'Select File'}
+                      Select Files
                     </button>
-                    {(attachedFile || existingFileInfo) && (
-                      <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                        <p style={{ fontSize: '0.75rem', color: 'white', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{attachedFile?.name || existingFileInfo?.name}</p>
-                        <p style={{ fontSize: '0.6rem', opacity: 0.3, marginTop: 4 }}>
-                          {attachedFile ? (attachedFile.size / 1024 / 1024).toFixed(2) : (existingFileInfo?.size ? (existingFileInfo.size / 1024 / 1024).toFixed(2) : '0')} MB
-                        </p>
+                    
+                    {(attachedFiles.length > 0 || (existingFiles && existingFiles.length > 0)) && (
+                      <div style={{ marginTop: 20, textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <p style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--gold)', opacity: 0.6, textTransform: 'uppercase' }}>Staged for Registry</p>
+                        
+                        {/* Existing Files */}
+                        {existingFiles?.map((file, idx) => (
+                          <div key={`exist-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 6, border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" strokeWidth="2"><path d="M20 6L9 17l-5-5"/></svg>
+                            <span style={{ fontSize: '0.7rem', color: 'white', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                            <button type="button" onClick={() => setExistingFiles(prev => prev?.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4 }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            </button>
+                          </div>
+                        ))}
+
+                        {/* New Files */}
+                        {attachedFiles.map((file, idx) => (
+                          <div key={`new-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(255,153,51,0.05)', borderRadius: 6, border: '1px solid rgba(255,153,51,0.1)' }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                            <span style={{ fontSize: '0.7rem', color: 'white', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{file.name}</span>
+                            <button type="button" onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4 }}>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
                 </div>
