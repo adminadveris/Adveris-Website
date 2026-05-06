@@ -227,12 +227,18 @@ const NewRequest = () => {
       }
 
       if (attachedFile) {
-        payload.attached_file = {
-          name: attachedFile.name,
-          size: attachedFile.size,
-          type: attachedFile.type,
-          url: URL.createObjectURL(attachedFile) 
-        };
+        try {
+          const publicUrl = await api.uploadFile(attachedFile);
+          payload.attached_file = {
+            name: attachedFile.name,
+            size: attachedFile.size,
+            type: attachedFile.type,
+            url: publicUrl
+          };
+        } catch (uploadErr) {
+          console.error("FileUploadError:", uploadErr);
+          throw new Error("Critical: System failed to persist documentation asset. Please check storage bucket permissions.");
+        }
       }
 
       if (id) {
@@ -465,9 +471,9 @@ const NewRequest = () => {
               )}
            </div>
         )}
-
         {isAdmin && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 800px), 1fr))', gap: 32, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32, alignItems: 'start' }}>
+            {/* LEFT: Service Parameters */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="portal-panel" style={{ padding: '24px 32px' }}>
                 <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Service Parameters</div>
@@ -488,11 +494,11 @@ const NewRequest = () => {
                             value={accountId || ''}
                             error={validationErrors.includes('accountId')}
                             onChange={val => {
-                              const acc = accounts.find(a => a.id === val);
-                              setAccountId(val);
-                              setAccountName(acc?.account_name || '');
-                              setPan(acc?.pan_number || '');
-                              setLitigationScan(acc?.litigation_scan || 'CLEAN');
+                               const acc = accounts.find(a => a.id === val);
+                               setAccountId(val);
+                               setAccountName(acc?.account_name || '');
+                               setPan(acc?.pan_number || '');
+                               setLitigationScan(acc?.litigation_scan || 'CLEAN');
                             }}
                             placeholder="Search Entity Database..."
                          />
@@ -537,21 +543,36 @@ const NewRequest = () => {
                           placeholder="Supplemental Information..." 
                        />
                     </div>
-
-                   <div className="portal-form-group" style={{ padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
-                      <label className="portal-form-label" style={{ color: 'var(--gold)' }}>Documentation Asset</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 12 }}>
-                         <input type="file" id="admin-file" style={{ display: 'none' }} onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
-                         <button type="button" onClick={() => document.getElementById('admin-file')?.click()} className="btn-portal-outline" style={{ width: 'auto', padding: '8px 20px', fontSize: '0.65rem' }}>Upload File</button>
-                         {(attachedFile || existingFileInfo) && <span style={{ fontSize: '0.7rem', opacity: 0.4 }}>{attachedFile?.name || existingFileInfo?.name}</span>}
-                      </div>
-                   </div>
                 </form>
               </div>
+            </div>
 
-              <div className="portal-panel" style={{ padding: '24px 32px', border: '1px solid rgba(255,153,51,0.1)' }}>
+            {/* RIGHT: Governance & File Upload */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              
+              <div className="portal-panel" style={{ padding: 24, borderLeft: '3px solid var(--gold)' }}>
+                <div className="firm-intel-tag" style={{ marginBottom: 16 }}>Documentation Asset</div>
+                <div style={{ padding: 20, background: 'rgba(255,153,51,0.02)', border: '1px dashed rgba(255,153,51,0.2)', borderRadius: 12, textAlign: 'center' }}>
+                    <input type="file" id="admin-file" style={{ display: 'none' }} onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5" style={{ marginBottom: 12, opacity: 0.5 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    <p style={{ fontSize: '0.7rem', opacity: 0.4, marginBottom: 16 }}>Authorized Evidence Upload</p>
+                    <button type="button" onClick={() => document.getElementById('admin-file')?.click()} className="btn-portal-primary" style={{ width: 'auto', padding: '8px 24px', fontSize: '0.65rem' }}>
+                      {attachedFile || existingFileInfo ? 'Change File' : 'Select File'}
+                    </button>
+                    {(attachedFile || existingFileInfo) && (
+                      <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p style={{ fontSize: '0.75rem', color: 'white', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>{attachedFile?.name || existingFileInfo?.name}</p>
+                        <p style={{ fontSize: '0.6rem', opacity: 0.3, marginTop: 4 }}>
+                          {attachedFile ? (attachedFile.size / 1024 / 1024).toFixed(2) : (existingFileInfo?.size ? (existingFileInfo.size / 1024 / 1024).toFixed(2) : '0')} MB
+                        </p>
+                      </div>
+                    )}
+                </div>
+              </div>
+
+              <div className="portal-panel" style={{ padding: 28 }}>
                 <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Administrative Governance</div>
-                <div className="portal-form-grid-2" style={{ gap: '20px 40px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                    <div className="portal-form-group">
                       <label className="portal-form-label">Priority Tier</label>
                       <select className="portal-form-control" value={priority} onChange={e => setPriority(e.target.value as any)}>
@@ -565,16 +586,13 @@ const NewRequest = () => {
                       <label className="portal-form-label">Deadline</label>
                       <input type="date" className="portal-form-control" value={dueDate} onChange={e => setDueDate(e.target.value)} />
                    </div>
-                   <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
+                   <div className="portal-form-group">
                       <label className="portal-form-label">Assigned Professional</label>
                       <select className="portal-form-control" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                          <option value="">Select Staff Member...</option>
                          {staff.map(s => <option key={s.id} value={s.full_name}>{s.full_name} ({s.role.charAt(0).toUpperCase() + s.role.slice(1)})</option>)}
                       </select>
                    </div>
-                </div>
-
-                <div className="portal-form-grid-2" style={{ gap: '20px 40px', marginTop: 20, padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12 }}>
                    <div className="portal-form-group">
                       <label className="portal-form-label">Verification Status</label>
                       <select className="portal-form-control" value={verificationStatus} onChange={e => setVerificationStatus(e.target.value as any)}>
@@ -584,15 +602,14 @@ const NewRequest = () => {
                          <option value="Re-submission required">Re-submission Required</option>
                       </select>
                    </div>
-                   <div className="portal-form-group">
-                      <label className="portal-form-label">Internal Briefing</label>
-                      <textarea className="portal-form-control" style={{ minHeight: 60 }} value={internalNotes} onChange={e => setInternalNotes(e.target.value)} />
-                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 32 }}>
-                   <button disabled={submitting} type="button" onClick={() => handleSubmit()} className="btn-portal-primary" style={{ padding: '16px 48px', fontSize: '0.7rem' }}>
+                <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                   <button disabled={submitting} type="button" onClick={() => handleSubmit()} className="btn-portal-primary" style={{ width: '100%', padding: '16px', fontSize: '0.75rem' }}>
                       {submitting ? 'Committing...' : id ? 'Update Request' : 'Save New Request'}
+                   </button>
+                   <button type="button" onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline" style={{ width: '100%', padding: '12px', fontSize: '0.65rem' }}>
+                      Cancel
                    </button>
                 </div>
               </div>

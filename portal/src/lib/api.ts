@@ -723,5 +723,35 @@ export const api = {
         created_at: new Date().toISOString()
       });
     if (error) throw error;
+  },
+
+  // === FILE STORAGE ===
+  uploadFile: async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const filePath = `mandates/${fileName}`;
+    const bucketName = 'mandate-files';
+
+    let { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, file);
+
+    // Self-healing: Try to create bucket if missing
+    if (uploadError && (uploadError as any).message?.includes('not found')) {
+      await supabase.storage.createBucket(bucketName, { public: true });
+      // Retry upload
+      const { error: retryError } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, file);
+      uploadError = retryError;
+    }
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   }
 };

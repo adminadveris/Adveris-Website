@@ -298,6 +298,31 @@ const MandateDetail = () => {
             </div>
           </div>
 
+          {/* CARD 4: EVIDENCE VAULT */}
+          {request.attached_file && (
+            <div className="portal-panel" style={{ padding: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,153,51,0.2)' }}>
+              <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Evidence Vault</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                 <div style={{ width: 48, height: 48, borderRadius: 8, background: 'rgba(255,153,51,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                 </div>
+                 <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{request.attached_file.name}</p>
+                    <p style={{ fontSize: '0.7rem', opacity: 0.4, marginTop: 2 }}>{(request.attached_file.size / 1024 / 1024).toFixed(2)} MB • {request.attached_file.type?.split('/').pop()?.toUpperCase()}</p>
+                 </div>
+              </div>
+              <a 
+                href={request.attached_file.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn-portal-primary" 
+                style={{ width: '100%', marginTop: 20, display: 'block', textAlign: 'center', textDecoration: 'none', fontSize: '0.65rem', padding: '10px 0' }}
+              >
+                Retrieve Asset
+              </a>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

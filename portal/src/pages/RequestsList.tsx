@@ -129,8 +129,11 @@ const RequestsList = () => {
                     <span style={{ opacity: 0.4 }}>{record.request_number}</span>
                   </td>
                   <td data-label="Service Request">
-                    <div style={{ color: 'white', fontWeight: 500 }}>
+                    <div style={{ color: 'white', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
                       {record.title || record.primary_service}
+                      {record.attached_file && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" style={{ opacity: 0.6 }} title="Documentation Asset Attached"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                      )}
                     </div>
                   </td>
                   <td data-label="Account Name">
