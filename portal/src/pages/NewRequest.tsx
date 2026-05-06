@@ -144,7 +144,7 @@ const NewRequest = () => {
     if (!pan) return;
     
     if (!validatePan(pan)) {
-      setError('Invalid PAN format. Expected: ABCDE1234F');
+      setError('Invalid PAN Format. Expected: ABCDE1234F');
       return;
     }
 
@@ -161,7 +161,7 @@ const NewRequest = () => {
         setStep('register');
       }
     } catch (err: any) {
-      setError(err.message || 'Verification error.');
+      setError(err.message || 'Verification Error.');
     } finally {
       setLoading(false);
     }
@@ -178,7 +178,7 @@ const NewRequest = () => {
     
     if (errors.length > 0) {
       setValidationErrors(errors);
-      setError('Please ensure all mandatory fields (Account, Service Domain, PAN) are complete.');
+      setError('Please Ensure All Mandatory Fields (Account, Service Domain, PAN) Are Complete.');
       return;
     }
 
@@ -245,7 +245,7 @@ const NewRequest = () => {
       setTimeout(() => navigate(`/dashboard/requests${id ? `/${id}` : ''}`), 1800);
     } catch (err: any) {
       console.error("Save error:", err);
-      setError(err.message || 'Submission failed. Please check network connectivity.');
+      setError(err.message || 'Submission Failed. Please Check Network Connectivity.');
     } finally {
       setSubmitting(false);
     }
@@ -262,8 +262,8 @@ const NewRequest = () => {
       <div style={{ color: 'var(--emerald)', marginBottom: 8 }}>
         <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h2 className="serif-title" style={{ fontSize: '3.3rem' }}>Request <em>Saved</em></h2>
-      <p style={{ opacity: 0.4 }}>Administrative request has been successfully committed to the governance vault.</p>
+      <h2 className="serif-title" style={{ fontSize: '3.3rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Request <em>Saved</em></h2>
+      <p style={{ opacity: 0.4 }}>Administrative Request Has Been Successfully Committed To The Governance Vault.</p>
     </div>
   );
 
@@ -282,8 +282,8 @@ const NewRequest = () => {
            <div className="portal-request-grid-center">
               {step === 'pan' && (
                 <div className="portal-panel" style={{ maxWidth: 600, padding: 40, textAlign: 'center' }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Entity <em>Identity</em></h2>
-                  <p style={{ opacity: 0.4, marginBottom: 24 }}>Verify the legal entity via Permanent Account Number.</p>
+                  <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Entity <em>Identity</em></h2>
+                  <p style={{ opacity: 0.4, marginBottom: 24 }}>Verify The Legal Entity Via Permanent Account Number.</p>
                   <form onSubmit={handlePanCheck}>
                     <div className="portal-form-group">
                       <label className="portal-form-label">PAN Identifier</label>
@@ -304,8 +304,8 @@ const NewRequest = () => {
 
               {step === 'register' && (
                 <div className="portal-panel" style={{ maxWidth: 900, padding: 40 }}>
-                  <h2 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 12, textAlign: 'center' }}>New Entity <em>Registry</em></h2>
-                  <p style={{ opacity: 0.4, marginBottom: 32, textAlign: 'center' }}>Identity <strong>{pan}</strong> not found. Initialize professional registration.</p>
+                  <h2 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 12, textAlign: 'center', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>New Entity <em>Registry</em></h2>
+                  <p style={{ opacity: 0.4, marginBottom: 32, textAlign: 'center' }}>Identity <strong>{pan}</strong> Not Found. Initialize Professional Registration.</p>
                   
                   <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -408,7 +408,7 @@ const NewRequest = () => {
               {step === 'scoping' && (
                  <div className="portal-panel" style={{ maxWidth: 800, padding: 40 }}>
                     <div className="firm-intel-tag" style={{ marginBottom: 20 }}>Service Scoping</div>
-                    <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 32 }}>Scope of <em>Engagement</em></h2>
+                    <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 32, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Scope Of <em>Engagement</em></h2>
                     <div style={{ marginBottom: 32, padding: 20, background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
                        <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 4 }}>Authorized Entity</p>
                        <p style={{ fontSize: '1.2rem', color: 'white', fontWeight: 600 }}>{accountName}</p>
@@ -444,8 +444,8 @@ const NewRequest = () => {
                           <label className="portal-form-label">Additional Request</label>
                           <input className="portal-form-control" placeholder="Reference Request No..." value={additionalInfo} onChange={e => setAdditionalInfo(e.target.value)} />
                        </div>
-                       <div className="portal-form-group">
-                          <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(MAX 20MB)</span></label>
+                        <div className="portal-form-group">
+                           <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(Max 20Mb)</span></label>
                           <input type="file" onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
                        </div>
                        <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
@@ -501,8 +501,8 @@ const NewRequest = () => {
                    </div>
 
                    {selectedService && (
-                      <div className="portal-form-group">
-                         <label className="portal-form-label">Opted Sub-Services <span style={{ opacity: 0.3, marginLeft: 8 }}>(Multi-Select)</span></label>
+                       <div className="portal-form-group">
+                          <label className="portal-form-label">Opted Sub-Services <span style={{ opacity: 0.3, marginLeft: 8 }}>(Multi-Select)</span></label>
                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8, padding: '20px', background: 'rgba(255,255,255,0.01)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
                             {servicesData.find(s => s.name === selectedService)?.subServices.map(sub => (
                                <label key={sub} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 12px', borderRadius: 6, background: selectedSubServices.includes(sub) ? 'rgba(255,153,51,0.05)' : 'transparent' }}>

@@ -117,7 +117,7 @@ const HistoryRegistry = () => {
               ))}
               {history.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 80, opacity: 0.1, fontStyle: 'italic' }}>No audit telemetry indexed for this request.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: 80, opacity: 0.1, fontStyle: 'italic' }}>No Audit Telemetry Indexed For This Request.</td>
                 </tr>
               )}
             </tbody>

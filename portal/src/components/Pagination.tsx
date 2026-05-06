@@ -24,12 +24,12 @@ const Pagination: React.FC<PaginationProps> = ({
   return (
     <div className="portal-pagination-bar">
       <div className="pagination-telemetry">
-        SHOWING <span className="telemetry-focus">{startIdx}-{endIdx}</span> OF <span className="telemetry-focus">{totalItems}</span> RECORDS
+        Showing <span className="telemetry-focus">{startIdx}-{endIdx}</span> Of <span className="telemetry-focus">{totalItems}</span> Records
       </div>
 
       <div className="pagination-controls">
         <div className="page-size-selector">
-          <span className="selector-label">ROWS</span>
+          <span className="selector-label">Rows</span>
           <select 
             value={pageSize} 
             onChange={(e) => onPageSizeChange(Number(e.target.value))}

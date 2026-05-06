@@ -189,7 +189,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                   >
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>Notifications</h3>
-                      <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>Mark all as read</button>
+                      <button onClick={markAllAsRead} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer' }}>Mark All As Read</button>
                     </div>
                     <div style={{ maxHeight: 400, overflowY: 'auto', padding: '12px 0' }} className="custom-scrollbar">
                       {notifications.length > 0 ? (
@@ -208,7 +208,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                         ))
                       ) : (
                         <div style={{ padding: '60px 40px', textAlign: 'center', opacity: 0.2 }}>
-                          <p style={{ fontSize: '0.85rem' }}>No new notifications.</p>
+                          <p style={{ fontSize: '0.85rem' }}>No New Notifications.</p>
                         </div>
                       )}
                     </div>
@@ -260,7 +260,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                         onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Edit profile</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Edit Profile</span>
                       </button>
                       <button 
                         onClick={() => { setIsProfileOpen(false); setIsSupportOpen(true); }}
@@ -279,7 +279,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                         onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Sign out</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>Sign Out</span>
                       </button>
                     </div>
                   </motion.div>
@@ -320,7 +320,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
               
               <h2 className="serif-title" style={{ fontSize: '3rem', marginBottom: 16 }}>Concierge Support</h2>
               <p style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.8, fontSize: '1rem', marginBottom: 48, maxWidth: 400, margin: '0 auto 48px' }}>
-                Our institutional support team is available for strategic assistance and technical guidance.
+                Our Institutional Support Team Is Available For Strategic Assistance And Technical Guidance.
               </p>
               
               <div style={{ display: 'grid', gap: 24, textAlign: 'left' }}>
@@ -386,7 +386,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
                 <span className="brand-subline" style={{ fontSize: '0.65rem', fontWeight: 400, color: 'rgba(255,255,255,0.3)', letterSpacing: 'normal' }}>Advisors Portal</span>
               </div>
               <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.2)', fontWeight: 200, letterSpacing: '0.02em' }}>
-                Professional advisory for the Indian market. Strategic compliance, regulatory governance, and corporate excellence.
+                Professional Advisory For The Indian Market. Strategic Compliance, Regulatory Governance, And Corporate Excellence.
               </p>
             </div>
 

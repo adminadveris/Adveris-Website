@@ -111,7 +111,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
               <input
                 autoFocus
                 type="text"
-                placeholder="Type to filter..."
+                placeholder="Type To Filter..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
@@ -161,10 +161,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
             )) : (
               <div style={{ padding: '30px 20px', textAlign: 'center' }}>
                 <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', marginBottom: 8 }}>
-                  No active mandates found
+                  No Active Mandates Found
                 </p>
                 <p style={{ fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--saffron)', opacity: 0.6 }}>
-                  Please verify search term or create a new request
+                  Please Verify Search Term Or Create A New Request
                 </p>
               </div>
             )}

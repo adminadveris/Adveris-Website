@@ -30,11 +30,11 @@ const UserProfile = () => {
       await api.updateProfile(user.id, updates);
       await refreshUser();
       setIsEditing(false);
-      setSuccess("Profile updated successfully.");
+      setSuccess("Profile Updated Successfully.");
       setTimeout(() => setSuccess(null), 5000);
     } catch (e: any) {
       console.error(e);
-      setError(`Failed to save: ${e?.message || 'Check network connection'}`);
+      setError(`Failed To Save: ${e?.message || 'Check Network Connection'}`);
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,8 @@ const UserProfile = () => {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 60 }}>
           <div>
-            <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 12 }}>Personal Identity</h1>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Manage your portal credentials</p>
+            <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Personal Identity</h1>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Manage Your Portal Credentials</p>
           </div>
           
           <div>
@@ -64,10 +64,10 @@ const UserProfile = () => {
                       type: 'system',
                       sender_name: 'Adveris Support'
                     });
-                    setSuccess("Test notification sent! Check the bell icon.");
+                    setSuccess("Test Notification Sent! Check The Bell Icon.");
                     setTimeout(() => setSuccess(null), 5000);
                   } catch (e) {
-                    setError("Failed to send test notification. Check SQL console.");
+                    setError("Failed To Send Test Notification. Check Sql Console.");
                   }
                 }}
                 className="btn-portal-outline"
@@ -175,7 +175,7 @@ const UserProfile = () => {
           </div>
 
           <div>
-            <label className="portal-form-label">Date of Birth</label>
+            <label className="portal-form-label">Date Of Birth</label>
             {isEditing ? (
               <input 
                 type="date"
@@ -226,7 +226,7 @@ const UserProfile = () => {
                 {(user.expertise_tags || []).map(tag => (
                   <span key={tag} style={{ padding: '8px 16px', borderRadius: 6, background: 'rgba(255,153,51,0.05)', border: '1px solid rgba(255,153,51,0.1)', color: 'var(--saffron)', fontSize: '0.75rem', fontWeight: 500 }}>{tag}</span>
                 ))}
-                {(user.expertise_tags || []).length === 0 && <p style={{ opacity: 0.2, fontSize: '0.85rem' }}>No tags assigned.</p>}
+                {(user.expertise_tags || []).length === 0 && <p style={{ opacity: 0.2, fontSize: '0.85rem' }}>No Tags Assigned.</p>}
               </div>
             </div>
           )}

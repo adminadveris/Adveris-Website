@@ -179,7 +179,7 @@ const Overview = () => {
                   </svg>
                   {c.label}
                 </div>
-                <div style={{ fontFamily: "var(--font-serif)", fontSize: '2.8rem', fontWeight: 300, lineHeight: 0.9, color: 'white' }}>
+                <div style={{ fontFamily: "var(--font-sans)", fontSize: '2.8rem', fontWeight: 600, lineHeight: 0.9, color: 'white' }}>
                   {c.value}<span style={{ fontSize: '0.85rem', verticalAlign: 'top', opacity: 0.3, marginLeft: 8, fontWeight: 600 }}>{c.suffix}</span>
                 </div>
                 <div style={{

@@ -79,7 +79,7 @@ const ClientForm = () => {
   const handleSave = async (e: FormEvent) => {
     e.preventDefault();
     if (!formData.client_name || !formData.account_id) {
-      alert('Client Name and Parent Account association are mandatory.');
+      alert('Client Name And Parent Account Association Are Mandatory.');
       return;
     }
 
@@ -92,7 +92,7 @@ const ClientForm = () => {
       }
       navigate(formData.account_id ? `/dashboard/crm/accounts/${formData.account_id}` : '/dashboard/crm');
     } catch (err) {
-      alert('Efficiency check: Verification failed. Please ensure data integrity.');
+      alert('Efficiency Check: Verification Failed. Please Ensure Data Integrity.');
     } finally {
       setSaving(false);
     }
@@ -137,7 +137,7 @@ const ClientForm = () => {
                 value={formData.client_name}
                 onChange={e => setFormData({ ...formData, client_name: e.target.value })}
                 className="portal-form-control"
-                placeholder="e.g. Vikram Malhotra"
+                placeholder="E.g. Vikram Malhotra"
                 required
               />
             </div>
@@ -147,7 +147,7 @@ const ClientForm = () => {
                 value={formData.designation}
                 onChange={e => setFormData({ ...formData, designation: e.target.value })}
                 className="portal-form-control"
-                placeholder="e.g. Managing Director"
+                placeholder="E.g. Managing Director"
               />
             </div>
             <div className="portal-form-group" style={{ gridColumn: '1 / -1' }}>
@@ -167,7 +167,7 @@ const ClientForm = () => {
               </select>
               {(isEdit || !!searchParams.get('account_id')) && (
                  <p style={{ fontSize: '0.7rem', color: 'var(--gold)', marginTop: 8, opacity: 0.6 }}>
-                   Account linkage is locked for this operation.
+                   Account Linkage Is Locked For This Operation.
                  </p>
               )}
             </div>
@@ -189,7 +189,7 @@ const ClientForm = () => {
                   value={formData.email_1}
                   onChange={e => setFormData({ ...formData, email_1: e.target.value })}
                   className="portal-form-control"
-                  placeholder="primary@firm.com"
+                  placeholder="Primary@firm.com"
                 />
               </div>
               <div className="portal-form-group">
@@ -199,7 +199,7 @@ const ClientForm = () => {
                   value={formData.email_2}
                   onChange={e => setFormData({ ...formData, email_2: e.target.value })}
                   className="portal-form-control"
-                  placeholder="secondary@firm.com"
+                  placeholder="Secondary@firm.com"
                 />
               </div>
               <div className="portal-form-group">
@@ -209,7 +209,7 @@ const ClientForm = () => {
                   value={formData.email_3}
                   onChange={e => setFormData({ ...formData, email_3: e.target.value })}
                   className="portal-form-control"
-                  placeholder="alternate@firm.com"
+                  placeholder="Alternate@firm.com"
                 />
               </div>
             </div>

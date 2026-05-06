@@ -83,9 +83,9 @@ const ClientDetail = () => {
       <div className="portal-page-header-row">
         <div className="portal-page-header" style={{ border: 'none', padding: 0 }}>
           <button onClick={() => navigate('/dashboard/crm')} className="btn-portal-outline" style={{ padding: '6px 12px', fontSize: '0.65rem', marginBottom: 16, width: 'auto', textAlign: 'left' }}>
-             ← Back to Hub
+             ← Back To Hub
           </button>
-           <h1 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 8 }}>{client.client_name}</h1>
+           <h1 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 8, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>{client.client_name}</h1>
            <p className="subtitle" style={{ fontSize: '1rem', fontWeight: 300, fontFamily: 'var(--font-sans)', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>
             {client.designation || 'Key Representative'} @ 
             <span 
@@ -192,7 +192,7 @@ const ClientDetail = () => {
                              <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '2px 6px', borderRadius: 4 }}>New: {log.new_value}</span>
                            </p>
                          )}
-                         <p style={{ fontSize: '0.7rem', opacity: 0.4, fontStyle: 'italic' }}>Modified by {log.changed_by_name}</p>
+                         <p style={{ fontSize: '0.7rem', opacity: 0.4, fontStyle: 'italic' }}>Modified By {log.changed_by_name}</p>
                       </div>
                     </div>
                   </div>
@@ -221,7 +221,7 @@ const ClientDetail = () => {
           
           <div style={{ padding: 32, borderRadius: 12, border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
              <p style={{ fontSize: '0.75rem', opacity: 0.2, lineHeight: 1.6 }}>
-               User synchronization enabled. Contact details are verified for secure client-professional communication within the Adveris ecosystem.
+               User Synchronization Enabled. Contact Details Are Verified For Secure Client-Professional Communication Within The Adveris Ecosystem.
              </p>
           </div>
         </div>

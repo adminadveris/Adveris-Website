@@ -144,7 +144,7 @@ const Expenses = () => {
       if (!category) errs.push('category');
       if (!date) errs.push('date');
       setValidationErrors(errs);
-      alert("Validation Error: Please ensure Account, Amount, Category, and Date are all completed.");
+      alert("Validation Error: Please Ensure Account, Amount, Category, And Date Are All Completed.");
       return;
     }
 
@@ -172,7 +172,7 @@ const Expenses = () => {
         await api.createExpense(payload);
       }
 
-      setSubmitStatus({ type: 'success', msg: "Expense record successfully committed to ledger." });
+      setSubmitStatus({ type: 'success', msg: "Expense Record Successfully Committed To Ledger." });
       setTimeout(() => {
         setShowForm(false);
         setEditingId(null);
@@ -186,7 +186,7 @@ const Expenses = () => {
       await loadData();
     } catch (err: any) {
       console.error("EXPENSE_SUBMIT_ERROR:", err);
-      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown server error") });
+      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown Server Error") });
     } finally {
       setLoading(false);
     }
@@ -248,12 +248,12 @@ const Expenses = () => {
                   options={records.filter(r => r.account_id === selectedAccountId).map(r => ({ id: r.id, label: r.title, sublabel: r.request_number }))}
                   value={selectedRecordId}
                   onChange={setSelectedRecordId}
-                  placeholder={selectedAccountId ? "Select Project or ADV Request..." : "Select account first..."}
+                  placeholder={selectedAccountId ? "Select Project Or Adv Request..." : "Select Account First..."}
                 />
               </div>
 
               <div className="portal-form-grid-2">
-                <FF label="Amount (INR)">
+                <FF label="Amount (Inr)">
                   <input required type="number" className="portal-form-control" style={getInputStyle('amount')} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" />
                 </FF>
                 <FF label="Category">
@@ -269,12 +269,12 @@ const Expenses = () => {
                 <FF label="Incurred Date">
                   <input required type="date" className="portal-form-control" style={getInputStyle('date')} value={date} onChange={e => setDate(e.target.value)} />
                 </FF>
-                <FF label="Receipt URL (Optional)">
+                <FF label="Receipt Url (Optional)">
                   <input type="url" className="portal-form-control" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." />
                 </FF>
               </div>
               <FF label="Rationale & Justification">
-                <textarea required className="portal-form-control" style={{ minHeight: 120, ...getInputStyle('desc') }} placeholder="Detailed reason for this disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
+                <textarea required className="portal-form-control" style={{ minHeight: 120, ...getInputStyle('desc') }} placeholder="Detailed Reason For This Disbursement..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
 
               {editingId && isAdmin && (
@@ -406,9 +406,9 @@ const Expenses = () => {
                 <th style={{ width: 100, paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>Date</th>
                 <th style={{ width: 140 }}>Category</th>
                 <th style={{ width: 140 }}>Account Name</th>
-                <th style={{ width: 100 }}>Exp-Ref</th>
+                <th style={{ width: 100 }}>Expense Ref</th>
                 <th style={{ width: 100 }}>Verification</th>
-                <th style={{ textAlign: 'right', width: 120 }}>Amount (INR)</th>
+                <th style={{ textAlign: 'right', width: 120 }}>Amount (Inr)</th>
                 <th style={{ textAlign: 'right', paddingRight: 60, width: 80 }}>Actions</th>
               </tr>
             </thead>
@@ -449,7 +449,7 @@ const Expenses = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={user?.role === 'admin' ? 7 : 6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No disbursement logs detected.</td>
+                  <td colSpan={user?.role === 'admin' ? 7 : 6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No Disbursement Logs Detected.</td>
                 </tr>
               )}
             </tbody>

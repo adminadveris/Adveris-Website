@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       setSuccess(true);
     } catch (err: any) {
       console.error("Reset failed:", err);
-      setError(err.message || 'Recovery request failed. Please try again.');
+      setError(err.message || 'Recovery Request Failed. Please Try Again.');
     } finally {
       setLoading(false);
     }
@@ -55,10 +55,10 @@ const ForgotPassword = () => {
       >
         <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(30px, 6vh, 48px)', alignItems: 'center' }}>
           <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Adveris</span>
-          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>ADVISORS PORTAL</span>
+          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>Advisors Portal</span>
         </div>
 
-        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>CREDENTIAL RECOVERY</div>
+        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>Credential Recovery</div>
 
         {success ? (
           <motion.div 
@@ -67,9 +67,9 @@ const ForgotPassword = () => {
             style={{ textAlign: 'center' }}
           >
             <p style={{ opacity: 0.7, lineHeight: 1.8, marginBottom: 32 }}>
-              If an account exists for <strong>{email}</strong>, a secure recovery link has been dispatched to your inbox.
+              If An Account Exists For <strong>{email}</strong>, A Secure Recovery Link Has Been Dispatched To Your Inbox.
             </p>
-            <Link to="/" className="btn-portal-primary" style={{ display: 'inline-block', width: 'auto', padding: '12px 40px' }}>RETURN TO LOGIN</Link>
+            <Link to="/" className="btn-portal-primary" style={{ display: 'inline-block', width: 'auto', padding: '12px 40px' }}>Return To Login</Link>
           </motion.div>
         ) : (
           <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vh, 32px)' }}>
@@ -81,7 +81,7 @@ const ForgotPassword = () => {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                placeholder="Enter your email address"
+                placeholder="Enter Your Email Address"
               />
             </div>
 
@@ -103,12 +103,12 @@ const ForgotPassword = () => {
               disabled={loading}
               style={{ marginTop: 8, width: '100%' }}
             >
-              {loading ? 'PROCESSING...' : 'SEND RECOVERY LINK'}
+              {loading ? 'Processing...' : 'Send Recovery Link'}
             </button>
             
             <div style={{ marginTop: 20 }}>
               <Link to="/" style={{ fontSize: '0.75rem', opacity: 0.4, color: 'white', textDecoration: 'none' }}>
-                ← Back to Login
+                ← Back To Login
               </Link>
             </div>
           </form>

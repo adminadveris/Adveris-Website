@@ -50,8 +50,8 @@ const Dashboard = () => {
         {(user.role === 'admin' || user.role === 'employee') && <Route path="users" element={<UserManagement />} />}
         <Route path="*" element={
           <div className="portal-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: '1.8rem', fontStyle: 'italic', color: 'rgba(255,255,255,0.2)' }}>
-              Module under development...
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.8rem', fontWeight: 600, fontStyle: 'italic', color: 'rgba(255,255,255,0.2)' }}>
+              Module Under Development...
             </p>
           </div>
         } />

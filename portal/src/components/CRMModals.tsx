@@ -148,7 +148,7 @@ export const AccountModal = ({
 
   const handleSave = async () => {
     if (!data.account_name.trim()) {
-      setError('Account Name is required.');
+      setError('Account Name Is Required.');
       return;
     }
     setError(null);
@@ -159,7 +159,7 @@ export const AccountModal = ({
       onSaved();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred. Please try again.');
+      setError(err.message || 'An Unexpected Error Occurred. Please Try Again.');
     } finally {
       setSaving(false);
     }
@@ -208,7 +208,7 @@ export const AccountModal = ({
 
           {/* Section 1: Core Registry */}
           <div className="crm-section-label">Core Registry Data</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
             <FF label="Account / Entity Name" span>
               <input
                 className="portal-form-control"
@@ -218,16 +218,16 @@ export const AccountModal = ({
                 style={{ fontSize: '0.9rem' }}
               />
             </FF>
-            <FF label="Registration (CIN / LLPIN)">
+            <FF label="Registration (Cin / Llpin)">
               <input className="portal-form-control font-mono" value={data.cin_number} onChange={e => set('cin_number', e.target.value)} placeholder="U12345MH2020..." />
             </FF>
             <FF label="Industry / Sector">
               <input className="portal-form-control" value={data.industry} onChange={e => set('industry', e.target.value)} placeholder="e.g. Finance & Banking" />
             </FF>
-            <FF label="PAN Number">
+            <FF label="Pan Number">
               <input className="portal-form-control font-mono" value={data.pan_number} onChange={e => set('pan_number', e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} />
             </FF>
-            <FF label="GSTIN Number">
+            <FF label="Gstin Number">
               <input className="portal-form-control font-mono" value={data.gstin_number} onChange={e => set('gstin_number', e.target.value.toUpperCase())} placeholder="29AAAAA0000A1Z5" />
             </FF>
           </div>
@@ -242,13 +242,13 @@ export const AccountModal = ({
               <input className="portal-form-control" value={data.landmark} onChange={e => set('landmark', e.target.value)} placeholder="Near Metro Station..." />
             </FF>
             <FF label="Street / Road 1" span>
-              <input className="portal-form-control" value={data.street_1} onChange={e => set('street_1', e.target.value)} placeholder="Primary street address" />
+              <input className="portal-form-control" value={data.street_1} onChange={e => set('street_1', e.target.value)} placeholder="Primary Street Address" />
             </FF>
             <FF label="Street / Area 2">
               <input className="portal-form-control" value={data.street_2} onChange={e => set('street_2', e.target.value)} placeholder="Area / Colony" />
             </FF>
             <FF label="Street / Locality 3">
-              <input className="portal-form-control" value={data.street_3} onChange={e => set('street_3', e.target.value)} placeholder="Sub-locality" />
+              <input className="portal-form-control" value={data.street_3} onChange={e => set('street_3', e.target.value)} placeholder="Sub-Locality" />
             </FF>
             <FF label="City / Town">
               <input className="portal-form-control" value={data.city} onChange={e => set('city', e.target.value)} placeholder="Mumbai" />
@@ -269,7 +269,7 @@ export const AccountModal = ({
         {/* Pinned Footer */}
         <div className="crm-drawer-footer">
           <button onClick={onClose} className="btn-portal-outline" style={{ flex: 1, fontSize: '0.65rem' }}>
-            CANCEL
+            Cancel
           </button>
           <button
             onClick={handleSave}
@@ -277,7 +277,7 @@ export const AccountModal = ({
             className="btn-portal-primary"
             style={{ flex: 2, fontSize: '0.65rem', opacity: (!data.account_name.trim() || saving) ? 0.5 : 1 }}
           >
-            {saving ? 'PROCESSING...' : account ? 'SAVE CHANGES' : 'CREATE ACCOUNT'}
+            {saving ? 'Processing...' : account ? 'Save Changes' : 'Create Account'}
           </button>
         </div>
 

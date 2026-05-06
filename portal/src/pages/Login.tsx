@@ -34,7 +34,7 @@ const Login = () => {
       }
     } catch (err: any) {
       console.error("Login failed:", err);
-      setError(err.message || 'Invalid credentials. Please try again.');
+      setError(err.message || 'Invalid Credentials. Please Try Again.');
     } finally {
       setLoading(false);
     }
@@ -65,10 +65,10 @@ const Login = () => {
       >
         <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(30px, 6vh, 48px)', alignItems: 'center' }}>
           <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Adveris</span>
-          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>ADVISORS PORTAL</span>
+          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>Advisors Portal</span>
         </div>
 
-        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>ACCOUNT ACCESS</div>
+        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>Account Access</div>
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(20px, 4vh, 32px)' }}>
           <div style={{ textAlign: 'left' }}>
@@ -117,19 +117,19 @@ const Login = () => {
             disabled={loading}
             style={{ marginTop: 8, width: '100%' }}
           >
-            {loading ? 'AUTHENTICATING...' : 'SECURE ENTRY'}
+            {loading ? 'Authenticating...' : 'Secure Entry'}
           </button>
 
           <div style={{ marginTop: 12 }}>
             <p style={{ fontSize: '0.75rem', opacity: 0.4 }}>
-              New to Adveris? <Link to="/signup" style={{ color: 'var(--gold)', textDecoration: 'none' }}>Request Access</Link>
+              New To Adveris? <Link to="/signup" style={{ color: 'var(--gold)', textDecoration: 'none' }}>Request Access</Link>
             </p>
           </div>
         </form>
 
         <div style={{ marginTop: 'clamp(30px, 6vh, 60px)', paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.02)' }}>
           <p style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.15)', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-            Strategic Compliance · Pan India
+            Strategic Compliance · PAN India
           </p>
         </div>
       </motion.div>

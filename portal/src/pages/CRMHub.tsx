@@ -60,9 +60,9 @@ const DataTable = <T extends { id?: string }>({
             ))}
             {paginated.length === 0 && (
               <tr>
-                <td colSpan={cols.length} style={{ padding: 80, textAlign: 'center', opacity: 0.1 }}>
-                   <p className="serif-title" style={{ fontStyle: 'italic', fontSize: '1.8rem' }}>No account objects found...</p>
-                </td>
+                 <td colSpan={cols.length} style={{ padding: 80, textAlign: 'center', opacity: 0.1 }}>
+                    <p className="serif-title" style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.8rem' }}>No Account Objects Found...</p>
+                 </td>
               </tr>
             )}
           </tbody>
@@ -106,9 +106,9 @@ const CRMHub = () => {
       )
     },
     { header: 'Industry / Sector', key: 'industry', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.industry || 'General'}</span> },
-    { header: 'PAN Number', key: 'pan_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.pan_number || '—'}</span> },
-    { header: 'Registration (CIN/LLPIN)', key: 'cin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.cin_number || '—'}</span> },
-    { header: 'GSTIN Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
+    { header: 'Pan Number', key: 'pan_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.pan_number || '—'}</span> },
+    { header: 'Registration (Cin/Llpin)', key: 'cin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.cin_number || '—'}</span> },
+    { header: 'Gstin Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
   ];
 
   const clientCols: ColDef<Client>[] = [
@@ -169,11 +169,11 @@ const CRMHub = () => {
 
           <div style={{ paddingBottom: 10, width: 320 }}>
              <input 
-               value={q} 
-               onChange={e => setQ(e.target.value)} 
-               placeholder={tab === 'accounts' ? "Search accounts..." : "Search stakeholders..."}
-               className="portal-form-control"
-               style={{ border: 'none', borderBottom: '1px solid rgba(255,153,51,0.2)', borderRadius: 0, padding: '4px 0', fontSize: '0.85rem', background: 'none' }}
+                value={q} 
+                onChange={e => setQ(e.target.value)} 
+                placeholder={tab === 'accounts' ? "Search Accounts..." : "Search Stakeholders..."}
+                className="portal-form-control"
+                style={{ border: 'none', borderBottom: '1px solid rgba(255,153,51,0.2)', borderRadius: 0, padding: '4px 0', fontSize: '0.85rem', background: 'none' }}
              />
           </div>
         </div>

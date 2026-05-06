@@ -57,7 +57,7 @@ const AuditLogs = () => {
             <tr>
               <th style={{ paddingLeft: 60, width: 100 }}>Log UUID</th>
               <th style={{ width: 120 }}>Source Table</th>
-              <th style={{ width: 120 }}>Record Ref</th>
+              <th style={{ width: 120 }}>Record Reference</th>
               <th style={{ width: 140 }}>Event Type</th>
               <th>Operational Details</th>
               <th>Authorized By</th>
@@ -111,7 +111,7 @@ const AuditLogs = () => {
             }) : (
               <tr>
                 <td colSpan={7} style={{ textAlign: 'center', padding: '160px 0', opacity: 0.1 }}>
-                  <p className="serif-title" style={{ fontSize: '1.8rem', fontStyle: 'italic' }}>Account registry is empty...</p>
+                  <p className="serif-title" style={{ fontSize: '1.8rem', fontStyle: 'italic', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Account Registry Is Empty...</p>
                 </td>
               </tr>
             )}

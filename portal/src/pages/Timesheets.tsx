@@ -109,7 +109,7 @@ const Timesheets = () => {
       if (!date) errs.push('date');
       if (!desc) errs.push('desc');
       setValidationErrors(errs);
-      alert("Validation Error: Please ensure Account, Hours, Date, and Task description are all completed.");
+      alert("Validation Error: Please Ensure Account, Hours, Date, And Task Description Are All Completed.");
       return;
     }
 
@@ -134,7 +134,7 @@ const Timesheets = () => {
         await api.createTimesheet(payload);
       }
 
-      setSubmitStatus({ type: 'success', msg: "Timesheet record successfully committed to ledger." });
+      setSubmitStatus({ type: 'success', msg: "Timesheet Record Successfully Committed To Ledger." });
       setTimeout(() => {
         setShowForm(false);
         setEditingId(null);
@@ -147,7 +147,7 @@ const Timesheets = () => {
       await loadData();
     } catch (err: any) {
       console.error("TIMESHEET_SUBMIT_ERROR:", err);
-      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown server error") });
+      setSubmitStatus({ type: 'error', msg: "Submission Failed: " + (err.message || "Unknown Server Error") });
     } finally {
       setLoading(false);
     }
@@ -200,7 +200,7 @@ const Timesheets = () => {
                   value={selectedRecordId}
                   error={validationErrors.includes('selectedRecordId')}
                   onChange={setSelectedRecordId}
-                  placeholder={selectedAccountId ? "Select Project or ADV Request..." : "Select account first..."}
+                  placeholder={selectedAccountId ? "Select Project Or Adv Request..." : "Select Account First..."}
                 />
               </div>
 
@@ -212,8 +212,8 @@ const Timesheets = () => {
                   <input required type="date" className="portal-form-control" style={getInputStyle('date')} value={date} onChange={e => setDate(e.target.value)} />
                 </FF>
               </div>
-              <FF label="Activity Work performed">
-                <textarea required className="portal-form-control" style={{ minHeight: 140, ...getInputStyle('desc') }} placeholder="Strategic context of the work performed..." value={desc} onChange={e => setDesc(e.target.value)} />
+              <FF label="Activity Work Performed">
+                <textarea required className="portal-form-control" style={{ minHeight: 140, ...getInputStyle('desc') }} placeholder="Strategic Context Of The Work Performed..." value={desc} onChange={e => setDesc(e.target.value)} />
               </FF>
               <div className={editingId && isAdmin ? "portal-form-grid-2" : ""} style={{ marginTop: 16 }}>
                 {submitStatus && (
@@ -263,7 +263,7 @@ const Timesheets = () => {
                 <th style={{ width: 100, paddingLeft: 60, whiteSpace: 'nowrap' }}>Date</th>
                 <th style={{ width: 140 }}>Created By</th>
                 <th>Account Name</th>
-                <th style={{ width: 120 }}>Time-Ref</th>
+                <th style={{ width: 120 }}>Time Reference</th>
                 <th style={{ width: 150, whiteSpace: 'nowrap' }}>Request ID</th>
                 <th style={{ textAlign: 'right', width: 90 }}>Hours</th>
                 <th style={{ textAlign: 'right', width: 100, paddingRight: 60 }}>Actions</th>
@@ -279,7 +279,7 @@ const Timesheets = () => {
                   <td data-label="Date" style={{ paddingLeft: 60, whiteSpace: 'nowrap' }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
                   <td data-label="Created By" style={{ color: 'white', fontSize: '0.85rem' }}>{log.logged_by || 'Admin'}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{log.account_name || 'Individual'}</td>
-                  <td data-label="Time-Ref" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{log.timesheet_number || 'Time-Temp'}</td>
+                  <td data-label="Time Reference" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{log.timesheet_number || 'Time Temp'}</td>
                   <td data-label="Request ID" style={{ whiteSpace: 'nowrap' }}><span className="portal-record-id">{(records.find(r => r.id === log.record_id)?.request_number) || 'ADV-000'}</span></td>
                   <td data-label="Hours" style={{ fontWeight: 600, color: 'white', textAlign: 'right' }}>{log.hours}h</td>
                   <td data-label="Actions" style={{ textAlign: 'right', paddingRight: 60 }}>
@@ -292,7 +292,7 @@ const Timesheets = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No time logs detected.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No Time Logs Detected.</td>
                 </tr>
               )}
             </tbody>

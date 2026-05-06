@@ -40,8 +40,8 @@ const UserManagement = () => {
       setIsEditing(false);
     } catch (e: any) {
       console.error("Profile save failure:", e);
-      const msg = e?.message || "Network or permission error.";
-      setError(`Save failed: ${msg}. Ensure your Supabase table has the required columns.`);
+      const msg = e?.message || "Network Or Permission Error.";
+      setError(`Save Failed: ${msg}. Ensure Your Supabase Table Has The Required Columns.`);
       setTimeout(() => setError(null), 8000);
     }
   };
@@ -85,7 +85,7 @@ const UserManagement = () => {
     if (status === 'approved' && target?.role === 'employee') {
       const tags = target.expertise_tags || [];
       if (tags.length === 0) {
-        setError("Approval requires at least one Firm Authorization for staff members.");
+        setError("Approval Requires At Least One Firm Authorization For Staff Members.");
         setTimeout(() => setError(null), 5000);
         return;
       }
@@ -129,7 +129,7 @@ const UserManagement = () => {
 
   if (loading) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="intelligence-pulse">Mapping governance ecosystem...</div>
+      <div className="intelligence-pulse">Mapping Governance Ecosystem...</div>
     </div>
   );
 
@@ -150,7 +150,7 @@ const UserManagement = () => {
             <input
               type="text"
               className="portal-form-control"
-              placeholder="Search identity..."
+              placeholder="Search Identity..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               style={{ height: 48, fontSize: '0.85rem' }}
@@ -201,7 +201,7 @@ const UserManagement = () => {
             </div>
           ))}
           {paginatedProfiles.length === 0 && (
-            <div style={{ padding: 40, textAlign: 'center', opacity: 0.2, fontSize: '0.85rem' }}>No users found.</div>
+            <div style={{ padding: 40, textAlign: 'center', opacity: 0.2, fontSize: '0.85rem' }}>No Users Found.</div>
           )}
         </div>
 
@@ -215,16 +215,16 @@ const UserManagement = () => {
           gap: 12
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', opacity: 0.3, fontWeight: 500 }}>Showing {Math.min(filteredUsers.length, pageSize)} of {filteredUsers.length}</span>
+            <span style={{ fontSize: '0.75rem', opacity: 0.3, fontWeight: 500 }}>Showing {Math.min(filteredUsers.length, pageSize)} Of {filteredUsers.length}</span>
             <select
               value={pageSize}
               onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
               className="portal-select-minimal"
             >
-              <option value={10}>10 rows</option>
-              <option value={25}>25 rows</option>
-              <option value={50}>50 rows</option>
-              <option value={100}>100 rows</option>
+              <option value={10}>10 Rows</option>
+              <option value={25}>25 Rows</option>
+              <option value={50}>50 Rows</option>
+              <option value={100}>100 Rows</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -261,7 +261,7 @@ const UserManagement = () => {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 60 }}>
                 <div>
-                  <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 8 }}>{selectedUser.full_name}</h1>
+                  <h1 className="serif-title" style={{ fontSize: '3.5rem', marginBottom: 8, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>{selectedUser.full_name}</h1>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                     <span style={{ fontSize: '1rem', color: 'var(--gold)', fontWeight: 300, opacity: 0.6 }}>{selectedUser.email}</span>
                     <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
@@ -326,7 +326,7 @@ const UserManagement = () => {
                 {/* USER PROFILE DETAILS (2 Column Grid) */}
                 <div style={{ gridColumn: 'span 2' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-                    <h3 style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.3, margin: 0 }}>User profile details</h3>
+                    <h3 style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.3, margin: 0 }}>User Profile Details</h3>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px 60px' }}>
@@ -378,7 +378,7 @@ const UserManagement = () => {
                     </div>
 
                     <div>
-                      <label className="portal-form-label">Date of Birth</label>
+                      <label className="portal-form-label">Date Of Birth</label>
                       {isEditing ? (
                         <input
                           type="date"
@@ -445,7 +445,7 @@ const UserManagement = () => {
                 {selectedUser.role !== 'client' && (
                   <div style={{ gridColumn: 'span 2', marginTop: 40, paddingTop: 40, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
-                      <h3 style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.3, margin: 0 }}>Firm authorizations</h3>
+                      <h3 style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.3, margin: 0 }}>Firm Authorizations</h3>
                       <button
                         onClick={() => setShowExpertiseModal(true)}
                         style={{
@@ -453,7 +453,7 @@ const UserManagement = () => {
                           fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer'
                         }}
                       >
-                        Manage access
+                        Manage Access
                       </button>
                     </div>
 
@@ -473,7 +473,7 @@ const UserManagement = () => {
                           width: '100%', padding: '40px', borderRadius: 12, border: '1px dashed rgba(255,255,255,0.05)',
                           textAlign: 'center', opacity: 0.2
                         }}>
-                          <p style={{ fontSize: '0.85rem' }}>No institutional services authorized yet.</p>
+                          <p style={{ fontSize: '0.85rem' }}>No Institutional Services Authorized Yet.</p>
                         </div>
                       )}
                     </div>
@@ -510,7 +510,7 @@ const UserManagement = () => {
             </motion.div>
           ) : (
             <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.1 }}>
-              <h2 className="serif-title" style={{ fontSize: '2rem' }}>Select a user to view details</h2>
+              <h2 className="serif-title" style={{ fontSize: '2rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Select A User To View Details</h2>
             </div>
           )}
         </AnimatePresence>
@@ -530,8 +530,8 @@ const UserManagement = () => {
               onClick={e => e.stopPropagation()}
               style={{ padding: 48, maxWidth: 800 }}
             >
-              <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12 }}>Authorizations</h2>
-              <p style={{ opacity: 0.4, marginBottom: 40 }}>Assign service-level expertise tags for <strong>{selectedUser.full_name}</strong>. These define the operational visibility of firm records.</p>
+              <h2 className="serif-title" style={{ fontSize: '2.5rem', marginBottom: 12, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Authorizations</h2>
+              <p style={{ opacity: 0.4, marginBottom: 40 }}>Assign Service-Level Expertise Tags For <strong>{selectedUser.full_name}</strong>. These Define The Operational Visibility Of Firm Records.</p>
 
               <div style={{
                 display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',

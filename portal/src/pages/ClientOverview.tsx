@@ -28,11 +28,11 @@ const ClientOverview = () => {
 
       <div className="portal-panel" style={{ padding: 0, overflow: 'visible' }}>
         <div className="portal-panel-header" style={{ padding: '24px 40px', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-          <h2 className="serif-title" style={{ fontSize: '1.8rem' }}>Your <em>Mandates</em></h2>
+          <h2 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Your <em>Mandates</em></h2>
         </div>
         <div className="portal-panel-body">
           {records.length === 0 ? (
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '40px 0' }}>No mandates submitted yet.</p>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '40px 0' }}>No Mandates Submitted Yet.</p>
           ) : (
             records.map((r: Request) => (
               <div 

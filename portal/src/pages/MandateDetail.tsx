@@ -97,15 +97,15 @@ const MandateDetail = () => {
 
   if (loading) return (
     <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="intelligence-pulse">Retrieving request ledger...</div>
+      <div className="intelligence-pulse">Retrieving Request Ledger...</div>
     </div>
   );
 
   if (!request) return (
     <div className="theater-container" style={{ textAlign: 'center', paddingTop: 100 }}>
-       <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1 }}>Request <em>Invalid</em></h1>
-       <p style={{ opacity: 0.4, marginTop: 20 }}>The requested mandate ID "{id}" could not be retrieved from the authorized ledger.</p>
-       <button onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return to Requests</button>
+       <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Request <em>Invalid</em></h1>
+       <p style={{ opacity: 0.4, marginTop: 20 }}>The Requested Mandate ID "{id}" Could Not Be Retrieved From The Authorized Ledger.</p>
+       <button onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return To Requests</button>
     </div>
   );
 
@@ -167,7 +167,7 @@ const MandateDetail = () => {
 
             <div className="portal-data-grid-2">
               <Field label="Additional Services" whisper>{request.description || 'None'}</Field>
-              <Field label="Client Remarks" whisper>{request.verification_remarks || 'No remarks recorded'}</Field>
+              <Field label="Client Remarks" whisper>{request.verification_remarks || 'No Remarks Recorded'}</Field>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ const MandateDetail = () => {
                     {request.verification_status || 'Pending'}
                   </span>
               </Field>
-              <Field label="Verification Remarks" whisper>{request.verification_remarks || 'None recorded'}</Field>
+              <Field label="Verification Remarks" whisper>{request.verification_remarks || 'None Recorded'}</Field>
             </div>
           </div>
 
@@ -229,7 +229,7 @@ const MandateDetail = () => {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
-                  <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>PAN Identifier</span>
+                  <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Pan Identifier</span>
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{account?.pan_number || '—'}</span>
                </div>
                {(user?.role === 'admin' || user?.role === 'employee') && (

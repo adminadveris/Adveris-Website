@@ -56,7 +56,7 @@ interface ExportDropdownProps<T> {
   dateField?: string;
 }
 
-const ExportDropdown = <T extends object>({ data, filename, label = "EXPORT DATA", dateField = "date" }: ExportDropdownProps<T>) => {
+const ExportDropdown = <T extends object>({ data, filename, label = "Export Data", dateField = "date" }: ExportDropdownProps<T>) => {
   const [open, setOpen] = useState(false);
 
   const ranges = [
@@ -100,7 +100,7 @@ const ExportDropdown = <T extends object>({ data, filename, label = "EXPORT DATA
         <>
           <div className="portal-dropdown-overlay" onClick={() => setOpen(false)} />
           <div className="portal-dropdown-menu" style={{ right: 0, left: 'auto', minWidth: 260 }}>
-            <div className="portal-dropdown-header">EXPORT TARGET (CSV DEFAULT)</div>
+            <div className="portal-dropdown-header">Export Target (Csv Default)</div>
             {ranges.map(r => (
               <div key={r.key} style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
                 <button 

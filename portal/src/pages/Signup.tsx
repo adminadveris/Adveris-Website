@@ -23,7 +23,7 @@ const Signup = () => {
     const cleanName = fullName.trim();
 
     if (cleanPass.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError('Password Must Be At Least 6 Characters.');
       setLoading(false);
       return;
     }
@@ -48,7 +48,7 @@ const Signup = () => {
       }
     } catch (err: any) {
       console.error("Signup failed:", err);
-      setError(err.message || 'Signup failed. Please try again.');
+      setError(err.message || 'Signup Failed. Please Try Again.');
     } finally {
       setLoading(false);
     }
@@ -67,13 +67,13 @@ const Signup = () => {
           className="portal-panel" 
           style={{ maxWidth: 540, padding: 80, textAlign: 'center' }}
         >
-          <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 32, color: 'var(--emerald)' }}>REGISTRATION SUBMITTED</div>
-          <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 24 }}>Account Initialized</h2>
+          <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 32, color: 'var(--emerald)' }}>Registration Submitted</div>
+          <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 24, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Account Initialized</h2>
           <p style={{ opacity: 0.6, lineHeight: 1.8, marginBottom: 40 }}>
-            Your request has been submitted to the Adveris Governance Board. 
-            Access will be granted once your identity is verified by our administrative team.
+            Your Request Has Been Submitted To The Adveris Governance Board. 
+            Access Will Be Granted Once Your Identity Is Verified By Our Administrative Team.
           </p>
-          <Link to="/" className="btn-portal-primary" style={{ display: 'inline-block', width: 'auto', padding: '12px 40px' }}>RETURN TO LOGIN</Link>
+          <Link to="/" className="btn-portal-primary" style={{ display: 'inline-block', width: 'auto', padding: '12px 40px' }}>Return To Login</Link>
         </motion.div>
       </div>
     );
@@ -104,10 +104,10 @@ const Signup = () => {
       >
         <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(20px, 4vh, 32px)', alignItems: 'center' }}>
           <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Adveris</span>
-          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>ADVISORS PORTAL</span>
+          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>Advisors Portal</span>
         </div>
 
-        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(20px, 4vh, 32px)', opacity: 0.4 }}>CLIENT ONBOARDING</div>
+        <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(20px, 4vh, 32px)', opacity: 0.4 }}>Client Onboarding</div>
 
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vh, 24px)' }}>
           <div style={{ textAlign: 'left' }}>
@@ -118,7 +118,7 @@ const Signup = () => {
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               required
-              placeholder="As per PAN/Aadhar"
+              placeholder="As Per PAN/Aadhaar"
             />
           </div>
 
@@ -134,14 +134,14 @@ const Signup = () => {
           </div>
 
           <div style={{ textAlign: 'left' }}>
-            <label className="portal-form-label">Set password</label>
+            <label className="portal-form-label">Set Password</label>
             <input
               type="password"
               className="portal-form-control"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              placeholder="Minimum 6 characters"
+              placeholder="Minimum 6 Characters"
             />
           </div>
 
@@ -163,13 +163,13 @@ const Signup = () => {
             disabled={loading}
             style={{ marginTop: 8, width: '100%' }}
           >
-            {loading ? 'INITIALIZING...' : 'REQUEST ACCESS'}
+            {loading ? 'Initializing...' : 'Request Access'}
           </button>
         </form>
 
         <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.02)' }}>
           <p style={{ fontSize: '0.75rem', opacity: 0.4 }}>
-            Already have an account? <Link to="/" style={{ color: 'var(--gold)', textDecoration: 'none' }}>Secure Login</Link>
+            Already Have An Account? <Link to="/" style={{ color: 'var(--gold)', textDecoration: 'none' }}>Secure Login</Link>
           </p>
         </div>
       </motion.div>

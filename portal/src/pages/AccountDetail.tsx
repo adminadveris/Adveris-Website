@@ -103,7 +103,7 @@ const AccountDetail = () => {
 
   const saveEdit = async () => {
     if (!account?.id || !draft.account_name?.trim()) {
-      setSaveError('Account Name is required.');
+      setSaveError('Account Name Is Required.');
       return;
     }
     setSaving(true);
@@ -114,7 +114,7 @@ const AccountDetail = () => {
       setDraft({});
       await load();
     } catch (err: any) {
-      setSaveError(err.message || 'Save failed. Please try again.');
+      setSaveError(err.message || 'Save Failed. Please Try Again.');
     } finally {
       setSaving(false);
     }
@@ -137,15 +137,15 @@ const AccountDetail = () => {
         <div className="portal-page-header" style={{ border: 'none', padding: 0 }}>
           <button onClick={() => navigate('/dashboard/crm')} className="btn-portal-outline"
             style={{ padding: '6px 12px', fontSize: '0.65rem', marginBottom: 16, width: 'auto', textAlign: 'left' }}>
-            ← Back to Hub
+            ← Back To Hub
           </button>
-          <h1 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 8 }}>
+          <h1 className="serif-title" style={{ fontSize: '2.2rem', marginBottom: 8, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
             {editing ? (
               <input
                 className="portal-form-control"
                 value={d.account_name ?? ''}
                 onChange={e => set('account_name', e.target.value)}
-                style={{ fontSize: '1.8rem', fontFamily: 'var(--font-serif)', fontWeight: 400, height: 52, padding: '8px 16px' }}
+                style={{ fontSize: '1.8rem', fontFamily: 'var(--font-sans)', fontWeight: 600, height: 52, padding: '8px 16px' }}
               />
             ) : account.account_name}
           </h1>
@@ -200,10 +200,10 @@ const AccountDetail = () => {
               {editing && <span style={{ fontSize: '0.65rem', color: 'var(--saffron)', opacity: 0.6 }}>● Edit Mode</span>}
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px 48px' }}>
-              <Field label="Registration (CIN/LLPIN)" value={a.cin_number}  editing={editing} inputValue={d.cin_number  ?? ''} onChange={v => set('cin_number',  v)} mono />
-              <Field label="PAN Number"               value={a.pan_number}  editing={editing} inputValue={d.pan_number  ?? ''} onChange={v => set('pan_number',  v.toUpperCase())} mono placeholder="ABCDE1234F" />
-              <Field label="GSTIN Number"             value={a.gstin_number} editing={editing} inputValue={d.gstin_number ?? ''} onChange={v => set('gstin_number', v.toUpperCase())} mono />
-              <Field label="Industry / Sector"        value={a.industry}    editing={editing} inputValue={d.industry    ?? ''} onChange={v => set('industry',    v)} placeholder="e.g. Finance & Banking" />
+              <Field label="Registration (Cin/Llpin)" value={a.cin_number}  editing={editing} inputValue={d.cin_number  ?? ''} onChange={v => set('cin_number',  v)} mono />
+              <Field label="Pan Number"               value={a.pan_number}  editing={editing} inputValue={d.pan_number  ?? ''} onChange={v => set('pan_number',  v.toUpperCase())} mono placeholder="ABCDE1234F" />
+              <Field label="Gstin Number"             value={a.gstin_number} editing={editing} inputValue={d.gstin_number ?? ''} onChange={v => set('gstin_number', v.toUpperCase())} mono />
+              <Field label="Industry / Sector"        value={a.industry}    editing={editing} inputValue={d.industry    ?? ''} onChange={v => set('industry',    v)} placeholder="E.g. Finance & Banking" />
             </div>
           </div>
 
@@ -245,7 +245,7 @@ const AccountDetail = () => {
           <div className="portal-panel" style={{ padding: 32 }}>
             <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, marginBottom: 24 }}>Modification Log</h3>
             {history.length === 0 ? (
-              <p style={{ opacity: 0.2, fontSize: '0.8rem', fontStyle: 'italic' }}>No modifications recorded yet.</p>
+              <p style={{ opacity: 0.2, fontSize: '0.8rem', fontStyle: 'italic' }}>No Modifications Recorded Yet.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {history.slice(0, 6).map(log => (
@@ -303,7 +303,7 @@ const AccountDetail = () => {
                 </div>
               )) : (
                 <div style={{ padding: 40, textAlign: 'center', opacity: 0.25 }}>
-                  <p style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>No stakeholders linked yet.</p>
+                  <p style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>No Stakeholders Linked Yet.</p>
                 </div>
               )}
             </div>
@@ -312,19 +312,19 @@ const AccountDetail = () => {
           {/* Stat cards */}
           <div className="portal-panel" style={{ padding: 24, borderLeft: '3px solid var(--gold)' }}>
             <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4 }}>Total Professional Hours</p>
-            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white' }}>
+            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
               {stats.totalHours}<em style={{ fontSize: '0.8rem', marginLeft: 6, opacity: 0.3 }}>Hrs</em>
             </h2>
           </div>
           <div className="portal-panel" style={{ padding: 24, borderLeft: '3px solid #10b981' }}>
             <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4 }}>Amount Disbursed</p>
-            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white' }}>
+            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
               <em style={{ fontSize: '0.8rem', marginRight: 6, opacity: 0.3 }}>₹</em>{stats.totalExp.toLocaleString('en-IN')}
             </h2>
           </div>
           <div className="portal-panel" style={{ padding: 24, borderLeft: '3px solid var(--saffron)' }}>
             <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4 }}>Active Mandates</p>
-            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white' }}>
+            <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
               {stats.mandateCount}<em style={{ fontSize: '0.8rem', marginLeft: 6, opacity: 0.3 }}>Records</em>
             </h2>
           </div>

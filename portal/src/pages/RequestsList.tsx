@@ -126,7 +126,7 @@ const RequestsList = () => {
             }) : (
               <tr>
                 <td colSpan={6} style={{ textAlign: 'center', padding: '160px 0', opacity: 0.1 }}>
-                  <p className="serif-title" style={{ fontSize: '1.8rem', fontStyle: 'italic' }}>Operational ledger is empty...</p>
+                  <p className="serif-title" style={{ fontSize: '1.8rem', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Operational Ledger Is Empty...</p>
                 </td>
               </tr>
             )}
@@ -145,7 +145,7 @@ const RequestsList = () => {
       {/* FOOTER NOTE */}
       <div style={{ marginTop: 60, textAlign: 'center' }}>
          <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em' }}>
-            All requests are time-stamped and governed by the Adveris Professional Protocol. Proprietary intellectual asset tracking enabled.
+            All Requests Are Time-Stamped And Governed By The Adveris Professional Protocol. Proprietary Intellectual Asset Tracking Enabled.
          </p>
       </div>
     </div>
