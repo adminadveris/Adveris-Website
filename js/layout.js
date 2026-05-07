@@ -37,7 +37,7 @@ const SHARED_MENU = `
         <a href="about.html" class="menu-primary-link">About Us</a>
         <a href="team.html" class="menu-primary-link">Our Team</a>
         <a href="contact.html" class="menu-primary-link">Contact</a>
-        <a href="/portal" class="menu-primary-link" style="color:var(--gold);margin-top:24px;">Client Portal</a>
+        <a href="/portal" class="menu-primary-link" style="color:var(--gold);margin-top:24px;">Login to Portal</a>
       </div>
     </div>
     <div class="menu-col" id="mcol-2">
@@ -98,7 +98,7 @@ const SHARED_FOOTER = `
         <a href="insights.html">Insights</a>
         <a href="careers.html">Careers</a>
         <a href="contact.html">Contact</a>
-        <a href="/portal" style="color:var(--gold);font-weight:600;margin-top:10px;display:block;">Client Portal</a>
+        <a href="/portal" style="color:var(--gold);font-weight:600;margin-top:10px;display:block;">Login to Portal</a>
       </div>
       <div class="footer-col">
         <h4>Contact</h4>
@@ -127,7 +127,7 @@ const SHARED_FOOTER = `
 function initSEO() {
   const pageName = document.body.getAttribute('data-page') || 'Home';
   const siteName = 'Adveris Advisors LLP';
-  
+
   // Set default canonical if missing
   let canonical = document.querySelector('link[rel="canonical"]');
   if (!canonical) {
