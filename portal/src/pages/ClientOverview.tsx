@@ -22,7 +22,7 @@ const ClientOverview = () => {
     <div className="theater-container" style={{ paddingTop: 80, paddingBottom: 150 }}>
       <div style={{ marginBottom: 40 }}>
         <div className="firm-intel-tag">
-           <span className="tag-line" /> Client Portal
+          <span className="tag-line" /> Client Portal
         </div>
       </div>
 
@@ -35,8 +35,8 @@ const ClientOverview = () => {
             <p style={{ color: 'rgba(255,255,255,0.3)', fontStyle: 'italic', textAlign: 'center', padding: '40px 0' }}>No Mandates Submitted Yet.</p>
           ) : (
             records.map((r: Request) => (
-              <div 
-                key={r.id} 
+              <div
+                key={r.id}
                 onClick={() => navigate(`/dashboard/requests/${r.id}`)}
                 style={{ cursor: 'pointer', padding: '48px 60px', borderBottom: '1px solid rgba(255,255,255,0.015)', transition: 'all 0.8s var(--ease)' }}
                 className="portal-list-item-elegant"
@@ -44,13 +44,13 @@ const ClientOverview = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.85rem', color: 'white', fontWeight: 600 }}>{r.request_number} — {r.primary_service}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ 
-                      fontSize: '0.65rem', padding: '4px 12px', borderRadius: 'var(--radius-pill)', 
-                      background: 'rgba(255,153,51,0.15)', color: 'var(--saffron)', fontWeight: 600 
+                    <span style={{
+                      fontSize: '0.65rem', padding: '4px 12px', borderRadius: 'var(--radius-pill)',
+                      background: 'rgba(255,153,51,0.15)', color: 'var(--saffron)', fontWeight: 600
                     }}>
                       {r.status.charAt(0).toUpperCase() + r.status.slice(1).toLowerCase()}
                     </span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ opacity: 0.3 }}><polyline points="9 18 15 12 9 6"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ opacity: 0.3 }}><polyline points="9 18 15 12 9 6" /></svg>
                   </div>
                 </div>
                 <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{r.description}</p>
