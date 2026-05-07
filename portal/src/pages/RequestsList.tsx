@@ -131,9 +131,24 @@ const RequestsList = () => {
                   <td data-label="Service Request">
                     <div style={{ color: 'white', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
                       {record.title || record.primary_service}
-                      {record.attached_file && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" style={{ opacity: 0.6 }} title="Documentation Asset Attached"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                      )}
+                      {(() => {
+                        const fileCount = (record.attached_files?.length ?? 0) + (record.attached_file && !record.attached_files?.some((f: any) => f?.url === record.attached_file?.url) ? 1 : 0);
+                        return fileCount > 0 ? (
+                          <span
+                            title={`${fileCount} Document${fileCount > 1 ? 's' : ''} Attached`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" style={{ opacity: 0.7 }}>
+                              <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                            </svg>
+                            {fileCount > 1 && (
+                              <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--gold)', opacity: 0.6, lineHeight: 1 }}>
+                                ×{fileCount}
+                              </span>
+                            )}
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                   </td>
                   <td data-label="Account Name">

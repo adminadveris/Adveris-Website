@@ -473,8 +473,23 @@ const NewRequest = () => {
                            />
                         </div>
                         <div className="portal-form-group">
-                           <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(Max 20Mb)</span></label>
-                          <input type="file" onChange={(e) => setAttachedFile(e.target.files?.[0] || null)} />
+                           <label className="portal-form-label">Attachment <span style={{ opacity: 0.3, marginLeft: 8 }}>(Max 20Mb · Up to 3 Files)</span></label>
+                          <input
+                            type="file"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setAttachedFiles(prev => {
+                                const total = prev.length + files.length;
+                                if (total > 3) {
+                                  alert(`Maximum 3 files allowed. You can add ${Math.max(0, 3 - prev.length)} more.`);
+                                  return [...prev, ...files.slice(0, Math.max(0, 3 - prev.length))];
+                                }
+                                return [...prev, ...files];
+                              });
+                              e.target.value = '';
+                            }}
+                          />
                        </div>
                        <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
                           <button onClick={() => handleSubmit()} disabled={submitting} className="btn-portal-primary" style={{ flex: 1 }}>
@@ -575,7 +590,17 @@ const NewRequest = () => {
                       style={{ display: 'none' }} 
                       onChange={(e) => {
                         const files = Array.from(e.target.files || []);
-                        setAttachedFiles(prev => [...prev, ...files]);
+                        setAttachedFiles(prev => {
+                          const currentTotal = (existingFiles?.length || 0) + prev.length;
+                          const availableSlots = Math.max(0, 3 - currentTotal);
+                          
+                          if (files.length > availableSlots) {
+                            alert(`Maximum 3 files allowed per request. You can only add ${availableSlots} more file(s).`);
+                            return [...prev, ...files.slice(0, availableSlots)];
+                          }
+                          return [...prev, ...files];
+                        });
+                        e.target.value = ''; // Reset input
                       }} 
                     />
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5" style={{ marginBottom: 12, opacity: 0.5 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>

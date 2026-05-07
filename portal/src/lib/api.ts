@@ -203,7 +203,25 @@ export const api = {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data as Request[];
+
+    // Normalize JSONB fields — Supabase returns them as objects, but legacy
+    // records might have been stored as JSON strings.
+    return (data as Request[]).map(r => {
+      const parseJson = (val: any) => {
+        if (!val) return val;
+        if (typeof val === 'string') {
+          try { return JSON.parse(val); } catch { return null; }
+        }
+        return val;
+      };
+      return {
+        ...r,
+        attached_file:  parseJson(r.attached_file),
+        attached_files: Array.isArray(r.attached_files)
+          ? r.attached_files
+          : (r.attached_files ? parseJson(r.attached_files) : []),
+      };
+    });
   },
 
   getNextSequenceNumber: async (table: string, prefix: string): Promise<string> => {
