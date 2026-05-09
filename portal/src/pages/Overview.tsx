@@ -2,6 +2,48 @@ import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
+const inr = (value: number) => `INR ${value.toLocaleString('en-IN')}`;
+const pct = (value: number, total: number) => total > 0 ? Math.max(4, Math.round((value / total) * 100)) : 0;
+
+const MiniBar = ({ label, value, max, tone = 'gold' }: { label: string; value: number; max: number; tone?: 'gold' | 'saffron' | 'green' | 'blue' }) => (
+  <div className="overview-chart-row">
+    <div>
+      <span>{label}</span>
+      <strong>{value.toFixed(value % 1 === 0 ? 0 : 1)}</strong>
+    </div>
+    <div className="overview-chart-track">
+      <i className={`tone-${tone}`} style={{ width: `${pct(value, max)}%` }} />
+    </div>
+  </div>
+);
+
+const Donut = ({ admins, staff, clients }: { admins: number; staff: number; clients: number }) => {
+  const total = Math.max(1, admins + staff + clients);
+  const admin = (admins / total) * 100;
+  const staffPct = (staff / total) * 100;
+
+  return (
+    <div className="overview-donut-wrap">
+      <div
+        className="overview-donut"
+        style={{
+          background: `conic-gradient(var(--saffron) 0 ${admin}%, #38bdf8 ${admin}% ${admin + staffPct}%, rgba(255,255,255,0.16) ${admin + staffPct}% 100%)`
+        }}
+      >
+        <div>
+          <strong>{admins + staff + clients}</strong>
+          <span>Users</span>
+        </div>
+      </div>
+      <div className="overview-legend">
+        <span><i className="tone-saffron" /> Admins {admins}</span>
+        <span><i className="tone-blue" /> Staff {staff}</span>
+        <span><i /> Clients {clients}</span>
+      </div>
+    </div>
+  );
+};
+
 const Overview = () => {
   const { user } = useAuth();
   const [stats, setStats] = useState({
@@ -34,10 +76,9 @@ const Overview = () => {
         ]);
 
         const now = new Date();
-
-        // Date Helpers
         const getMonday = (d: Date) => {
-          const day = d.getDay(), diff = d.getDate() - day + (day === 0 ? -6 : 1);
+          const day = d.getDay();
+          const diff = d.getDate() - day + (day === 0 ? -6 : 1);
           return new Date(d.setDate(diff)).setHours(0, 0, 0, 0);
         };
 
@@ -47,7 +88,6 @@ const Overview = () => {
         const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
 
-        // --- Role Based Security Filtering ---
         let fRecs = recs;
         let fTlogs = tlogs;
         let fElogs = elogs;
@@ -56,18 +96,12 @@ const Overview = () => {
 
         if (user.role === 'employee') {
           const expertise = user.expertise_tags || [];
-          if (expertise.includes('ALL (Global Access)')) {
-            fRecs = recs;
-          } else {
-            fRecs = recs.filter(r => expertise.includes(r.primary_service));
-          }
+          fRecs = expertise.includes('ALL (Global Access)')
+            ? recs
+            : recs.filter(r => expertise.includes(r.primary_service));
           fTlogs = tlogs.filter(t => t.logged_by === user.full_name);
           fElogs = elogs.filter(e => e.created_by_name === user.full_name);
-
-          fAccs = accs;
-          fClis = clis;
         } else if (user.role === 'client') {
-          // Clients see ONLY their own data
           fRecs = recs.filter(r => r.account_id === user.account_id);
           fTlogs = tlogs.filter(t => t.account_id === user.account_id);
           fElogs = elogs.filter(e => e.account_id === user.account_id);
@@ -75,12 +109,10 @@ const Overview = () => {
           fClis = clis.filter(c => c.account_id === user.account_id);
         }
 
-        // 1. Operations & Verification
         const pendingVerifications = fRecs.filter(r => r.verification_status === 'Pending').length;
         const activeMandates = fRecs.filter(r => r.status !== 'completed' && r.status !== 'on_hold').length;
         const totalRegistry = fAccs.length + fClis.length;
 
-        // 2. Financials (Expenses)
         const paidThisMonth = fElogs
           .filter(e => (e.status === 'paid' || e.status === 'approved') && new Date(e.date).getTime() >= startOfThisMonth)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
@@ -93,7 +125,6 @@ const Overview = () => {
           .filter(e => e.status === 'submitted' && new Date(e.date).getTime() >= startOfLastMonth && new Date(e.date).getTime() <= endOfLastMonth)
           .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
 
-        // 3. Timesheets (Hours)
         const currWeekHours = fTlogs
           .filter(t => new Date(t.date).getTime() >= startOfThisWeek)
           .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
@@ -106,96 +137,156 @@ const Overview = () => {
           .filter(t => new Date(t.date).getTime() >= startOfThisMonth)
           .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
 
-
-
-        // 4. Governance (All Users)
-        const totalAdmins = allUsers.filter(u => u.role === 'admin').length;
-        const totalStaff = allUsers.filter(u => u.role === 'employee').length;
-        const totalClients = allUsers.filter(u => u.role === 'client').length;
-
         setStats({
-          pendingVerifications, activeMandates, totalAccounts: totalRegistry,
-          paidThisMonth, pendingCurrMonth, pendingLastMonth,
-          currWeekHours, lastWeekHours, currMonthHours,
-          totalAdmins, totalStaff, totalClients
+          pendingVerifications,
+          activeMandates,
+          totalAccounts: totalRegistry,
+          paidThisMonth,
+          pendingCurrMonth,
+          pendingLastMonth,
+          currWeekHours,
+          lastWeekHours,
+          currMonthHours,
+          totalAdmins: allUsers.filter(u => u.role === 'admin').length,
+          totalStaff: allUsers.filter(u => u.role === 'employee').length,
+          totalClients: allUsers.filter(u => u.role === 'client').length
         });
       } catch (err) {
-        console.error("Telemetry failure:", err);
+        console.error('Telemetry failure:', err);
       } finally {
         setLoading(false);
       }
     };
+
     loadOverviewTelemetery();
   }, [user]);
 
-  const sections = [
-    {
-      title: 'Identity & Governance',
-      cards: [
-        { label: 'Administrators', value: stats.totalAdmins.toString(), suffix: '', accent: 'gold', icon: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /> },
-        { label: 'Firm Staff', value: stats.totalStaff.toString(), suffix: '', accent: 'saffron', icon: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /> },
-        { label: 'External Clients', value: stats.totalClients.toString(), suffix: '', accent: 'dim', icon: <circle cx="12" cy="12" r="10" /> }
-      ]
-    },
-    {
-      title: 'Operations & Verification',
-      cards: [
-        { label: 'Pending Verification', value: stats.pendingVerifications.toString(), suffix: '', accent: 'saffron', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> },
-        { label: 'Active Requests', value: stats.activeMandates.toString(), suffix: '', accent: 'gold', icon: <circle cx="12" cy="12" r="10" /> },
-        { label: 'Total Registry', value: stats.totalAccounts.toString(), suffix: '', accent: 'dim', icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></> }
-      ]
-    },
-    {
-      title: 'Financial Disbursals',
-      cards: [
-        { label: 'Paid This Month', value: '₹' + stats.paidThisMonth.toLocaleString('en-IN'), suffix: '', accent: 'gold', icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /> },
-        { label: 'Pending (Curr Month)', value: '₹' + stats.pendingCurrMonth.toLocaleString('en-IN'), suffix: '', accent: 'saffron', icon: <><rect x="2" y="4" width="20" height="16" rx="2" /><line x1="2" y1="10" x2="22" y2="10" /></> },
-        { label: 'Pending (Last Month)', value: '₹' + stats.pendingLastMonth.toLocaleString('en-IN'), suffix: '', accent: 'dim', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> }
-      ]
-    },
-    {
-      title: 'Professional Timesheets',
-      cards: [
-        { label: 'This Week Hours', value: stats.currWeekHours.toFixed(1), suffix: 'Hrs', accent: 'gold', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> },
-        { label: 'Last Week Hours', value: stats.lastWeekHours.toFixed(1), suffix: 'Hrs', accent: 'dim', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> },
-        { label: 'Monthly Hours', value: stats.currMonthHours.toFixed(1), suffix: 'Hrs', accent: 'saffron', icon: <><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></> }
-      ]
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="portal-content overview-loading">
+        <div className="intelligence-pulse">Syncing Adveris Advisors Dashboard...</div>
+      </div>
+    );
+  }
 
-  if (loading) return (
-    <div className="portal-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-      <div className="intelligence-pulse">Syncing Adveris Advisors Dashboard...</div>
-    </div>
-  );
+  const maxHours = Math.max(stats.currWeekHours, stats.lastWeekHours, stats.currMonthHours, 1);
+  const maxMoney = Math.max(stats.paidThisMonth, stats.pendingCurrMonth, stats.pendingLastMonth, 1);
+  const requestTotal = Math.max(stats.pendingVerifications + stats.activeMandates, 1);
+  const healthScore = Math.max(0, Math.min(100, 100 - (stats.pendingVerifications * 12) + (stats.currWeekHours > 0 ? 6 : 0)));
 
   return (
-    <div className="theater-container" style={{ paddingTop: 40, paddingBottom: 60 }}>
-      {sections.map((section, sIdx) => (
-        <div key={section.title} style={{ marginBottom: sIdx === sections.length - 1 ? 0 : 48 }}>
-          <div className="firm-intel-tag" style={{ marginBottom: 16 }}>{section.title}</div>
-          <div className="dashboard-grid">
-            {section.cards.map(c => (
-              <div key={c.label} className="portal-panel" style={{ padding: '32px 28px', position: 'relative', overflow: 'hidden' }}>
-                <div className="firm-intel-tag" style={{ marginBottom: 20, opacity: 0.5, fontSize: '0.65rem' }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    {c.icon}
-                  </svg>
-                  {c.label}
-                </div>
-                <div style={{ fontFamily: "var(--font-ui)", fontSize: '2rem', fontWeight: 600, lineHeight: 0.9, color: 'white' }}>
-                  {c.value}<span style={{ fontSize: '0.85rem', verticalAlign: 'top', opacity: 0.3, marginLeft: 8, fontWeight: 600, fontFamily: "var(--font-ui)" }}>{c.suffix}</span>
-                </div>
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, width: '100%', height: '2px',
-                  background: c.accent === 'gold' ? 'var(--gold)' : c.accent === 'saffron' ? 'var(--saffron)' : 'rgba(255,255,255,0.05)',
-                  opacity: 0.3
-                }} />
-              </div>
-            ))}
+    <div className="overview-analytics">
+      <section className="overview-topline">
+        <div>
+          <div className="enterprise-eyebrow">Dashboard</div>
+          <h1>Operational Overview</h1>
+          <p>Live picture of work, money, time, and access.</p>
+        </div>
+        <div className="overview-health-card portal-panel">
+          <span>Operating Score</span>
+          <strong>{healthScore}</strong>
+          <p>{stats.pendingVerifications > 0 ? 'Action required' : 'Healthy queue'}</p>
+        </div>
+      </section>
+
+      <section className="overview-kpi-strip">
+        <div className="portal-panel">
+          <span>Pending Verification</span>
+          <strong>{stats.pendingVerifications}</strong>
+        </div>
+        <div className="portal-panel">
+          <span>Active Requests</span>
+          <strong>{stats.activeMandates}</strong>
+        </div>
+        <div className="portal-panel">
+          <span>This Week</span>
+          <strong>{stats.currWeekHours.toFixed(1)}h</strong>
+        </div>
+        <div className="portal-panel">
+          <span>Pending Expense</span>
+          <strong>{inr(stats.pendingCurrMonth)}</strong>
+        </div>
+      </section>
+
+      <section className="overview-analytics-grid">
+        <div className="portal-panel overview-analytics-card overview-card-large">
+          <div className="overview-card-head">
+            <div>
+              <h2>Workload Mix</h2>
+              <p>Request distribution across verification and active work.</p>
+            </div>
+          </div>
+          <div className="overview-workload-chart">
+            <div className="overview-workload-bar">
+              <i className="tone-saffron" style={{ width: `${pct(stats.pendingVerifications, requestTotal)}%` }} />
+              <i className="tone-blue" style={{ width: `${pct(stats.activeMandates, requestTotal)}%` }} />
+            </div>
+            <div className="overview-workload-values">
+              <div><span>Pending</span><strong>{stats.pendingVerifications}</strong></div>
+              <div><span>Active</span><strong>{stats.activeMandates}</strong></div>
+              <div><span>Registry</span><strong>{stats.totalAccounts}</strong></div>
+            </div>
           </div>
         </div>
-      ))}
+
+        <div className="portal-panel overview-analytics-card">
+          <div className="overview-card-head">
+            <div>
+              <h2>Governance</h2>
+              <p>Access composition.</p>
+            </div>
+          </div>
+          <Donut admins={stats.totalAdmins} staff={stats.totalStaff} clients={stats.totalClients} />
+        </div>
+
+        <div className="portal-panel overview-analytics-card">
+          <div className="overview-card-head">
+            <div>
+              <h2>Time Capture</h2>
+              <p>Logged professional hours.</p>
+            </div>
+          </div>
+          <div className="overview-chart-stack">
+            <MiniBar label="This week" value={stats.currWeekHours} max={maxHours} tone="green" />
+            <MiniBar label="Last week" value={stats.lastWeekHours} max={maxHours} tone="blue" />
+            <MiniBar label="This month" value={stats.currMonthHours} max={maxHours} tone="saffron" />
+          </div>
+        </div>
+
+        <div className="portal-panel overview-analytics-card overview-card-wide">
+          <div className="overview-card-head">
+            <div>
+              <h2>Expense Flow</h2>
+              <p>Disbursals and open submissions.</p>
+            </div>
+          </div>
+          <div className="overview-money-chart">
+            <MiniBar label="Paid / approved" value={stats.paidThisMonth} max={maxMoney} tone="green" />
+            <MiniBar label="Pending current" value={stats.pendingCurrMonth} max={maxMoney} tone="saffron" />
+            <MiniBar label="Pending last" value={stats.pendingLastMonth} max={maxMoney} tone="blue" />
+          </div>
+          <div className="overview-money-labels">
+            <span>{inr(stats.paidThisMonth)}</span>
+            <span>{inr(stats.pendingCurrMonth)}</span>
+            <span>{inr(stats.pendingLastMonth)}</span>
+          </div>
+        </div>
+
+        <div className="portal-panel overview-analytics-card overview-brief">
+          <div className="overview-card-head">
+            <div>
+              <h2>Next Best Action</h2>
+              <p>Suggested operational focus.</p>
+            </div>
+          </div>
+          <strong>{stats.pendingVerifications > 0 ? 'Clear verification queue' : 'Maintain active request cadence'}</strong>
+          <p>
+            {stats.pendingVerifications > 0
+              ? `${stats.pendingVerifications} record${stats.pendingVerifications === 1 ? '' : 's'} should be reviewed before expanding intake.`
+              : 'No verification backlog detected. Review active requests and keep timesheets current.'}
+          </p>
+        </div>
+      </section>
     </div>
   );
 };

@@ -215,8 +215,12 @@ const Expenses = () => {
   if (showForm) {
     return (
       <div className="portal-content">
-        <div className="portal-page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <div className="enterprise-toolbar portal-page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <button onClick={cancelForm} className="btn-portal-outline">← Back</button>
+          <div>
+            <div className="enterprise-eyebrow">Expense Entry</div>
+            <h1>{editingId ? 'Edit Expense' : 'New Expense'}</h1>
+          </div>
           {editingId && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.4, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Status</span>
@@ -365,7 +369,17 @@ const Expenses = () => {
 
   return (
     <div className="portal-content">
-      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
+      <div className="enterprise-toolbar">
+        <div>
+          <div className="enterprise-eyebrow">Workspace</div>
+          <h1>Expenses</h1>
+        </div>
+        <div className="enterprise-toolbar__actions">
+          <span className="enterprise-status enterprise-status--warning">{filteredData.length} entries</span>
+        </div>
+      </div>
+
+      <div className="enterprise-filterbar" style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
           <div style={{ position: 'relative', flex: 1 }}>
              <input 

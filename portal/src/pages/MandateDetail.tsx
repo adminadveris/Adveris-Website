@@ -4,43 +4,31 @@ import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { Request, Account, AuditLog } from '../types';
 
-const STATUSES_MAP: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Pending Assessment', color: 'var(--saffron)' },
-  approved: { label: 'Authorized', color: '#22c55e' },
-  rejected: { label: 'Declined', color: '#ef4444' },
-  clarification_required: { label: 'Clarification Req', color: '#a78bfa' },
-  ongoing: { label: 'Operational', color: '#38bdf8' },
-};
+const fmtDate = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
-const fmt = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDateTime = (iso?: string) =>
+  iso ? new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
 
-/* ── Field wrapper ── */
-const Field = ({ label, children, span, whisper }: { label: string; children: React.ReactNode; span?: boolean, whisper?: boolean }) => (
-  <div style={{ gridColumn: span ? '1 / -1' : undefined, marginBottom: 12 }}>
-    <p className="portal-form-label" style={{
-      marginBottom: 6,
-      opacity: 0.7,
-      fontSize: '1rem',
-      textTransform: 'none',
-      letterSpacing: 'normal',
-      color: 'var(--gold)',
-      fontWeight: 400,
-      fontFamily: 'var(--font-sans)'
-    }}>
-      {label}
-    </p>
-    <div style={{
-      fontSize: '1rem',
-      color: 'white',
-      lineHeight: 1.5,
-      fontWeight: whisper ? 300 : 600,
-      fontFamily: 'var(--font-sans)'
-    }}>
-      {children}
-    </div>
+const normalize = (value?: string) =>
+  value ? value.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') : '-';
+
+const DetailField = ({ label, value, span, muted }: { label: string; value?: React.ReactNode; span?: boolean; muted?: boolean }) => (
+  <div className={`record-field ${span ? 'record-field--wide' : ''}`}>
+    <div className="record-field__label">{label}</div>
+    <div className={`record-field__value ${muted ? 'record-field__value--muted' : ''}`}>{value || '-'}</div>
   </div>
 );
+
+const statusMeta = (status?: string) => {
+  if (status === 'rejected' || status === 'completed' || status === 'closed') {
+    return { label: 'Closed', tone: 'danger' };
+  }
+  if (status === 'on_hold' || status === 'clarification_required') {
+    return { label: 'On Hold', tone: 'warning' };
+  }
+  return { label: 'Active', tone: 'success' };
+};
 
 const MandateDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,24 +49,22 @@ const MandateDetail = () => {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } else {
-      try {
-        // Fetch the file bytes, then create a local blob URL so the browser
-        // saves with the original file name instead of the random storage path.
-        const res = await fetch(fileUrl);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(blobUrl);
-      } catch {
-        // Fallback: open in new tab
-        window.open(fileUrl, '_blank');
-      }
+      return;
+    }
+
+    try {
+      const res = await fetch(fileUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(fileUrl, '_blank');
     }
   };
 
@@ -86,23 +72,19 @@ const MandateDetail = () => {
     const loadData = async () => {
       if (!id || !user) return;
       setLoading(true);
-      try {
-        let allRecs = await api.getRecords();
+      setError(null);
 
-        const rec = allRecs.find((r: Request) =>
-          r.id === id || r.id === `seed-mand-${id}`
-        );
+      try {
+        const allRecs = await api.getRecords();
+        const rec = allRecs.find((r: Request) => r.id === id || r.id === `seed-mand-${id}`);
 
         if (!rec) {
-          setError("Request not found.");
-          setLoading(false);
+          setError('Request not found.');
           return;
         }
 
-        // Basic RBAC guard
         if (user.role === 'client' && rec.account_id !== user.account_id) {
-          setError("Access strictly denied. Intelligence classification exceeds your clearance.");
-          setLoading(false);
+          setError('Access denied for this request.');
           return;
         }
 
@@ -115,334 +97,174 @@ const MandateDetail = () => {
         setAccount(acc);
         setHistory(hist);
       } catch (err: any) {
-        console.error("MANDATE_DETAIL: Load failure", err);
-        setError(err.message || 'Operation failed.');
+        console.error('MANDATE_DETAIL: Load failure', err);
+        setError(err.message || 'Request could not be loaded.');
       } finally {
         setLoading(false);
       }
     };
+
     loadData();
   }, [id, user]);
 
-  if (loading) return (
-    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="intelligence-pulse">Retrieving Request Ledger...</div>
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="record-empty-state">
+        <div className="intelligence-pulse">Loading request record...</div>
+      </div>
+    );
+  }
 
-  if (!request) return (
-    <div className="theater-container" style={{ textAlign: 'center', paddingTop: 100 }}>
-      <h1 className="serif-title" style={{ fontSize: '2.5rem', opacity: 0.1, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Request <em>Invalid</em></h1>
-      <p style={{ opacity: 0.4, marginTop: 20 }}>The Requested Mandate ID "{id}" Could Not Be Retrieved From The Authorized Ledger.</p>
-      <button onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline" style={{ marginTop: 40 }}>Return To Requests</button>
-    </div>
-  );
+  if (!request || error) {
+    return (
+      <div className="record-empty-state">
+        <h1 className="serif-title">Request unavailable</h1>
+        <p>{error || 'The selected request could not be retrieved.'}</p>
+        <button onClick={() => navigate('/dashboard/requests')} className="btn-portal-outline">Back to Requests</button>
+      </div>
+    );
+  }
 
-  const status = (request.status === 'rejected' || request.status === 'closed')
-    ? { label: 'Closed', color: '#ef4444' }
-    : { label: 'Active', color: '#4ade80' };
+  const files: Array<{ name: string; size: number; type?: string; url: string; date: string }> = [];
+  if (request.attached_files?.length) {
+    request.attached_files.forEach(file => files.push({ ...file, date: request.updated_at || request.created_at }));
+  }
+  if (request.attached_file && !files.some(file => file.url === request.attached_file?.url)) {
+    files.push({ ...request.attached_file, date: request.created_at });
+  }
+
+  const status = statusMeta(request.status);
+  const daysActive = Math.max(0, Math.floor((new Date().getTime() - new Date(request.created_at).getTime()) / 86400000));
 
   return (
-    <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40, fontFamily: 'var(--font-sans)' }}>
-      {/* HEADER: COMPACT NAVIGATION & ACTIONS */}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: 24 }}>
-          <button
-            onClick={() => navigate('/dashboard/requests')}
-            style={{
-              background: 'none', border: 'none', color: 'white',
-              fontSize: '0.85rem', letterSpacing: 'normal', fontWeight: 600,
-              opacity: 0.3, cursor: 'pointer',
-              transition: 'opacity 0.3s',
-              fontFamily: 'var(--font-sans)',
-              padding: 0
-            }}
-            onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseOut={(e) => e.currentTarget.style.opacity = '0.3'}
-          >
-            ← Back
-          </button>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-            <button
-              onClick={() => navigate(`/dashboard/requests/${id}/edit`)}
-              className="btn-portal-primary"
-              style={{ padding: '12px 28px', fontSize: '0.65rem' }}
-            >
-              Update Request
-            </button>
-          </div>
+    <div className="enterprise-page record-detail-page">
+      <div className="enterprise-toolbar">
+        <div>
+          <button onClick={() => navigate('/dashboard/requests')} className="enterprise-link-button">Back to Requests</button>
+          <div className="enterprise-eyebrow">Request Record</div>
+          <h1>{request.title || request.primary_service || 'Service Request'}</h1>
+        </div>
+        <div className="enterprise-toolbar__actions">
+          <span className={`enterprise-status enterprise-status--${status.tone}`}>{status.label}</span>
+          <button onClick={() => navigate(`/dashboard/requests/${id}/edit`)} className="btn-portal-primary">Update Request</button>
         </div>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 800px), 1fr))',
-        gap: 32,
-        marginTop: 0,
-        alignItems: 'start'
-      }}>
+      <section className="record-summary-card">
+        <DetailField label="Request ID" value={request.request_number} />
+        <DetailField label="Account" value={account?.account_name || request.account_name || 'Individual Identity'} />
+        <DetailField label="Service" value={request.primary_service || request.title} />
+        <DetailField label="Created" value={fmtDate(request.created_at)} />
+      </section>
 
-        {/* LEFT: INFORMATION LEDGER */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-          {/* SECTION 1: GENERAL INFORMATION */}
-          <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,255,255,0.05)' }}>
-            <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', marginBottom: 32, opacity: 0.4 }}>General Information</h2>
-
-            <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
-              <Field label="Request ID">{request.request_number}</Field>
-              <Field label="Service Type" span>{request.primary_service || request.title}</Field>
+      <div className="record-layout">
+        <main className="record-main">
+          <section className="portal-panel record-section">
+            <div className="record-section__header">
+              <h2>General Information</h2>
+              <span>{request.request_number}</span>
             </div>
-
-            <div className="portal-data-grid-2">
-              <Field label="Additional Services" whisper>{request.description || 'None'}</Field>
-              <Field label="Client Remarks" whisper>{request.verification_remarks || 'No Remarks Recorded'}</Field>
+            <div className="record-field-grid">
+              <DetailField label="Service Type" value={request.primary_service || request.title} />
+              <DetailField label="Priority" value={request.priority || 'Standard'} />
+              <DetailField label="Additional Services" value={request.description || 'None'} span muted />
+              <DetailField label="Client Remarks" value={request.verification_remarks || 'No remarks recorded'} span muted />
             </div>
-          </div>
+          </section>
 
-          {/* SECTION 3: ADMINISTRATIVE SECTION */}
-          <div className="portal-panel" style={{ padding: '32px', borderTop: '4px solid rgba(255,153,51,0.2)' }}>
-            <h2 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--gold)', marginBottom: 32 }}>Administrative Section</h2>
-
-            <div className="portal-data-grid-2" style={{ marginBottom: 8 }}>
-              <Field label="Priority">{request.priority || 'Standard'}</Field>
-              <Field label="Assigned To" span>{request.assigned_to || 'Partner Pending'}</Field>
+          <section className="portal-panel record-section">
+            <div className="record-section__header">
+              <h2>Administrative Review</h2>
+              <span>Governance</span>
             </div>
-
-            <div className="portal-data-grid-2">
-              <Field label="Verification Status">
-                <span style={{
-                  color: request.verification_status === 'Verified' ? '#22c55e' : (request.verification_status === 'Rejected' ? '#ef4444' : 'var(--gold)'),
-                  fontWeight: 700, fontSize: '1rem', fontFamily: 'var(--font-sans)'
-                }}>
-                  {request.verification_status || 'Pending'}
-                </span>
-              </Field>
-              <Field label="Verification Remarks" whisper>{request.verification_remarks || 'None Recorded'}</Field>
+            <div className="record-field-grid">
+              <DetailField label="Assigned To" value={request.assigned_to || 'Partner pending'} />
+              <DetailField
+                label="Verification"
+                value={<span className={`enterprise-status enterprise-status--${request.verification_status === 'Verified' ? 'success' : request.verification_status === 'Rejected' ? 'danger' : 'warning'}`}>{request.verification_status || 'Pending'}</span>}
+              />
+              <DetailField label="Verification Remarks" value={request.verification_remarks || 'None recorded'} span muted />
             </div>
-          </div>
+          </section>
 
-
-
-        </div>
-
-        {/* RIGHT: PERSISTENT REGISTRY SIDEBAR */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-          {/* CARD 1: ACCOUNT REGISTRY */}
-          <div className="portal-panel" style={{ padding: 24, borderLeft: '4px solid var(--gold)' }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Account Registry</div>
-            <div style={{ marginBottom: 24 }}>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '1.2rem', color: 'white', lineHeight: 1.1, marginBottom: 6, fontWeight: 700 }}>{account?.account_name}</p>
-              <p style={{ fontSize: '0.7rem', color: 'var(--gold)', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>Authorized Registry Object</p>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
-                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Pan Identifier</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>{account?.pan_number || '—'}</span>
+          {files.length > 0 && (
+            <section className="portal-panel record-section">
+              <div className="record-section__header">
+                <h2>Documents</h2>
+                <span>{files.length} file{files.length > 1 ? 's' : ''}</span>
               </div>
+              <div className="record-file-list">
+                {files.map((file, index) => (
+                  <div key={`${file.url}-${index}`} className="record-file-row">
+                    <div className="record-file-row__icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="record-file-row__name" title={file.name}>{file.name}</div>
+                      <div className="record-file-row__meta">
+                        {fmtDate(file.date)} · {file.size >= 1024 * 1024 ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(file.size / 1024))} KB`}
+                      </div>
+                    </div>
+                    <button onClick={() => handleDownload(file.url, file.name)} className="enterprise-icon-button" title={`Download ${file.name}`}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </main>
+
+        <aside className="record-side">
+          <section className="portal-panel record-section">
+            <div className="record-section__header">
+              <h2>Account Registry</h2>
+            </div>
+            <div className="record-stack">
+              <DetailField label="Account Name" value={account?.account_name || '-'} />
+              <DetailField label="PAN Identifier" value={account?.pan_number || '-'} />
               {(user?.role === 'admin' || user?.role === 'employee') && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.03)', paddingBottom: 8 }}>
-                  <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Litigation Scan</span>
-                  <span style={{
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    color: account?.litigation_scan === 'FLAGGED' || account?.litigation_scan === 'SEVERE' ? '#ef4444' : (account?.litigation_scan === 'PENDING' ? 'var(--gold)' : '#22c55e'),
-                    fontFamily: 'var(--font-sans)'
-                  }}>
-                    {account?.litigation_scan || 'Clean'}
-                  </span>
-                </div>
+                <DetailField label="Litigation Scan" value={account?.litigation_scan || 'Clean'} />
               )}
-
             </div>
-          </div>
+          </section>
 
-          {/* CARD 2: STATUS TELEMETRY */}
-          <div className="portal-panel" style={{ padding: 24 }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Status Telemetry</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Request Status</span>
-                <span style={{
-                  fontSize: '0.65rem', fontWeight: 600,
-                  color: status.color, background: `${status.color}10`,
-                  padding: '4px 12px', borderRadius: 4, border: '1px solid currentColor', fontFamily: 'var(--font-sans)'
-                }}>
-                  {status.label}
-                </span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.85rem', opacity: 0.7, fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-sans)' }}>Days Active</span>
-                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white', fontFamily: 'var(--font-sans)' }}>
-                  {Math.floor((new Date().getTime() - new Date(request.created_at).getTime()) / (1000 * 60 * 60 * 24))} Days
-                </span>
-              </div>
+          <section className="portal-panel record-section">
+            <div className="record-section__header">
+              <h2>Record Facts</h2>
             </div>
-          </div>
-          <div className="portal-panel" style={{ padding: 32, background: 'rgba(255,153,51,0.01)', border: '1px solid rgba(255,153,51,0.05)' }}>
-            <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.3, marginBottom: 24, color: 'var(--gold)' }}>System Information</h3>
-            <div className="portal-data-grid-2">
-              <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Created Date</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.created_at ? new Date(request.created_at).toLocaleString() : '—'}</p>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Created By</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.created_by_name || 'System'}</p>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Last Modified Date</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.updated_at ? new Date(request.updated_at).toLocaleString() : '—'}</p>
-              </div>
-              <div>
-                <p style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.3, marginBottom: 8 }}>Last Modified By</p>
-                <p style={{ fontSize: '0.9rem', color: 'white', opacity: 0.6 }}>{request.updated_by_name || 'System'}</p>
-              </div>
+            <div className="record-stack">
+              <DetailField label="Days Active" value={`${daysActive} days`} />
+              <DetailField label="Created By" value={request.created_by_name || request.submitted_by_name || 'System'} />
+              <DetailField label="Created Date" value={fmtDateTime(request.created_at)} />
+              <DetailField label="Last Modified By" value={request.updated_by_name || 'System'} />
+              <DetailField label="Last Modified Date" value={fmtDateTime(request.updated_at)} />
             </div>
-          </div>
+          </section>
 
-          {/* CARD 3: HISTORICAL PULSE */}
-          <div className="portal-panel" style={{ padding: 24 }}>
-            <div className="firm-intel-tag" style={{ marginBottom: 16, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}>Historical Pulse</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {history.slice(0, 3).map(log => (
-                <div key={log.id} style={{ borderLeft: '2px solid rgba(255,153,51,0.2)', paddingLeft: 12, paddingBottom: 4 }}>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-sans)' }}>
-                    {(log.field_name || 'Data').split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} {log.action === 'CREATE' ? 'Created' : log.action === 'UPDATE' ? 'Updated' : log.action}
-                  </p>
-                  <p style={{ fontSize: '0.75rem', opacity: 0.4, marginTop: 2, fontFamily: 'var(--font-sans)' }}>{fmt(log.created_at)}</p>
+          <section className="portal-panel record-section">
+            <div className="record-section__header">
+              <h2>Recent History</h2>
+              <button onClick={() => navigate(`/dashboard/requests/${id}/history`)} className="enterprise-link-button">View All</button>
+            </div>
+            <div className="record-history-list">
+              {history.slice(0, 4).map(log => (
+                <div key={log.id} className="record-history-item">
+                  <div>{normalize(log.field_name || log.action)}</div>
+                  <span>{fmtDate(log.created_at)}</span>
                 </div>
               ))}
-              <button
-                onClick={() => navigate(`/dashboard/requests/${id}/history`)}
-                style={{
-                  width: '100%', padding: '10px 0', background: 'none', border: '1px solid rgba(255,255,255,0.05)',
-                  color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 600,
-                  cursor: 'pointer', borderRadius: 4,
-                  transition: 'all 0.3s', marginTop: 8, fontFamily: 'var(--font-sans)'
-                }}
-              >
-                View Full Audit
-              </button>
+              {history.length === 0 && <div className="record-muted">No audit history yet.</div>}
             </div>
-          </div>
-
-          {/* CARD 4: EVIDENCE VAULT — TABLE LAYOUT */}
-          {(request.attached_file || (request.attached_files && request.attached_files.length > 0)) && (() => {
-            // Merge legacy single file + multi-file array into one deduplicated list
-            const allFiles: Array<{ name: string; size: number; type?: string; url: string; date: string }> = [];
-
-            if (request.attached_files?.length) {
-              request.attached_files.forEach(f => allFiles.push({ ...f, date: request.updated_at || request.created_at }));
-            }
-            // Only add legacy file if it's not already in the array
-            if (request.attached_file && !allFiles.some(f => f.url === request.attached_file?.url)) {
-              allFiles.push({ ...request.attached_file, date: request.created_at });
-            }
-
-            if (!allFiles.length) return null;
-
-            return (
-              <div className="portal-panel" style={{ padding: 24, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,153,51,0.2)' }}>
-                <div className="firm-intel-tag" style={{ marginBottom: 20, opacity: 0.6, fontFamily: 'var(--font-sans)', fontSize: '0.75rem' }}
-                >Evidence Vault
-                  <span style={{ marginLeft: 8, background: 'rgba(255,153,51,0.15)', color: 'var(--gold)', borderRadius: 20, padding: '1px 8px', fontSize: '0.6rem', fontWeight: 700 }}>
-                    {allFiles.length} File{allFiles.length > 1 ? 's' : ''}
-                  </span>
-                </div>
-
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.72rem', fontFamily: 'var(--font-sans)' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <th style={{ textAlign: 'left', padding: '6px 8px', color: 'var(--gold)', fontWeight: 600, opacity: 0.6, fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>File Name</th>
-                      <th style={{ textAlign: 'left', padding: '6px 8px', color: 'var(--gold)', fontWeight: 600, opacity: 0.6, fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Upload Date</th>
-                      <th style={{ textAlign: 'right', padding: '6px 8px', color: 'var(--gold)', fontWeight: 600, opacity: 0.6, fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Size</th>
-                      <th style={{ textAlign: 'center', padding: '6px 8px', color: 'var(--gold)', fontWeight: 600, opacity: 0.6, fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Download</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allFiles.map((file, idx) => (
-                      <tr
-                        key={idx}
-                        style={{
-                          borderBottom: idx < allFiles.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                          transition: 'background 0.2s'
-                        }}
-                        onMouseOver={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-                        onMouseOut={e => (e.currentTarget.style.background = 'transparent')}
-                      >
-                        {/* File Name */}
-                        <td style={{ padding: '10px 8px', maxWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{
-                              width: 26, height: 26, borderRadius: 4, flexShrink: 0,
-                              background: 'rgba(255,153,51,0.1)',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              color: 'var(--gold)'
-                            }}>
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
-                                <polyline points="13 2 13 9 20 9" />
-                              </svg>
-                            </div>
-                            <span style={{
-                              color: 'white', fontWeight: 500,
-                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                              display: 'block'
-                            }} title={file.name}>
-                              {file.name}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Upload Date */}
-                        <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', opacity: 0.45, color: 'white' }}>
-                          {file.date ? new Date(file.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : '—'}
-                        </td>
-
-                        {/* File Size */}
-                        <td style={{ padding: '10px 8px', textAlign: 'right', whiteSpace: 'nowrap', opacity: 0.45, color: 'white' }}>
-                          {file.size >= 1024 * 1024
-                            ? `${(file.size / 1024 / 1024).toFixed(1)} MB`
-                            : `${(file.size / 1024).toFixed(0)} KB`}
-                        </td>
-
-                        {/* Download */}
-                        <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                          <button
-                            onClick={() => handleDownload(file.url, file.name)}
-                            title={`Download ${file.name}`}
-                            style={{
-                              background: 'rgba(255,153,51,0.08)',
-                              border: '1px solid rgba(255,153,51,0.2)',
-                              borderRadius: 6,
-                              color: 'var(--gold)',
-                              cursor: 'pointer',
-                              padding: '5px 10px',
-                              fontSize: '0.6rem',
-                              fontWeight: 700,
-                              letterSpacing: '0.05em',
-                              fontFamily: 'var(--font-sans)',
-                              transition: 'all 0.2s',
-                              whiteSpace: 'nowrap'
-                            }}
-                            onMouseOver={e => { e.currentTarget.style.background = 'rgba(255,153,51,0.18)'; e.currentTarget.style.borderColor = 'rgba(255,153,51,0.5)'; }}
-                            onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,153,51,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,153,51,0.2)'; }}
-                          >
-                            ↓ Save
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            );
-          })()}
-
-
-        </div>
+          </section>
+        </aside>
       </div>
     </div>
   );

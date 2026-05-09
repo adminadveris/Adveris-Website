@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { AccountModal } from '../components/CRMModals';
 import Pagination from '../components/Pagination';
 import type { Account, Client } from '../types';
 
-// ——— ADVERIS PREMIUM ACCOUNT HYPER-AESTHETIC TABLE ———
 interface ColDef<T> {
   header: string;
   key: string;
@@ -14,7 +13,10 @@ interface ColDef<T> {
 }
 
 const DataTable = <T extends { id?: string }>({
-  cols, rows, onRowClick, q,
+  cols,
+  rows,
+  onRowClick,
+  q,
 }: {
   cols: ColDef<T>[];
   rows: T[];
@@ -27,53 +29,49 @@ const DataTable = <T extends { id?: string }>({
   const filtered = useMemo(() => {
     if (!q) return rows;
     const lq = q.toLowerCase();
-    return rows.filter(r => Object.values(r).some(v => String(v ?? '').toLowerCase().includes(lq)));
+    return rows.filter(row => Object.values(row).some(value => String(value ?? '').toLowerCase().includes(lq)));
   }, [rows, q]);
 
-  const paginated = filtered.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
+  const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
-    <div style={{ marginTop: 40 }}>
-      <div className="portal-panel" style={{ padding: 0, overflow: 'visible' }}>
+    <div className="crm-table-block">
+      <div className="portal-panel crm-table-panel">
         <table className="portal-table-v2">
           <thead>
             <tr>
-              {cols.map((col, idx) => (
-                <th key={col.key} style={{ paddingLeft: idx === 0 ? 60 : 24, width: col.width }}>{col.header}</th>
+              {cols.map(col => (
+                <th key={col.key} style={{ width: col.width }}>{col.header}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {paginated.map((row, i) => (
-              <tr key={row.id ?? i} onClick={() => onRowClick?.(row)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
-                {cols.map((col, idx) => (
-                  <td key={col.key} style={{ paddingLeft: idx === 0 ? 60 : 24 }}>
-                    {col.render ? col.render(row) : (
-                       <span style={{ fontWeight: 300, color: 'rgba(255,255,255,0.6)' }}>{(row as any)[col.key] ?? '—'}</span>
-                    )}
+            {paginated.map((row, index) => (
+              <tr key={row.id ?? index} onClick={() => onRowClick?.(row)} style={{ cursor: onRowClick ? 'pointer' : 'default' }}>
+                {cols.map(col => (
+                  <td key={col.key}>
+                    {col.render ? col.render(row) : <span className="crm-muted-value">{(row as any)[col.key] ?? '-'}</span>}
                   </td>
                 ))}
               </tr>
             ))}
             {paginated.length === 0 && (
               <tr>
-                 <td colSpan={cols.length} style={{ padding: 80, textAlign: 'center', opacity: 0.1 }}>
-                    <p className="serif-title" style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.8rem' }}>No Account Objects Found...</p>
-                 </td>
+                <td colSpan={cols.length} className="crm-empty-cell">No records found</td>
               </tr>
             )}
           </tbody>
         </table>
 
-        <Pagination 
+        <Pagination
           currentPage={currentPage}
           totalItems={filtered.length}
           pageSize={pageSize}
           onPageChange={setCurrentPage}
-          onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
         />
       </div>
     </div>
@@ -96,95 +94,155 @@ const CRMHub = () => {
     setClients(clis);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const accountCols: ColDef<Account>[] = [
     {
-      header: 'Account Name', key: 'account_name',
-      render: r => (
-        <div style={{ color: 'white', fontWeight: 500 }}>{r.account_name}</div>
-      )
+      header: 'Account Name',
+      key: 'account_name',
+      render: row => <div className="crm-primary-cell">{row.account_name}</div>,
     },
-    { header: 'Industry / Sector', key: 'industry', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.industry || 'General'}</span> },
-    { header: 'PAN Number', key: 'pan_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.pan_number || '—'}</span> },
-    { header: 'Registration (CIN / LLPIN)', key: 'cin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.cin_number || '—'}</span> },
-    { header: 'GSTIN Number', key: 'gstin_number', render: r => <span style={{ opacity: 0.4, fontWeight: 300, fontSize: '0.8rem' }}>{r.gstin_number || '—'}</span> },
+    {
+      header: 'Industry / Sector',
+      key: 'industry',
+      render: row => <span className="crm-muted-value">{row.industry || 'General'}</span>,
+    },
+    {
+      header: 'PAN Number',
+      key: 'pan_number',
+      render: row => <span className="crm-muted-value">{row.pan_number || '-'}</span>,
+    },
+    {
+      header: 'Registration (CIN / LLPIN)',
+      key: 'cin_number',
+      render: row => <span className="crm-muted-value">{row.cin_number || '-'}</span>,
+    },
+    {
+      header: 'GSTIN Number',
+      key: 'gstin_number',
+      render: row => <span className="crm-muted-value">{row.gstin_number || '-'}</span>,
+    },
   ];
 
   const clientCols: ColDef<Client>[] = [
     {
-      header: 'Client Name', key: 'client_name',
-      render: r => <div style={{ color: 'white', fontWeight: 500 }}>{r.client_name}</div>
+      header: 'Client Name',
+      key: 'client_name',
+      render: row => <div className="crm-primary-cell">{row.client_name}</div>,
     },
-    { header: 'Designation', key: 'designation', render: r => <span style={{ opacity: 0.4, fontWeight: 300 }}>{r.designation || 'Officer'}</span> },
-    { header: 'Primary Email', key: 'email_1', render: r => <span style={{ opacity: 0.4, fontSize: '0.8rem' }}>{r.email_1 || '—'}</span> },
-    { header: 'Primary Phone', key: 'phone_1', render: r => <span style={{ opacity: 0.4, fontSize: '0.8rem' }}>{r.phone_1 || '—'}</span> },
+    {
+      header: 'Designation',
+      key: 'designation',
+      render: row => <span className="crm-muted-value">{row.designation || 'Officer'}</span>,
+    },
+    {
+      header: 'Primary Email',
+      key: 'email_1',
+      render: row => <span className="crm-muted-value">{row.email_1 || '-'}</span>,
+    },
+    {
+      header: 'Primary Phone',
+      key: 'phone_1',
+      render: row => <span className="crm-muted-value">{row.phone_1 || '-'}</span>,
+    },
   ];
 
   return (
-    <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40 }}>
+    <div className="theater-container crm-page" style={{ paddingTop: 0, paddingBottom: 40 }}>
       {showAccountModal && <AccountModal onClose={() => setShowAccountModal(false)} onSaved={load} />}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40 }}>
-        <div />
-        <div style={{ paddingBottom: 0 }}>
-          <button 
+      <div className="enterprise-toolbar crm-toolbar">
+        <div>
+          <div className="enterprise-eyebrow">System Overview</div>
+          <h1>Accounts & Clients</h1>
+        </div>
+        <div className="enterprise-toolbar__actions">
+          <button
             onClick={() => {
               if (tab === 'accounts') setShowAccountModal(true);
               else navigate('/dashboard/crm/clients/new');
             }}
             className="btn-portal-primary"
-            style={{ width: 'auto', whiteSpace: 'nowrap', padding: '16px 40px' }}
+            style={{ width: 'auto', whiteSpace: 'nowrap' }}
           >
             {tab === 'accounts' ? 'New Account' : 'New Client'}
           </button>
         </div>
       </div>
 
-      <div style={{ marginTop: 40 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: 40 }}>
-          {/* Account Tabs — Flow Aesthetic V4 */}
-          <div className="portal-tab-group" style={{ marginBottom: 0, border: 'none' }}>
-            {(['accounts', 'clients'] as Tab[]).map(t => (
-              <button 
-                key={t} 
-                onClick={() => setTab(t)} 
-                className={`portal-tab-item ${tab === t ? 'active' : ''}`}
-                style={{ fontSize: '0.85rem', fontWeight: 500 }}
+      <div className="crm-metrics-row">
+        <div className="portal-panel crm-metric-card">
+          <span>Total Accounts</span>
+          <strong>{accounts.length}</strong>
+        </div>
+        <div className="portal-panel crm-metric-card">
+          <span>Total Clients</span>
+          <strong>{clients.length}</strong>
+        </div>
+        <div className="portal-panel crm-metric-card">
+          <span>Current View</span>
+          <strong>{tab === 'accounts' ? 'Accounts' : 'Clients'}</strong>
+        </div>
+      </div>
+
+      <section className="portal-panel crm-workspace">
+        <div className="crm-control-row">
+          <div className="crm-segmented-tabs" role="tablist" aria-label="CRM view">
+            {(['accounts', 'clients'] as Tab[]).map(item => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => {
+                  setTab(item);
+                  setQ('');
+                }}
+                className={tab === item ? 'active' : ''}
               >
-                {t === 'accounts' ? (
-                  <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                    Manage Accounts
-                  </>
+                {item === 'accounts' ? (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                  </svg>
                 ) : (
-                  <>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><polyline points="16 11 18 13 22 9"></polyline></svg>
-                    Manage Clients
-                  </>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <polyline points="16 11 18 13 22 9" />
+                  </svg>
                 )}
+                {item === 'accounts' ? 'Accounts' : 'Clients'}
               </button>
             ))}
           </div>
 
-          <div style={{ paddingBottom: 10, width: 320 }}>
-             <input 
-                value={q} 
-                onChange={e => setQ(e.target.value)} 
-                placeholder={tab === 'accounts' ? "Search Accounts..." : "Search Stakeholders..."}
-                className="portal-form-control"
-                style={{ border: 'none', borderBottom: '1px solid rgba(255,153,51,0.2)', borderRadius: 0, padding: '4px 0', fontSize: '0.85rem', background: 'none' }}
-             />
+          <div className="crm-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              value={q}
+              onChange={event => setQ(event.target.value)}
+              placeholder={tab === 'accounts' ? 'Search accounts...' : 'Search clients...'}
+            />
           </div>
         </div>
 
-        <div key={tab}>
+        <div className="crm-view-title">
+          <div>
+            <h2>{tab === 'accounts' ? 'Account Directory' : 'Client Directory'}</h2>
+            <p>{tab === 'accounts' ? 'Registered client entities and statutory identifiers.' : 'Stakeholder contacts linked to managed accounts.'}</p>
+          </div>
+        </div>
+
+        <div key={tab} className="crm-table-host">
           {tab === 'accounts'
-            ? <DataTable cols={accountCols} rows={accounts} q={q} onRowClick={r => navigate(`/dashboard/crm/accounts/${r.id}`)} />
-            : <DataTable cols={clientCols} rows={clients} q={q} onRowClick={r => navigate(`/dashboard/crm/clients/${r.id}`)} />
+            ? <DataTable cols={accountCols} rows={accounts} q={q} onRowClick={row => navigate(`/dashboard/crm/accounts/${row.id}`)} />
+            : <DataTable cols={clientCols} rows={clients} q={q} onRowClick={row => navigate(`/dashboard/crm/clients/${row.id}`)} />
           }
         </div>
-      </div>
+      </section>
     </div>
   );
 };

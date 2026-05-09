@@ -50,7 +50,17 @@ const RequestsList = () => {
 
   return (
     <div className="theater-container" style={{ paddingTop: 0, paddingBottom: 40 }}>
-      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+      <div className="enterprise-toolbar">
+        <div>
+          <div className="enterprise-eyebrow">Workspace</div>
+          <h1>All Requests</h1>
+        </div>
+        <div className="enterprise-toolbar__actions">
+          <span className="enterprise-status enterprise-status--warning">{filteredData.length} records</span>
+        </div>
+      </div>
+
+      <div className="enterprise-filterbar" style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
           <div style={{ position: 'relative', flex: 1 }}>
              <input 
@@ -143,7 +153,7 @@ const RequestsList = () => {
                             </svg>
                             {fileCount > 1 && (
                               <span style={{ fontSize: '0.6rem', fontWeight: 700, color: 'var(--gold)', opacity: 0.6, lineHeight: 1 }}>
-                                ×{fileCount}
+                                x{fileCount}
                               </span>
                             )}
                           </span>
@@ -214,11 +224,7 @@ const RequestsList = () => {
         />
       </div>
 
-      <div style={{ marginTop: 60, textAlign: 'center' }}>
-         <p style={{ fontSize: '0.8rem', opacity: 0.15, fontWeight: 200, letterSpacing: '0.05em', fontFamily: 'var(--font-ui)' }}>
-            All Requests Are Time-Stamped And Governed By The Adveris Professional Protocol. Proprietary Intellectual Asset Tracking Enabled.
-         </p>
-      </div>
+      <div className="enterprise-page-note">All requests are time-stamped and governed by the Adveris professional protocol.</div>
     </div>
   );
 };

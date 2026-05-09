@@ -1,8 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { User } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const ProfileField = ({
+  label,
+  children,
+  wide,
+}: {
+  label: string;
+  children: React.ReactNode;
+  wide?: boolean;
+}) => (
+  <div className={`profile-field ${wide ? 'profile-field--wide' : ''}`}>
+    <label className="portal-form-label">{label}</label>
+    {children}
+  </div>
+);
+
+const readValue = (value?: React.ReactNode, muted = false) => (
+  <p className={`profile-read-value ${muted ? 'profile-read-value--muted' : ''}`}>{value || '-'}</p>
+);
 
 const UserProfile = () => {
   const { user, refreshUser } = useAuth();
@@ -13,28 +32,27 @@ const UserProfile = () => {
   const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
-      setEditData({ ...user });
-    }
+    if (user) setEditData({ ...user });
   }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
     setLoading(true);
     setError(null);
+
     try {
       const updates = {
         ...editData,
-        full_name: `${editData.first_name || ''} ${editData.last_name || ''}`.trim()
+        full_name: `${editData.first_name || ''} ${editData.last_name || ''}`.trim(),
       };
       await api.updateProfile(user.id, updates);
       await refreshUser();
       setIsEditing(false);
-      setSuccess("Profile Updated Successfully.");
-      setTimeout(() => setSuccess(null), 5000);
+      setSuccess('Profile updated successfully.');
+      setTimeout(() => setSuccess(null), 3500);
     } catch (e: any) {
       console.error(e);
-      setError(`Failed To Save: ${e?.message || 'Check Network Connection'}`);
+      setError(`Failed to save: ${e?.message || 'check network connection'}`);
     } finally {
       setLoading(false);
     }
@@ -43,173 +61,148 @@ const UserProfile = () => {
   if (!user) return null;
 
   return (
-    <div className="theater-container" style={{ minHeight: '80vh', padding: '60px' }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-        
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 60 }}>
-          <div>
-            <h1 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Personal Identity</h1>
-            <p style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>Manage Your Portal Credentials</p>
-          </div>
-          
-          <div>
-            <div style={{ display: 'flex', gap: 12 }}>
-              {!isEditing ? (
-                <button 
-                  onClick={() => setIsEditing(true)} 
-                  className="btn-portal-primary"
-                  style={{ padding: '16px 40px' }}
-                >
-                  Edit Profile
-                </button>
-              ) : (
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button 
-                    onClick={() => setIsEditing(false)} 
-                    className="btn-portal-outline"
-                    style={{ padding: '16px 32px' }}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={handleSave} 
-                    disabled={loading}
-                    className="btn-portal-primary"
-                    style={{ padding: '16px 40px' }}
-                  >
-                    {loading ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="profile-page">
+      <div className="enterprise-toolbar profile-toolbar">
+        <div>
+          <div className="enterprise-eyebrow">Profile</div>
+          <h1>Personal Identity</h1>
+          <p>Manage your portal credentials and assigned access.</p>
         </div>
 
-        <AnimatePresence>
-          {error && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ padding: '20px 24px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, color: '#f87171', marginBottom: 40, fontSize: '0.9rem', fontWeight: 600 }}
-            >
-              ⚠ {error}
-            </motion.div>
+        <div className="enterprise-toolbar__actions">
+          {!isEditing ? (
+            <button onClick={() => setIsEditing(true)} className="btn-portal-primary">
+              Edit Profile
+            </button>
+          ) : (
+            <>
+              <button onClick={() => setIsEditing(false)} className="btn-portal-outline">
+                Cancel
+              </button>
+              <button onClick={handleSave} disabled={loading} className="btn-portal-primary">
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </>
           )}
-          {success && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              style={{ padding: '20px 24px', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 12, color: '#4ade80', marginBottom: 40, fontSize: '0.9rem', fontWeight: 600 }}
-            >
-              ✓ {success}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        </div>
+      </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px 80px', padding: '60px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: 24 }}>
-          
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="profile-alert profile-alert--error"
+          >
+            {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="profile-alert profile-alert--success"
+          >
+            {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="portal-panel profile-card">
+        <section className="profile-summary">
+          <div className="profile-avatar">{(user.first_name || user.full_name || user.email || 'U').charAt(0).toUpperCase()}</div>
           <div>
-            <label className="portal-form-label">First Name</label>
+            <h2>{user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Portal User'}</h2>
+            <p>{user.email}</p>
+          </div>
+          <span className="enterprise-status enterprise-status--warning">
+            {user.role === 'admin' ? 'Administrator' : user.role === 'employee' ? 'Firm Staff' : 'External Client'}
+          </span>
+        </section>
+
+        <section className="profile-grid">
+          <ProfileField label="First Name">
             {isEditing ? (
-              <input 
+              <input
                 className="portal-form-control"
                 value={editData.first_name || ''}
-                onChange={e => setEditData({ ...editData, first_name: e.target.value })}
-                style={{ height: 48 }}
+                onChange={event => setEditData({ ...editData, first_name: event.target.value })}
               />
-            ) : (
-              <p style={{ fontSize: '1rem', color: 'white', fontWeight: 400 }}>{user.first_name || '—'}</p>
-            )}
-          </div>
+            ) : readValue(user.first_name)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Last Name</label>
+          <ProfileField label="Last Name">
             {isEditing ? (
-              <input 
+              <input
                 className="portal-form-control"
                 value={editData.last_name || ''}
-                onChange={e => setEditData({ ...editData, last_name: e.target.value })}
-                style={{ height: 48 }}
+                onChange={event => setEditData({ ...editData, last_name: event.target.value })}
               />
-            ) : (
-              <p style={{ fontSize: '1rem', color: 'white', fontWeight: 400 }}>{user.last_name || '—'}</p>
-            )}
-          </div>
+            ) : readValue(user.last_name)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Gender / Sex</label>
+          <ProfileField label="Gender / Sex">
             {isEditing ? (
-              <select 
+              <select
                 className="portal-form-control"
                 value={editData.sex || ''}
-                onChange={e => setEditData({ ...editData, sex: e.target.value as any })}
-                style={{ height: 48 }}
+                onChange={event => setEditData({ ...editData, sex: event.target.value as any })}
               >
                 <option value="">Select...</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
               </select>
-            ) : (
-              <p style={{ fontSize: '1rem', color: 'white', fontWeight: 400 }}>{user.sex || '—'}</p>
-            )}
-          </div>
+            ) : readValue(user.sex)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Date Of Birth</label>
+          <ProfileField label="Date Of Birth">
             {isEditing ? (
-              <input 
+              <input
                 type="date"
                 className="portal-form-control"
                 value={editData.dob || ''}
-                onChange={e => setEditData({ ...editData, dob: e.target.value })}
-                style={{ height: 48 }}
+                onChange={event => setEditData({ ...editData, dob: event.target.value })}
               />
-            ) : (
-              <p style={{ fontSize: '1rem', color: 'white', fontWeight: 400 }}>{user.dob || '—'}</p>
-            )}
-          </div>
+            ) : readValue(user.dob)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Phone Number</label>
+          <ProfileField label="Phone Number">
             {isEditing ? (
-              <input 
+              <input
                 type="tel"
-                className="portal-form-control font-mono"
+                className="portal-form-control"
                 value={editData.phone || ''}
-                onChange={e => setEditData({ ...editData, phone: e.target.value })}
-                style={{ height: 48 }}
+                onChange={event => setEditData({ ...editData, phone: event.target.value })}
               />
-            ) : (
-              <p style={{ fontSize: '1rem', color: 'white', fontWeight: 400, fontFamily: 'monospace' }}>{user.phone || '—'}</p>
-            )}
-          </div>
+            ) : readValue(user.phone)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Email Address</label>
-            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{user.email}</p>
-          </div>
+          <ProfileField label="Email Address">
+            {readValue(user.email, true)}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Assigned Portal Role</label>
-            <p style={{ fontSize: '1rem', color: 'var(--gold)', fontWeight: 500 }}>{user.role === 'admin' ? 'Administrator' : user.role === 'employee' ? 'Firm Staff' : 'External Client'}</p>
-          </div>
+          <ProfileField label="Assigned Portal Role">
+            {readValue(user.role === 'admin' ? 'Administrator' : user.role === 'employee' ? 'Firm Staff' : 'External Client')}
+          </ProfileField>
 
-          <div>
-            <label className="portal-form-label">Member Since</label>
-            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.4)', fontWeight: 400 }}>{new Date(user.created_at).toLocaleDateString()}</p>
-          </div>
+          <ProfileField label="Member Since">
+            {readValue(new Date(user.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), true)}
+          </ProfileField>
 
           {user.role !== 'client' && (
-            <div style={{ gridColumn: 'span 2', marginTop: 20 }}>
-              <label className="portal-form-label">Authorized Firm Services</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 12 }}>
+            <ProfileField label="Authorized Firm Services" wide>
+              <div className="profile-tag-row">
                 {(user.expertise_tags || []).map(tag => (
-                  <span key={tag} style={{ padding: '8px 16px', borderRadius: 6, background: 'rgba(255,153,51,0.05)', border: '1px solid rgba(255,153,51,0.1)', color: 'var(--saffron)', fontSize: '0.75rem', fontWeight: 500 }}>{tag}</span>
+                  <span key={tag}>{tag}</span>
                 ))}
-                {(user.expertise_tags || []).length === 0 && <p style={{ opacity: 0.2, fontSize: '0.85rem' }}>No Tags Assigned.</p>}
+                {(user.expertise_tags || []).length === 0 && <p className="profile-read-value profile-read-value--muted">No tags assigned.</p>}
               </div>
-            </div>
+            </ProfileField>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

@@ -230,11 +230,12 @@ const Timesheets = () => {
     
     return (
       <div className="portal-content" style={{ maxWidth: '100vw', padding: '40px 60px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
+        <div className="enterprise-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
           <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
             <button onClick={cancelForm} className="btn-portal-outline" style={{ padding: '10px 24px' }}>← Back to Ledger</button>
             <div style={{ height: 24, width: 1, background: 'rgba(255,255,255,0.1)' }} />
             <div>
+              <div className="enterprise-eyebrow">Timesheet Entry</div>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 600, color: 'white', marginBottom: 4 }}>Weekly Timesheet Entry</h2>
               <p style={{ fontSize: '0.8rem', opacity: 0.4 }}>Week Starting Monday, {weekStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
@@ -429,7 +430,17 @@ const Timesheets = () => {
 
   return (
     <div className="portal-content">
-      <div style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+      <div className="enterprise-toolbar">
+        <div>
+          <div className="enterprise-eyebrow">Workspace</div>
+          <h1>Timesheets</h1>
+        </div>
+        <div className="enterprise-toolbar__actions">
+          <span className="enterprise-status enterprise-status--warning">{filteredData.length} logs</span>
+        </div>
+      </div>
+
+      <div className="enterprise-filterbar" style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
           <div style={{ position: 'relative', flex: 1 }}>
              <input 

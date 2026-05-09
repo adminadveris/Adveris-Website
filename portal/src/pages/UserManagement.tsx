@@ -134,7 +134,7 @@ const UserManagement = () => {
   );
 
   return (
-    <div className="theater-container" style={{ padding: 0, height: 'calc(100vh - 120px)', display: 'flex', gap: 0 }}>
+    <div className="theater-container governance-page" style={{ padding: 0, height: 'calc(100vh - 120px)', display: 'flex', gap: 0 }}>
 
       {/* SIDEBAR: USER LIST */}
       <div style={{
@@ -253,6 +253,7 @@ const UserManagement = () => {
         <AnimatePresence mode="wait">
           {selectedUser ? (
             <motion.div
+              className="governance-detail"
               key={selectedUser.id}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
