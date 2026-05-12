@@ -38,7 +38,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const handleLogout = async () => {
     localStorage.removeItem('adveris_mock_session');
     await supabase.auth.signOut();
-    window.location.href = '/';
+    window.location.href = '/portal/login';
   };
 
   const filtered = navItems.filter(item => item.roles.includes(role));

@@ -160,7 +160,7 @@ const ClientDetail = () => {
               </div>
               <div>
                 <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>Created By</p>
-                <p style={{ fontSize: '1rem', color: 'white', opacity: 0.6 }}>{client.created_by_name || 'System'}</p>
+                <p style={{ fontSize: '1rem', color: 'white', opacity: 0.6 }}>{client.created_by?.full_name || client.created_by_name || 'System'}</p>
               </div>
               <div>
                 <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>Last Modified Date</p>
@@ -168,7 +168,7 @@ const ClientDetail = () => {
               </div>
               <div>
                 <p style={{ fontSize: '0.72rem', fontWeight: 500, opacity: 0.4, marginBottom: 8 }}>Last Modified By</p>
-                <p style={{ fontSize: '1rem', color: 'white', opacity: 0.6 }}>{client.updated_by_name || 'System'}</p>
+                <p style={{ fontSize: '1rem', color: 'white', opacity: 0.6 }}>{client.updated_by?.full_name || client.updated_by_name || 'System'}</p>
               </div>
             </div>
           </div>
@@ -192,7 +192,7 @@ const ClientDetail = () => {
                              <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '2px 6px', borderRadius: 4 }}>New: {log.new_value}</span>
                            </p>
                          )}
-                         <p style={{ fontSize: '0.7rem', opacity: 0.4, fontStyle: 'italic' }}>Modified By {log.changed_by_name}</p>
+                         <p style={{ fontSize: '0.7rem', opacity: 0.4, fontStyle: 'italic' }}>Modified By {log.changed_by_user?.full_name || log.changed_by_name || 'System'}</p>
                       </div>
                     </div>
                   </div>

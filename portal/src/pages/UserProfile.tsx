@@ -30,6 +30,8 @@ const UserProfile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (user) setEditData({ ...user });
@@ -41,11 +43,26 @@ const UserProfile = () => {
     setError(null);
 
     try {
+      const { role, status, email, created_at, id, ...rest } = editData;
       const updates = {
-        ...editData,
+        ...rest,
         full_name: `${editData.first_name || ''} ${editData.last_name || ''}`.trim(),
       };
       await api.updateProfile(user.id, updates);
+
+      // Password Update if provided
+      if (newPassword) {
+        if (newPassword !== confirmPassword) {
+          throw new Error("Passwords do not match.");
+        }
+        if (newPassword.length < 6) {
+          throw new Error("Password must be at least 6 characters.");
+        }
+        await api.updatePassword(newPassword);
+        setNewPassword('');
+        setConfirmPassword('');
+      }
+
       await refreshUser();
       setIsEditing(false);
       setSuccess('Profile updated successfully.');
@@ -201,6 +218,36 @@ const UserProfile = () => {
                 {(user.expertise_tags || []).length === 0 && <p className="profile-read-value profile-read-value--muted">No tags assigned.</p>}
               </div>
             </ProfileField>
+          )}
+
+          {isEditing && (
+            <>
+              <div className="profile-divider" style={{ gridColumn: '1 / -1', margin: '30px 0 10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}></div>
+              <div style={{ gridColumn: '1 / -1', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--accent-primary)', marginBottom: '5px' }}>Security Credentials</h3>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>Update your portal access password below. Leave blank to keep current.</p>
+              </div>
+              
+              <ProfileField label="New Password">
+                <input
+                  type="password"
+                  className="portal-form-control"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                />
+              </ProfileField>
+
+              <ProfileField label="Confirm New Password">
+                <input
+                  type="password"
+                  className="portal-form-control"
+                  placeholder="Repeat new password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                />
+              </ProfileField>
+            </>
           )}
         </section>
       </div>

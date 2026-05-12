@@ -20,10 +20,17 @@ const RequestsList = () => {
     Promise.all([api.getRecords(), api.getAccounts()]).then(([requestsData, accs]) => {
       let filteredRequests = requestsData;
       if (user.role === 'client') {
-        filteredRequests = requestsData.filter(r => r.account_id === user.account_id);
+        // Defensive filtering: Ensure clients only see records matching their account_id
+        // or records they explicitly submitted (fallback for new entities)
+        filteredRequests = requestsData.filter(r => 
+          r.account_id === user.account_id || r.submitted_by === user.id
+        );
+      } else if (user.role === 'admin') {
+        // Admins see everything
+        filteredRequests = requestsData;
       } else if (user.role === 'employee') {
         const expertise = user.expertise_tags || [];
-        if (expertise.includes('ALL (Global Access)')) {
+        if (expertise.length === 0 || expertise.includes('ALL (Global Access)')) {
           filteredRequests = requestsData;
         } else {
           filteredRequests = requestsData.filter(r => expertise.includes(r.primary_service));
@@ -168,7 +175,7 @@ const RequestsList = () => {
                   </td>
                   <td data-label="Created By">
                      <div style={{ opacity: 0.4, fontStyle: 'italic', fontSize: '0.75rem' }}>
-                       {record.submitted_by_name || 'System'}
+                       {record.created_by?.full_name || record.submitted_by_name || 'System'}
                      </div>
                   </td>
                   <td data-label="Priority">

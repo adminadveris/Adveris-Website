@@ -1,0 +1,308 @@
+import { useState, useEffect } from 'react';
+import { api } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
+
+const formatInr = (value: number) => `INR ${value.toLocaleString('en-IN')}`;
+
+const Overview = () => {
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    pendingVerifications: 0,
+    activeMandates: 0,
+    totalAccounts: 0,
+    paidThisMonth: 0,
+    pendingCurrMonth: 0,
+    pendingLastMonth: 0,
+    currWeekHours: 0,
+    lastWeekHours: 0,
+    currMonthHours: 0,
+    totalAdmins: 0,
+    totalStaff: 0,
+    totalClients: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadOverviewTelemetery = async () => {
+      if (!user) return;
+      try {
+        const [recs, tlogs, elogs, accs, clis, allUsers] = await Promise.all([
+          api.getRecords(),
+          api.getTimesheets(),
+          api.getExpenses(),
+          api.getAccounts(),
+          api.getClients(),
+          api.getAllProfiles()
+        ]);
+
+        const now = new Date();
+        const getMonday = (d: Date) => {
+          const day = d.getDay();
+          const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+          return new Date(d.setDate(diff)).setHours(0, 0, 0, 0);
+        };
+
+        const startOfThisWeek = getMonday(new Date(now));
+        const startOfLastWeek = startOfThisWeek - (7 * 24 * 60 * 60 * 1000);
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999).getTime();
+
+        let fRecs = recs;
+        let fTlogs = tlogs;
+        let fElogs = elogs;
+        let fAccs = accs;
+        let fClis = clis;
+
+        if (user.role === 'employee') {
+          const expertise = user.expertise_tags || [];
+          fRecs = expertise.includes('ALL (Global Access)')
+            ? recs
+            : recs.filter(r => expertise.includes(r.primary_service));
+          fTlogs = tlogs.filter(t => t.logged_by === user.full_name);
+          fElogs = elogs.filter(e => e.created_by_name === user.full_name);
+        } else if (user.role === 'client') {
+          fRecs = recs.filter(r => r.account_id === user.account_id);
+          fTlogs = tlogs.filter(t => t.account_id === user.account_id);
+          fElogs = elogs.filter(e => e.account_id === user.account_id);
+          fAccs = accs.filter(a => a.id === user.account_id);
+          fClis = clis.filter(c => c.account_id === user.account_id);
+        }
+
+        const pendingVerifications = fRecs.filter(r => r.verification_status === 'Pending').length;
+        const activeMandates = fRecs.filter(r => r.status !== 'completed' && r.status !== 'on_hold').length;
+        const totalRegistry = fAccs.length + fClis.length;
+
+        const paidThisMonth = fElogs
+          .filter(e => (e.status === 'paid' || e.status === 'approved') && new Date(e.date).getTime() >= startOfThisMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+        const pendingCurrMonth = fElogs
+          .filter(e => e.status === 'submitted' && new Date(e.date).getTime() >= startOfThisMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+        const pendingLastMonth = fElogs
+          .filter(e => e.status === 'submitted' && new Date(e.date).getTime() >= startOfLastMonth && new Date(e.date).getTime() <= endOfLastMonth)
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+        const currWeekHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfThisWeek)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+
+        const lastWeekHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfLastWeek && new Date(t.date).getTime() < startOfThisWeek)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+
+        const currMonthHours = fTlogs
+          .filter(t => new Date(t.date).getTime() >= startOfThisMonth)
+          .reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
+
+        setStats({
+          pendingVerifications,
+          activeMandates,
+          totalAccounts: totalRegistry,
+          paidThisMonth,
+          pendingCurrMonth,
+          pendingLastMonth,
+          currWeekHours,
+          lastWeekHours,
+          currMonthHours,
+          totalAdmins: allUsers.filter(u => u.role === 'admin').length,
+          totalStaff: allUsers.filter(u => u.role === 'employee').length,
+          totalClients: allUsers.filter(u => u.role === 'client').length
+        });
+      } catch (err) {
+        console.error('Telemetry failure:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOverviewTelemetery();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="portal-content overview-loading">
+        <div className="intelligence-pulse">Syncing Adveris Advisors Dashboard...</div>
+      </div>
+    );
+  }
+
+  const weekDelta = stats.currWeekHours - stats.lastWeekHours;
+  const pendingExpenseDelta = stats.pendingCurrMonth - stats.pendingLastMonth;
+  const governanceTotal = stats.totalAdmins + stats.totalStaff + stats.totalClients;
+
+  const workCards = [
+    {
+      label: 'Pending Verification',
+      value: stats.pendingVerifications,
+      caption: stats.pendingVerifications > 0 ? 'Needs review' : 'Queue clear',
+      tone: stats.pendingVerifications > 0 ? 'warning' : 'success',
+    },
+    {
+      label: 'Active Requests',
+      value: stats.activeMandates,
+      caption: 'Open operational work',
+      tone: 'info',
+    },
+    {
+      label: 'Registry Objects',
+      value: stats.totalAccounts,
+      caption: 'Accounts and clients',
+      tone: 'neutral',
+    },
+  ];
+
+  return (
+    <div className="overview-command">
+      <section className="overview-hero portal-panel">
+        <div>
+          <div className="enterprise-eyebrow">Command Center</div>
+          <h1>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {user?.first_name || 'Team'}</h1>
+          <p>Operational pulse across requests, time, expenses, and governance.</p>
+        </div>
+        <div className="overview-hero__signal">
+          <span>Today</span>
+          <strong>{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</strong>
+        </div>
+      </section>
+
+      <section className="overview-focus-grid">
+        {workCards.map(card => (
+          <div key={card.label} className={`portal-panel overview-focus-card overview-focus-card--${card.tone}`}>
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+            <p>{card.caption}</p>
+          </div>
+        ))}
+      </section>
+
+      <section className="overview-layout">
+        <div className="overview-left-stack">
+          <div className="portal-panel overview-panel">
+            <div className="overview-panel__header">
+              <div>
+                <h2>Priority Work</h2>
+                <p>What deserves attention first.</p>
+              </div>
+            </div>
+
+            <div className="overview-action-list">
+              <div className="overview-action-row">
+                <div>
+                  <span className="overview-dot overview-dot--warning" />
+                  <strong>Verification queue</strong>
+                  <p>{stats.pendingVerifications} request{stats.pendingVerifications === 1 ? '' : 's'} pending verification.</p>
+                </div>
+                <em>{stats.pendingVerifications > 0 ? 'Review' : 'Clear'}</em>
+              </div>
+              <div className="overview-action-row">
+                <div>
+                  <span className="overview-dot overview-dot--info" />
+                  <strong>Active request load</strong>
+                  <p>{stats.activeMandates} active request{stats.activeMandates === 1 ? '' : 's'} across accessible services.</p>
+                </div>
+                <em>Monitor</em>
+              </div>
+              <div className="overview-action-row">
+                <div>
+                  <span className="overview-dot overview-dot--success" />
+                  <strong>Registry coverage</strong>
+                  <p>{stats.totalAccounts} account/client records available in CRM.</p>
+                </div>
+                <em>Stable</em>
+              </div>
+            </div>
+          </div>
+
+          <div className="overview-split">
+            <div className="portal-panel overview-panel">
+              <div className="overview-panel__header">
+                <div>
+                  <h2>Time Ledger</h2>
+                  <p>Professional hours logged.</p>
+                </div>
+              </div>
+              <div className="overview-number-row">
+                <div>
+                  <span>This Week</span>
+                  <strong>{stats.currWeekHours.toFixed(1)}h</strong>
+                </div>
+                <div>
+                  <span>This Month</span>
+                  <strong>{stats.currMonthHours.toFixed(1)}h</strong>
+                </div>
+              </div>
+              <div className={`overview-delta ${weekDelta >= 0 ? 'positive' : 'negative'}`}>
+                {weekDelta >= 0 ? '+' : ''}{weekDelta.toFixed(1)}h vs last week
+              </div>
+            </div>
+
+            <div className="portal-panel overview-panel">
+              <div className="overview-panel__header">
+                <div>
+                  <h2>Expenses</h2>
+                  <p>Current month disbursal posture.</p>
+                </div>
+              </div>
+              <div className="overview-money-stack">
+                <div>
+                  <span>Paid / Approved</span>
+                  <strong>{formatInr(stats.paidThisMonth)}</strong>
+                </div>
+                <div>
+                  <span>Pending</span>
+                  <strong>{formatInr(stats.pendingCurrMonth)}</strong>
+                </div>
+              </div>
+              <div className={`overview-delta ${pendingExpenseDelta <= 0 ? 'positive' : 'negative'}`}>
+                {pendingExpenseDelta >= 0 ? '+' : ''}{formatInr(pendingExpenseDelta)} vs last month
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside className="overview-right-stack">
+          <div className="portal-panel overview-panel overview-governance-card">
+            <div className="overview-panel__header">
+              <div>
+                <h2>Governance</h2>
+                <p>User access distribution.</p>
+              </div>
+            </div>
+            <div className="overview-governance-total">
+              <span>Total Users</span>
+              <strong>{governanceTotal}</strong>
+            </div>
+            <div className="overview-governance-bars">
+              <div>
+                <span>Admins</span>
+                <strong>{stats.totalAdmins}</strong>
+              </div>
+              <div>
+                <span>Staff</span>
+                <strong>{stats.totalStaff}</strong>
+              </div>
+              <div>
+                <span>Clients</span>
+                <strong>{stats.totalClients}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div className="portal-panel overview-panel overview-brief-card">
+            <h2>Board Brief</h2>
+            <p>
+              {stats.pendingVerifications > 0
+                ? 'Verification backlog exists. Prioritize approvals before new operational intake.'
+                : 'Verification queue is clear. Focus can stay on active requests and time capture.'}
+            </p>
+          </div>
+        </aside>
+      </section>
+    </div>
+  );
+};
+
+export default Overview;

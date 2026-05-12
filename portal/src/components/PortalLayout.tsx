@@ -54,7 +54,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        window.location.href = '/';
+        window.location.href = '/portal/login';
     };
 
     const markAllAsRead = async () => {
@@ -138,7 +138,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
         {
             name: 'User Governance',
             path: '/dashboard/users',
-            roles: ['admin', 'employee'],
+            roles: ['admin'],
             group: 'system',
             icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
         }

@@ -1,4 +1,4 @@
-export const AdverisTypesCanary = "V1.0";
+export const AdverisTypesCanary = "V1.1";
 
 export type UserRole = 'admin' | 'employee' | 'client';
 
@@ -39,9 +39,13 @@ export interface Account extends Address {
   industry?: string;
   litigation_scan?: 'CLEAN' | 'PENDING' | 'FLAGGED' | 'SEVERE';
   created_at: string;
+  created_by_id?: string;
   created_by_name: string;
+  created_by?: { full_name: string };
   updated_at: string;
+  updated_by_id?: string;
   updated_by_name: string;
+  updated_by?: { full_name: string };
 }
 
 export interface Client extends Address {
@@ -56,9 +60,13 @@ export interface Client extends Address {
   phone_2?: string;
   phone_3?: string;
   created_at: string;
+  created_by_id?: string;
   created_by_name: string;
+  created_by?: { full_name: string };
   updated_at: string;
+  updated_by_id?: string;
   updated_by_name: string;
+  updated_by?: { full_name: string };
 }
 
 export interface Request {
@@ -68,7 +76,7 @@ export interface Request {
   request_number: string;
   title: string;
   primary_service: string;
-  sub_service: string; // Ensuring this is filled to avoid DB errors
+  sub_service: string;
   status: 'pending' | 'active' | 'completed' | 'on_hold';
   priority: 'Standard' | 'High' | 'Urgent';
   assigned_to?: string;
@@ -87,9 +95,13 @@ export interface Request {
   internal_notes?: string;
   client_comms?: string;
   created_at: string;
+  created_by_id?: string;
   created_by_name: string;
+  created_by?: { full_name: string };
   updated_at: string;
+  updated_by_id?: string;
   updated_by_name: string;
+  updated_by?: { full_name: string };
 }
 
 export interface TimesheetEntry {
@@ -103,10 +115,15 @@ export interface TimesheetEntry {
   logged_by: string;
   status: 'submitted' | 'approved' | 'paid' | 'rejected';
   created_at: string;
+  created_by_id?: string;
   created_by_name: string;
+  created_by?: { full_name: string };
   updated_at: string;
+  updated_by_id?: string;
   updated_by_name: string;
+  updated_by?: { full_name: string };
   timesheet_number?: string;
+  user_id?: string;
 }
 
 export interface ExpenseEntry {
@@ -121,10 +138,15 @@ export interface ExpenseEntry {
   url?: string;
   status: 'submitted' | 'approved' | 'paid' | 'rejected';
   created_at: string;
+  created_by_id?: string;
   created_by_name: string;
+  created_by?: { full_name: string };
   updated_at: string;
+  updated_by_id?: string;
   updated_by_name: string;
+  updated_by?: { full_name: string };
   expense_number?: string;
+  user_id?: string;
 }
 
 export interface AuditLog {
@@ -137,10 +159,11 @@ export interface AuditLog {
   new_value: string | null;
   changed_by: string;
   changed_by_name: string;
+  changed_by_user?: { full_name: string };
   created_at: string;
-  timestamp?: string; // Some logs might use timestamp
-  details?: string; // Some logs might use details
-  user_name?: string; // Some logs might use user_name
+  timestamp?: string;
+  details?: string;
+  user_name?: string;
 }
 
 export interface UIHistoryItem {
@@ -153,7 +176,6 @@ export interface UIHistoryItem {
   table_name: string;
 }
 
-/* ——— NOTIFICATIONS ——— */
 export interface Notification {
   id: string;
   user_id: string;
@@ -163,6 +185,8 @@ export interface Notification {
   related_id?: string;
   is_read: boolean;
   created_at: string;
+  sender_id?: string;
   sender_name?: string;
+  sender?: { full_name: string };
   sender_avatar?: string;
 }

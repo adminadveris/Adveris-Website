@@ -581,3 +581,50 @@ textarea.portal-form-control {
         gap: 16px;
     }
 }
+/* --- TAG CHECKBOX SYSTEM (LUXURY INTERACTIVE) --- */
+.tag-checkbox-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.tag-checkbox {
+    position: relative;
+    cursor: pointer;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.3s var(--ease);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.tag-checkbox:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.tag-checkbox.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy-deep);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(201, 168, 76, 0.3);
+}
+
+.tag-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}

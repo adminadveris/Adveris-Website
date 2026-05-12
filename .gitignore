@@ -6,3 +6,5 @@ node_modules/
 dist/
 portal-dist/
 *.log
+.gemini/
+brain/

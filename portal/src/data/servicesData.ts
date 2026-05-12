@@ -133,5 +133,25 @@ export const servicesData: ServiceCategory[] = [
       "Drafting and review of Resolution Plans",
       "Advisory on Voluntary Liquidation and Winding-up proceedings"
     ]
+  },
+  {
+    id: "13",
+    name: "Direct Tax",
+    subServices: [
+      "Income Tax Advisory & Compliance",
+      "Transfer Pricing & International Tax",
+      "Tax Audits and Assessments",
+      "Representation before CIT(A) and ITAT"
+    ]
+  },
+  {
+    id: "14",
+    name: "Indirect Tax",
+    subServices: [
+      "GST Advisory & Ongoing Compliance",
+      "GST Audits and Annual Returns",
+      "Customs Duty & Import/Export Advisory",
+      "Representation before GST Authorities"
+    ]
   }
 ];

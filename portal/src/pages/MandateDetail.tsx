@@ -83,7 +83,7 @@ const MandateDetail = () => {
           return;
         }
 
-        if (user.role === 'client' && rec.account_id !== user.account_id) {
+        if (user.role === 'client' && rec.account_id !== user.account_id && rec.submitted_by !== user.id) {
           setError('Access denied for this request.');
           return;
         }
@@ -178,7 +178,7 @@ const MandateDetail = () => {
               <span>Governance</span>
             </div>
             <div className="record-field-grid">
-              <DetailField label="Assigned To" value={request.assigned_to || 'Partner pending'} />
+              <DetailField label="Assigned To" value={request.assigned_user?.full_name || request.assigned_to || 'Partner pending'} />
               <DetailField
                 label="Verification"
                 value={<span className={`enterprise-status enterprise-status--${request.verification_status === 'Verified' ? 'success' : request.verification_status === 'Rejected' ? 'danger' : 'warning'}`}>{request.verification_status || 'Pending'}</span>}
@@ -242,9 +242,9 @@ const MandateDetail = () => {
             </div>
             <div className="record-stack">
               <DetailField label="Days Active" value={`${daysActive} days`} />
-              <DetailField label="Created By" value={request.created_by_name || request.submitted_by_name || 'System'} />
+              <DetailField label="Created By" value={request.created_by?.full_name || request.created_by_name || request.submitted_by_name || 'System'} />
               <DetailField label="Created Date" value={fmtDateTime(request.created_at)} />
-              <DetailField label="Last Modified By" value={request.updated_by_name || 'System'} />
+              <DetailField label="Last Modified By" value={request.updated_by?.full_name || request.updated_by_name || 'System'} />
               <DetailField label="Last Modified Date" value={fmtDateTime(request.updated_at)} />
             </div>
           </section>
@@ -257,8 +257,13 @@ const MandateDetail = () => {
             <div className="record-history-list">
               {history.slice(0, 4).map(log => (
                 <div key={log.id} className="record-history-item">
-                  <div>{normalize(log.field_name || log.action)}</div>
-                  <span>{fmtDate(log.created_at)}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>{normalize(log.field_name || log.action)}</div>
+                    <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>{fmtDate(log.created_at)}</span>
+                  </div>
+                  <div style={{ fontSize: '0.65rem', opacity: 0.4, fontStyle: 'italic', marginTop: 2 }}>
+                    by {log.changed_by_user?.full_name || log.changed_by_name || 'System'}
+                  </div>
                 </div>
               ))}
               {history.length === 0 && <div className="record-muted">No audit history yet.</div>}

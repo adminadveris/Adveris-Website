@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,13 +8,15 @@ const UserManagement = () => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'employee' | 'client'>('employee');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'employee' | 'client' | 'pending'>('employee');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [showExpertiseModal, setShowExpertiseModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // --- Edit Mode State ---
   const [isEditing, setIsEditing] = useState(false);
@@ -68,7 +69,11 @@ const UserManagement = () => {
   const selectedUser = users.find(p => p.id === selectedUserId);
 
   const filteredUsers = users.filter(p => {
-    const roleMatch = roleFilter === 'all' || p.role === roleFilter;
+    let roleMatch = false;
+    if (roleFilter === 'all') roleMatch = true;
+    else if (roleFilter === 'pending') roleMatch = p.status === 'pending';
+    else roleMatch = p.role === roleFilter;
+
     const searchMatch = p.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.email.toLowerCase().includes(searchQuery.toLowerCase());
     return roleMatch && searchMatch;
@@ -156,13 +161,13 @@ const UserManagement = () => {
               style={{ height: 48, fontSize: '0.85rem' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['all', 'admin', 'employee', 'client'].map(r => (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {['all', 'admin', 'employee', 'client', 'pending'].map(r => (
               <button
                 key={r}
-                onClick={() => setRoleFilter(r as any)}
+                onClick={() => { setRoleFilter(r as any); setCurrentPage(1); }}
                 style={{
-                  flex: 1, height: 32, fontSize: '0.7rem', fontWeight: 500, borderRadius: 6,
+                  padding: '0 12px', height: 32, fontSize: '0.7rem', fontWeight: 500, borderRadius: 6,
                   background: roleFilter === r ? 'var(--gold)' : 'rgba(255,255,255,0.05)',
                   color: roleFilter === r ? 'black' : 'rgba(255,255,255,0.4)',
                   border: 'none', cursor: 'pointer'
@@ -172,6 +177,14 @@ const UserManagement = () => {
               </button>
             ))}
           </div>
+
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="btn-portal-primary"
+            style={{ width: '100%', height: 48, marginTop: 24, fontSize: '0.8rem' }}
+          >
+            Create New User
+          </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
@@ -192,7 +205,7 @@ const UserManagement = () => {
                   <p style={{ fontSize: '0.75rem', opacity: 0.3, marginTop: 2 }}>{p.email}</p>
                 </div>
                 <span style={{
-                  fontSize: '0.65rem', fontWeight: 600, 
+                  fontSize: '0.65rem', fontWeight: 600,
                   padding: '4px 8px', borderRadius: 4,
                   background: p.role === 'admin' ? 'rgba(255,215,0,0.1)' : 'rgba(255,255,255,0.05)',
                   color: p.role === 'admin' ? 'var(--gold)' : 'rgba(255,255,255,0.3)'
@@ -308,6 +321,19 @@ const UserManagement = () => {
                   </div>
                 </div>
               </div>
+
+              {success && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
+                  style={{
+                    background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)',
+                    padding: '16px 24px', borderRadius: 8, color: '#4ade80', fontSize: '0.85rem',
+                    marginBottom: 40, fontWeight: 600
+                  }}
+                >
+                  ✓ {success}
+                </motion.div>
+              )}
 
               {error && (
                 <motion.div
@@ -483,7 +509,7 @@ const UserManagement = () => {
               </div>
 
               {/* ACTION HUB */}
-              <div style={{ marginTop: 80, paddingTop: 60, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 16 }}>
+              <div style={{ marginTop: 80, paddingTop: 60, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 {selectedUser.id !== currentUser?.id && (
                   <>
                     {selectedUser.status !== 'approved' && (
@@ -505,6 +531,66 @@ const UserManagement = () => {
                       </button>
                     )}
                   </>
+                )}
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.adminResetPassword(selectedUser.email);
+                      setSuccess(`Password Reset Email Sent To ${selectedUser.email}`);
+                      setTimeout(() => setSuccess(null), 5000);
+                    } catch (e: any) {
+                      setError(`Reset Failed: ${e.message}`);
+                      setTimeout(() => setError(null), 5000);
+                    }
+                  }}
+                  className="btn-portal-outline"
+                  style={{ padding: '20px 40px', fontSize: '0.85rem', color: 'var(--gold)' }}
+                >
+                  Send Password Reset
+                </button>
+
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.adminSendInvite(
+                        selectedUser.email,
+                        selectedUser.first_name || '',
+                        selectedUser.last_name || '',
+                        selectedUser.role
+                      );
+                      setSuccess(`Invitation Link Dispatched To ${selectedUser.email}`);
+                      setTimeout(() => setSuccess(null), 5000);
+                    } catch (e: any) {
+                      setError(`Invite Failed: ${e.message}`);
+                      setTimeout(() => setError(null), 5000);
+                    }
+                  }}
+                  className="btn-portal-outline"
+                  style={{ padding: '20px 40px', fontSize: '0.85rem' }}
+                >
+                  Send Invite Link
+                </button>
+
+                {selectedUser.id !== currentUser?.id && (
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Are You Sure You Want To PERMANENTLY Delete ${selectedUser.full_name}? This Action Cannot Be Undone.`)) return;
+                      try {
+                        await api.adminDeleteUser(selectedUser.id);
+                        setSuccess(`User Identity Expunged From System.`);
+                        setSelectedUserId(null);
+                        await load();
+                        setTimeout(() => setSuccess(null), 5000);
+                      } catch (e: any) {
+                        setError(`Deletion Failed: ${e.message}`);
+                        setTimeout(() => setError(null), 5000);
+                      }
+                    }}
+                    className="btn-portal-outline"
+                    style={{ padding: '20px 40px', fontSize: '0.85rem', color: '#f87171' }}
+                  >
+                    Delete Identity
+                  </button>
                 )}
               </div>
 
@@ -609,7 +695,120 @@ const UserManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* MODAL: CREATE USER */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="portal-modal-overlay"
+            onClick={() => setShowCreateModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="portal-modal-card"
+              onClick={e => e.stopPropagation()}
+              style={{ padding: 60, maxWidth: 600 }}
+            >
+              <h2 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Provision New Identity</h2>
+              <p style={{ opacity: 0.4, marginBottom: 40 }}>Directly Create An Authorized User Within The Adveris Governance Framework.</p>
+
+              <CreateUserForm
+                onSuccess={async () => {
+                  setShowCreateModal(false);
+                  setSuccess("User Identity Successfully Initialized.");
+                  await load();
+                  setTimeout(() => setSuccess(null), 5000);
+                }}
+                onError={(msg) => {
+                  setError(msg);
+                  setTimeout(() => setError(null), 5000);
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+};
+
+const CreateUserForm = ({ onSuccess, onError }: { onSuccess: () => void; onError: (msg: string) => void }) => {
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState<User['role']>('client');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await api.adminCreateUser(email, firstName, lastName, role);
+      onSuccess();
+    } catch (err: any) {
+      onError(err.message || "Failed To Create User.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div>
+          <label className="portal-form-label">First Name</label>
+          <input
+            className="portal-form-control"
+            required
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            placeholder="e.g. Ashik"
+          />
+        </div>
+        <div>
+          <label className="portal-form-label">Last Name</label>
+          <input
+            className="portal-form-control"
+            required
+            value={lastName}
+            onChange={e => setLastName(e.target.value)}
+            placeholder="e.g. G Swamy"
+          />
+        </div>
+      </div>
+      <div>
+        <label className="portal-form-label">Email Address</label>
+        <input
+          type="email"
+          className="portal-form-control font-mono"
+          required
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="email@adveris.com"
+        />
+      </div>
+      <div>
+        <label className="portal-form-label">Institutional Role</label>
+        <select
+          className="portal-form-control"
+          value={role}
+          onChange={e => setRole(e.target.value as any)}
+        >
+          <option value="client">External Client</option>
+          <option value="employee">Firm Staff (Associate)</option>
+          <option value="admin">Administrator (Governance)</option>
+        </select>
+      </div>
+      <button
+        type="submit"
+        className="btn-portal-primary"
+        disabled={loading}
+        style={{ marginTop: 16, height: 56 }}
+      >
+        {loading ? 'Processing...' : 'Generate Identity'}
+      </button>
+    </form>
   );
 };
 

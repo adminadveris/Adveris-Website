@@ -99,8 +99,8 @@ const Overview = () => {
           fRecs = expertise.includes('ALL (Global Access)')
             ? recs
             : recs.filter(r => expertise.includes(r.primary_service));
-          fTlogs = tlogs.filter(t => t.logged_by === user.full_name);
-          fElogs = elogs.filter(e => e.created_by_name === user.full_name);
+          fTlogs = tlogs.filter(t => t.user_id === user.id);
+          fElogs = elogs.filter(e => e.user_id === user.id);
         } else if (user.role === 'client') {
           fRecs = recs.filter(r => r.account_id === user.account_id);
           fTlogs = tlogs.filter(t => t.account_id === user.account_id);

@@ -24,7 +24,7 @@ export const api = {
   getAccounts: async (): Promise<Account[]> => {
     const { data, error } = await supabase
       .from('accounts')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .order('account_name', { ascending: true });
     
     if (error) throw error;
@@ -34,7 +34,7 @@ export const api = {
   getAccountById: async (id: string): Promise<Account | null> => {
     const { data, error } = await supabase
       .from('accounts')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .eq('id', id)
       .single();
     
@@ -61,10 +61,12 @@ export const api = {
       .from('accounts')
       .insert({
         ...account,
+        created_by_id: user?.id,
+        updated_by_id: user?.id,
         created_by_name: currentUser?.full_name || 'System',
         updated_by_name: currentUser?.full_name || 'System'
       })
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -91,10 +93,11 @@ export const api = {
       .update({
         ...account,
         updated_at: new Date().toISOString(),
+        updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
       })
       .eq('id', id)
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -129,7 +132,7 @@ export const api = {
   getClients: async (): Promise<Client[]> => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .order('client_name', { ascending: true });
     
     if (error) throw error;
@@ -139,7 +142,7 @@ export const api = {
   getClientsByAccount: async (accountId: string): Promise<Client[]> => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .eq('account_id', accountId)
       .order('client_name', { ascending: true });
     
@@ -150,7 +153,7 @@ export const api = {
   getClientById: async (id: string): Promise<Client | null> => {
     const { data, error } = await supabase
       .from('clients')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .eq('id', id)
       .single();
     
@@ -166,10 +169,12 @@ export const api = {
       .from('clients')
       .insert({
         ...client,
+        created_by_id: user?.id,
+        updated_by_id: user?.id,
         created_by_name: currentUser?.full_name || 'System',
         updated_by_name: currentUser?.full_name || 'System'
       })
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -185,10 +190,11 @@ export const api = {
       .update({
         ...client,
         updated_at: new Date().toISOString(),
+        updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
       })
       .eq('id', id)
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -199,7 +205,7 @@ export const api = {
   getRecords: async (): Promise<Request[]> => {
     const { data, error } = await supabase
       .from('Request')
-      .select('*')
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name), assigned_user:User!assigned_to_id(full_name)')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
@@ -263,11 +269,13 @@ export const api = {
         ...record,
         request_number,
         submitted_by: user?.id,
+        created_by_id: user?.id,
+        updated_by_id: user?.id,
         submitted_by_name: currentUser?.full_name || 'System',
         created_by_name: currentUser?.full_name || 'System',
         updated_by_name: currentUser?.full_name || 'System'
       })
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name), assigned_user:User!assigned_to_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -315,10 +323,11 @@ export const api = {
       .update({
         ...record,
         updated_at: new Date().toISOString(),
+        updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
       })
       .eq('id', id)
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name), assigned_user:User!assigned_to_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -362,7 +371,7 @@ export const api = {
 
   // --- TIMESHEETS ---
   getTimesheets: async (recordId?: string): Promise<TimesheetEntry[]> => {
-    let query = supabase.from('timesheets').select('*').order('date', { ascending: false });
+    let query = supabase.from('timesheets').select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)').order('date', { ascending: false });
     if (recordId) query = query.eq('record_id', recordId);
     
     const { data, error } = await query;
@@ -381,11 +390,14 @@ export const api = {
       .insert({
         ...entry,
         timesheet_number,
+        user_id: user?.id,
+        created_by_id: user?.id,
+        updated_by_id: user?.id,
         logged_by: currentUser?.full_name || 'System',
         created_by_name: currentUser?.full_name || 'System',
         updated_by_name: currentUser?.full_name || 'System'
       })
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -410,10 +422,11 @@ export const api = {
       .update({
         ...entry,
         updated_at: new Date().toISOString(),
+        updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
       })
       .eq('id', id)
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -427,9 +440,17 @@ export const api = {
         new_value: data.status,
       });
 
-      // Notify logged_by (we need their user_id, but current schema stores logged_by name. 
-      // For now, we'll notify the person who logged it if we can find their ID)
-      // Note: Real implementation would use user_id in timesheets table.
+      // Notify submitter (user_id)
+      if (data.user_id) {
+        await api.createNotification({
+          user_id: data.user_id,
+          title: 'Timesheet Status Updated',
+          message: `${data.timesheet_number} has been ${data.status}.`,
+          type: 'timesheet',
+          related_id: data.id,
+          sender_name: currentUser?.full_name || 'System Governance'
+        });
+      }
     }
     return data as TimesheetEntry;
   },
@@ -442,7 +463,7 @@ export const api = {
       .from('timesheets')
       .update({ status, updated_at: new Date().toISOString() })
       .in('id', ids)
-      .select();
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)');
     
     if (error) throw error;
     const action = status === 'approved' ? 'APPROVE_TIMESHEETS' : status === 'rejected' ? 'REJECT_TIMESHEETS' : 'UPDATE_TIMESHEETS_STATUS';
@@ -465,7 +486,7 @@ export const api = {
 
   // --- EXPENSES ---
   getExpenses: async (recordId?: string): Promise<ExpenseEntry[]> => {
-    let query = supabase.from('expenses').select('*').order('date', { ascending: false });
+    let query = supabase.from('expenses').select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)').order('date', { ascending: false });
     if (recordId) query = query.eq('record_id', recordId);
     
     const { data, error } = await query;
@@ -484,10 +505,13 @@ export const api = {
       .insert({
         ...entry,
         expense_number,
+        user_id: user?.id,
+        created_by_id: user?.id,
+        updated_by_id: user?.id,
         created_by_name: currentUser?.full_name || 'System',
         updated_by_name: currentUser?.full_name || 'System'
       })
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -530,10 +554,11 @@ export const api = {
       .update({
         ...entry,
         updated_at: new Date().toISOString(),
+        updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
       })
       .eq('id', id)
-      .select()
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)')
       .single();
     
     if (error) throw error;
@@ -546,6 +571,18 @@ export const api = {
         old_value: oldEntry?.status,
         new_value: data.status,
       });
+
+      // Notify submitter (user_id)
+      if (data.user_id) {
+        await api.createNotification({
+          user_id: data.user_id,
+          title: 'Expense Status Updated',
+          message: `${data.expense_number} has been ${data.status}.`,
+          type: 'expense',
+          related_id: data.id,
+          sender_name: currentUser?.full_name || 'System Governance'
+        });
+      }
     }
     return data as ExpenseEntry;
   },
@@ -558,7 +595,7 @@ export const api = {
       .from('expenses')
       .update({ status, updated_at: new Date().toISOString() })
       .in('id', ids)
-      .select();
+      .select('*, created_by:User!created_by_id(full_name), updated_by:User!updated_by_id(full_name)');
     
     if (error) throw error;
     const action = status === 'approved' ? 'APPROVE_EXPENSES' : status === 'rejected' ? 'REJECT_EXPENSES' : 'UPDATE_EXPENSES_STATUS';
@@ -589,9 +626,9 @@ export const api = {
     const finalLog = {
       ...cleanLog,
       field_name: cleanLog.field_name || 'details',
-      new_value: cleanLog.new_value || details || 'Action performed',
+      new_value: String(cleanLog.new_value || details || 'Action performed'),
       changed_by: user?.id,
-      changed_by_name: user?.user_metadata?.full_name || 'System'
+      changed_by_name: user?.user_metadata?.full_name || user?.user_metadata?.firstName ? `${user.user_metadata.firstName} ${user.user_metadata.lastName}` : 'System'
     };
 
     await supabase.from('audit_logs').insert(finalLog);
@@ -599,7 +636,7 @@ export const api = {
 
   getAuditLogs: async (): Promise<UIHistoryItem[]> => {
     const [logs, records, expenses, timesheets] = await Promise.all([
-      supabase.from('audit_logs').select('*').order('created_at', { ascending: false }),
+      supabase.from('audit_logs').select('*, changed_by_user:User!changed_by(full_name)').order('created_at', { ascending: false }),
       supabase.from('Request').select('id, request_number'),
       supabase.from('expenses').select('id, expense_number'),
       supabase.from('timesheets').select('id, timesheet_number')
@@ -618,7 +655,7 @@ export const api = {
       timestamp: l.created_at, 
       action: l.action,
       details: l.details || (l.field_name === 'details' ? (l.new_value || '') : `${l.action} — ${l.field_name}: ${l.old_value ?? '(empty)'} → ${l.new_value ?? '(empty)'}`),
-      user_name: l.changed_by_name, 
+      user_name: l.changed_by_user?.full_name || l.changed_by_name, 
       record_id: l.record_id, 
       record_ref: refMap[l.record_id] || l.record_id?.substring(0, 8) || 'N/A',
       table_name: l.table_name,
@@ -628,7 +665,7 @@ export const api = {
   getHistoryByRecord: async (record_id: string): Promise<AuditLog[]> => {
     const { data, error } = await supabase
       .from('audit_logs')
-      .select('*')
+      .select('*, changed_by_user:User!changed_by(full_name)')
       .eq('record_id', record_id)
       .order('created_at', { ascending: false });
     
@@ -704,7 +741,7 @@ export const api = {
   getNotifications: async (userId: string): Promise<Notification[]> => {
     const { data, error } = await supabase
       .from('Notification')
-      .select('*')
+      .select('*, sender:User!sender_id(full_name)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -737,6 +774,7 @@ export const api = {
       .from('Notification')
       .insert({
         ...notif,
+        sender_id: (await supabase.auth.getUser()).data.user?.id,
         is_read: false,
         created_at: new Date().toISOString()
       });

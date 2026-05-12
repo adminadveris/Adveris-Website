@@ -73,7 +73,7 @@ const Timesheets = () => {
     setRecords(recs);
     let filteredTlogs = tlogs;
     if (user.role === 'employee') {
-      filteredTlogs = tlogs.filter(t => t.logged_by === user.full_name);
+      filteredTlogs = tlogs.filter(t => t.user_id === user.id);
     } else if (user.role === 'client') {
       filteredTlogs = tlogs.filter(t => t.account_id === user.account_id);
     }
@@ -496,7 +496,7 @@ const Timesheets = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <td data-label="Date" style={{ paddingLeft: 60, whiteSpace: 'nowrap' }}>{new Date(log.date || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
-                  <td data-label="Created By" style={{ color: 'white', fontSize: '0.85rem' }}>{log.logged_by || 'Admin'}</td>
+                  <td data-label="Created By" style={{ color: 'white', fontSize: '0.85rem' }}>{log.created_by?.full_name || log.logged_by || 'Admin'}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{log.account_name || 'Individual'}</td>
                   <td data-label="Time Reference" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{log.timesheet_number || 'Time Temp'}</td>
                   <td data-label="Request ID" style={{ whiteSpace: 'nowrap' }}><span className="portal-record-id">{(records.find(r => r.id === log.record_id)?.request_number) || 'ADV-000'}</span></td>

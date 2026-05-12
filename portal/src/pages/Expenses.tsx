@@ -72,7 +72,7 @@ const Expenses = () => {
     setRecords(recs);
     let filteredExpenses = eEntries;
     if (user.role === 'employee') {
-      filteredExpenses = eEntries.filter(e => e.created_by_name === user.full_name);
+      filteredExpenses = eEntries.filter(e => e.user_id === user.id);
     } else if (user.role === 'client') {
       filteredExpenses = eEntries.filter(e => e.account_id === user.account_id);
     }
@@ -545,6 +545,7 @@ const Expenses = () => {
                   </th>
                 )}
                 <th style={{ width: 100, paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>Date</th>
+                <th style={{ width: 140 }}>Created By</th>
                 <th style={{ width: 140 }}>Category</th>
                 <th style={{ width: 140 }}>Account Name</th>
                 <th style={{ width: 100 }}>Expense Ref</th>
@@ -571,6 +572,7 @@ const Expenses = () => {
                     </td>
                   )}
                   <td data-label="Date" style={{ paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>{new Date(e.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</td>
+                  <td data-label="Created By" style={{ fontSize: '0.85rem', color: 'white' }}>{e.created_by?.full_name || e.created_by_name || 'System'}</td>
                   <td data-label="Category" style={{ color: 'white', fontSize: '0.85rem' }}>{e.category}</td>
                   <td data-label="Account Name" style={{ opacity: 0.6, fontSize: '0.85rem' }}>{e.account_name}</td>
                   <td data-label="Exp-Ref" style={{ color: 'var(--gold)', fontWeight: 700, fontSize: '0.75rem' }}>{e.expense_number || 'Exp-Temp'}</td>
@@ -590,7 +592,7 @@ const Expenses = () => {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={user?.role === 'admin' ? 7 : 6} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No Disbursement Logs Detected.</td>
+                  <td colSpan={user?.role === 'admin' ? 8 : 7} style={{ textAlign: 'center', padding: 60, opacity: 0.1 }}>No Disbursement Logs Detected.</td>
                 </tr>
               )}
             </tbody>

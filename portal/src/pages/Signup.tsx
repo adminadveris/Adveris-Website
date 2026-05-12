@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -20,7 +21,9 @@ const Signup = () => {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanPass = password.trim();
-    const cleanName = fullName.trim();
+    const cleanFirst = firstName.trim();
+    const cleanLast = lastName.trim();
+    const cleanName = `${cleanFirst} ${cleanLast}`.trim();
 
     if (cleanPass.length < 6) {
       setError('Password Must Be At Least 6 Characters.');
@@ -34,6 +37,8 @@ const Signup = () => {
         password: cleanPass,
         options: {
           data: {
+            first_name: cleanFirst,
+            last_name: cleanLast,
             full_name: cleanName,
             role: 'client' // Default role for new signups
           }
@@ -61,16 +66,16 @@ const Signup = () => {
           <div className="aurora-blob aurora-blob-1" style={{ opacity: 0.15 }}></div>
           <div className="aurora-blob aurora-blob-2" style={{ opacity: 0.1 }}></div>
         </div>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="portal-panel" 
+          className="portal-panel"
           style={{ maxWidth: 540, padding: 80, textAlign: 'center' }}
         >
           <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 32, color: 'var(--emerald)' }}>Registration Submitted</div>
           <h2 className="serif-title" style={{ fontSize: '2rem', marginBottom: 24, fontFamily: 'var(--font-sans)', fontWeight: 600 }}>Account Initialized</h2>
           <p style={{ opacity: 0.6, lineHeight: 1.8, marginBottom: 40 }}>
-            Your Request Has Been Submitted To The Adveris Governance Board. 
+            Your Request Has Been Submitted To The Adveris Governance Board.
             Access Will Be Granted Once Your Identity Is Verified By Our Administrative Team.
           </p>
           <Link to="/" className="btn-portal-primary" style={{ display: 'inline-block', width: 'auto', padding: '12px 40px' }}>Return To Login</Link>
@@ -91,10 +96,10 @@ const Signup = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="portal-panel"
-        style={{ 
-          width: '100%', 
-          maxWidth: 500, 
-          padding: 'clamp(30px, 6vh, 40px) clamp(30px, 5vw, 60px)', 
+        style={{
+          width: '100%',
+          maxWidth: 500,
+          padding: 'clamp(30px, 6vh, 40px) clamp(30px, 5vw, 60px)',
           textAlign: 'center',
           maxHeight: '95vh',
           display: 'flex',
@@ -110,16 +115,29 @@ const Signup = () => {
         <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(20px, 4vh, 32px)', opacity: 0.4 }}>Client Onboarding</div>
 
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(16px, 3vh, 24px)' }}>
-          <div style={{ textAlign: 'left' }}>
-            <label className="portal-form-label">Legal Full Name</label>
-            <input
-              type="text"
-              className="portal-form-control"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              required
-              placeholder="As Per PAN/Aadhaar"
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ textAlign: 'left' }}>
+              <label className="portal-form-label">First Name</label>
+              <input
+                type="text"
+                className="portal-form-control"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                required
+                placeholder="e.g. John"
+              />
+            </div>
+            <div style={{ textAlign: 'left' }}>
+              <label className="portal-form-label">Last Name</label>
+              <input
+                type="text"
+                className="portal-form-control"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                required
+                placeholder="e.g. Doe"
+              />
+            </div>
           </div>
 
           <div style={{ textAlign: 'left' }}>
