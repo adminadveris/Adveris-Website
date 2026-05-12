@@ -52,10 +52,10 @@ const Login = () => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="portal-panel"
-        style={{ 
-          width: '100%', 
-          maxWidth: 500, 
-          padding: 'clamp(40px, 8vh, 60px) clamp(30px, 5vw, 60px)', 
+        style={{
+          width: '100%',
+          maxWidth: 500,
+          padding: 'clamp(40px, 8vh, 60px) clamp(30px, 5vw, 60px)',
           textAlign: 'center',
           maxHeight: '95vh',
           display: 'flex',
@@ -63,9 +63,9 @@ const Login = () => {
           justifyContent: 'center'
         }}
       >
-        <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(30px, 6vh, 48px)', alignItems: 'center' }}>
-          <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Adveris</span>
-          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em' }}>Advisors Portal</span>
+        <div className="portal-brand-lockup" style={{ marginBottom: 'clamp(30px, 6vh, 48px)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span className="brand-main" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', lineHeight: 1 }}>Adveris</span>
+          <span className="brand-subline" style={{ fontSize: '0.6rem', letterSpacing: '0.4em', marginTop: '0.5rem' }}>Advisors Portal</span>
         </div>
 
         <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 'clamp(24px, 5vh, 40px)', opacity: 0.4 }}>Account Access</div>
@@ -132,8 +132,8 @@ const Login = () => {
             Strategic Compliance · PAN India
           </p>
         </div>
-      </motion.div>
-    </div>
+      </motion.div >
+    </div >
   );
 };
 
