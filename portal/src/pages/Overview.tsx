@@ -36,9 +36,9 @@ const Donut = ({ admins, staff, clients }: { admins: number; staff: number; clie
         </div>
       </div>
       <div className="overview-legend">
-        <span><i className="tone-saffron" /> Admins {admins}</span>
-        <span><i className="tone-blue" /> Staff {staff}</span>
-        <span><i /> Clients {clients}</span>
+        <span><i style={{ background: 'var(--saffron)' }} /> Admins {admins}</span>
+        <span><i style={{ background: '#38bdf8' }} /> Staff {staff}</span>
+        <span><i style={{ background: 'rgba(255,255,255,0.16)' }} /> Clients {clients}</span>
       </div>
     </div>
   );
