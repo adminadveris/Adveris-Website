@@ -77,50 +77,160 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // --- INACTIVITY TIMEOUT (30 MINS) ---
+  // --- IMPROVED INACTIVITY GOVERNANCE ---
+  const [showWarning, setShowWarning] = useState(false);
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setShowWarning(false);
+      return;
+    }
 
     const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+    const WARNING_THRESHOLD = 28 * 60 * 1000; // 28 minutes
     const STORAGE_KEY = 'adveris_portal_last_active';
+    let lastResetTime = Date.now();
 
-    const resetTimer = () => {
-      localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    const resetTimer = (force = false) => {
+      const now = Date.now();
+      // Throttle storage writes to every 30 seconds unless forced
+      if (force || now - lastResetTime > 30000) {
+        localStorage.setItem(STORAGE_KEY, now.toString());
+        lastResetTime = now;
+        if (showWarning) setShowWarning(false);
+      }
+    };
+
+    // Cross-tab synchronization: If another tab resets the timer, this tab follows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) {
+        lastResetTime = parseInt(e.newValue || '0');
+        setShowWarning(false);
+      }
     };
 
     // Events to track activity
-    const activityEvents = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
-    activityEvents.forEach(e => window.addEventListener(e, resetTimer));
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach(e => window.addEventListener(e, () => resetTimer()));
+    window.addEventListener('storage', handleStorageChange);
 
     // Initialize timer
-    resetTimer();
+    resetTimer(true);
 
     // Check interval
     const interval = setInterval(() => {
       const lastActive = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
       const now = Date.now();
+      const diff = now - lastActive;
 
-      if (now - lastActive > INACTIVITY_LIMIT) {
-        console.warn("Session expired due to inactivity.");
+      if (diff > INACTIVITY_LIMIT) {
+        clearInterval(interval);
         signOut();
+      } else if (diff > WARNING_THRESHOLD) {
+        setShowWarning(true);
+      } else {
+        if (showWarning) setShowWarning(false);
       }
     }, 10000); // Check every 10 seconds
 
     return () => {
-      activityEvents.forEach(e => window.removeEventListener(e, resetTimer));
+      activityEvents.forEach(e => window.removeEventListener(e, () => resetTimer()));
+      window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, showWarning]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setShowWarning(false);
     localStorage.removeItem('adveris_portal_last_active');
+  };
+
+  const stayLoggedIn = () => {
+    const STORAGE_KEY = 'adveris_portal_last_active';
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    setShowWarning(false);
   };
 
   return (
     <AuthContext.Provider value={{ user, loading, refreshUser: fetchUser, signOut }}>
       {children}
+      
+      {/* SESSION EXPIRY WARNING MODAL */}
+      {showWarning && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          fontFamily: 'var(--font-ui)'
+        }}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            padding: '48px',
+            borderRadius: '24px',
+            maxWidth: '480px',
+            textAlign: 'center',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{
+              width: '64px', height: '64px',
+              background: 'rgba(255,153,51,0.1)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 24px'
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9933" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <h2 style={{ color: 'white', marginBottom: 12, fontSize: '1.5rem', fontWeight: 600 }}>Session Expiring</h2>
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: 32, lineHeight: 1.6 }}>
+              Your secure session is about to expire due to inactivity. Would you like to stay logged in?
+            </p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button 
+                onClick={() => signOut()}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  borderRadius: '12px',
+                  background: 'transparent',
+                  color: 'white',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  cursor: 'pointer',
+                  fontWeight: 600
+                }}
+              >
+                Sign Out
+              </button>
+              <button 
+                onClick={stayLoggedIn}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  borderRadius: '12px',
+                  background: 'var(--gold)',
+                  color: 'black',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 700
+                }}
+              >
+                Stay Logged In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };
