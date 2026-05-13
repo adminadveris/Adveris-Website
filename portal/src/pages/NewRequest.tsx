@@ -136,25 +136,35 @@ const NewRequest = () => {
       // 1. Resolve Account
       let finalAccountId = accountId;
       if (!finalAccountId) {
-        // ARCHITECTURAL MAPPING: Translate UI CamelCase to DB SnakeCase
-        const dbAccountPayload = {
-          account_name: accountName,
-          pan_number: pan,
-          cin_number: cin,
-          gstin_number: gstin,
-          industry,
-          house_no: address.houseNo,
-          street_1: address.street1,
-          street_2: address.street2,
-          street_3: address.street3,
-          landmark: address.landmark,
-          city: address.city,
-          state: address.state,
-          pincode: address.pincode,
-          country: address.country
-        };
-        const newAcc = await api.createAccount(dbAccountPayload);
-        finalAccountId = newAcc.id;
+        // [DATA INTEGRITY FIX]: Check for existing account by PAN or Name to prevent duplication
+        const existingMatch = accounts.find(acc => 
+          (pan && acc.pan_number === pan) || 
+          (acc.account_name.toLowerCase().trim() === accountName.toLowerCase().trim())
+        );
+
+        if (existingMatch) {
+          finalAccountId = existingMatch.id;
+        } else {
+          // ARCHITECTURAL MAPPING: Translate UI CamelCase to DB SnakeCase
+          const dbAccountPayload = {
+            account_name: accountName,
+            pan_number: pan,
+            cin_number: cin,
+            gstin_number: gstin,
+            industry,
+            house_no: address.houseNo,
+            street_1: address.street1,
+            street_2: address.street2,
+            street_3: address.street3,
+            landmark: address.landmark,
+            city: address.city,
+            state: address.state,
+            pincode: address.pincode,
+            country: address.country
+          };
+          const newAcc = await api.createAccount(dbAccountPayload);
+          finalAccountId = newAcc.id;
+        }
       }
 
       // 2. Handle Document Assets

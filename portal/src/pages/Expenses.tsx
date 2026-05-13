@@ -120,13 +120,27 @@ const Expenses = () => {
     setLoading(true);
     try {
       const idsToUpdate = overrideIds || selectedIds;
+      if (idsToUpdate.length === 0) return;
+      
       await api.bulkUpdateExpensesStatus(idsToUpdate, status as ExpenseEntry['status']);
+      
       if (editingId && idsToUpdate.includes(editingId)) {
         setCurrentStatus(status);
       }
+      
       setSelectedIds([]);
       await loadData();
-    } finally { setLoading(false); }
+      
+      if (overrideIds) {
+        setSubmitStatus({ type: 'success', msg: `Disbursement Status Successfully Updated To ${status.toUpperCase()}.` });
+        setTimeout(() => setSubmitStatus(null), 3000);
+      }
+    } catch (err: any) {
+      console.error("STATUS_UPDATE_ERROR:", err);
+      alert("Governance Error: Failed to update disbursement status. " + (err.message || ""));
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleSelectOne = (id: string) => {
@@ -170,7 +184,7 @@ const Expenses = () => {
         date,
         description: desc,
         url,
-        status: 'submitted'
+        status: editingId ? currentStatus : 'submitted'
       };
 
 
