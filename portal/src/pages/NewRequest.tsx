@@ -54,7 +54,7 @@ const NewRequest = () => {
   const [assignedTo, setAssignedTo] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
   const [clientComms, setClientComms] = useState('');
-  const [requestNumber, setRequestNumber] = useState('[PENDING]');
+  const [requestNumber, setRequestNumber] = useState(`ADV-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`);
 
   // --- INITIALIZATION ---
   useEffect(() => {

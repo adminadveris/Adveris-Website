@@ -241,7 +241,7 @@ export const api = {
       .from(table)
       .select(colName)
       .like(colName, `${prefix}-%`)
-      .order('created_at', { ascending: false })
+      .order(colName, { ascending: false })
       .limit(20); // Get more to find the latest SEQUENTIAL one
     
     if (error) {
