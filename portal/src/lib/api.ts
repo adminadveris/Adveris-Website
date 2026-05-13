@@ -231,6 +231,18 @@ export const api = {
   },
 
   getNextSequenceNumber: async (table: string, prefix: string): Promise<string> => {
+    // SECURITY UPGRADE: Use a Security Definer RPC to get the absolute global next number.
+    // This bypasses RLS to ensure clients don't start their own local sequences from 0001.
+    if (table === 'Request') {
+      try {
+        const { data, error } = await supabase.rpc('get_next_request_number');
+        if (error) throw error;
+        if (data) return data;
+      } catch (err) {
+        console.error("Global Sequence RPC failed, falling back to local calculation:", err);
+      }
+    }
+
     const colName = table === 'Request' ? 'request_number' : 
                     table === 'expenses' ? 'expense_number' : 
                     table === 'timesheets' ? 'timesheet_number' : null;
@@ -242,14 +254,13 @@ export const api = {
       .select(colName)
       .like(colName, `${prefix}-%`)
       .order(colName, { ascending: false })
-      .limit(20); // Get more to find the latest SEQUENTIAL one
+      .limit(20); 
     
     if (error) {
       console.error(`Error getting sequence for ${table}:`, error);
       return `${prefix}-0001`;
     }
     
-    // Filter for truly sequential ones (prefix-XXXX)
     const sequentialRecords = data?.filter(r => {
       const val = r[colName];
       if (!val) return false;
