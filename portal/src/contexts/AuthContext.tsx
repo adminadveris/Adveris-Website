@@ -38,9 +38,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('id', session.user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError && profileError.code !== 'PGRST116') { // PGRST116 is "no rows found"
+        throw profileError;
+      }
 
-      setUser(userProfile as User);
+      if (!userProfile) {
+        // Create a minimal user object if profile doesn't exist yet
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          full_name: session.user.user_metadata?.full_name || 'New User',
+          role: session.user.user_metadata?.role || 'client',
+          status: 'pending',
+          created_at: new Date().toISOString()
+        } as User);
+      } else {
+        setUser(userProfile as User);
+      }
     } catch (error) {
       console.error("Failed to load user", error);
       setUser(null);

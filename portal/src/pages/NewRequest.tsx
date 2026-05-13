@@ -12,7 +12,7 @@ type Step = 'pan_verify' | 'entity_registration' | 'engagement_scope';
 const NewRequest = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'employee';
 
   // --- NAVIGATION STATE ---
@@ -54,7 +54,7 @@ const NewRequest = () => {
   const [assignedTo, setAssignedTo] = useState('');
   const [internalNotes, setInternalNotes] = useState('');
   const [clientComms, setClientComms] = useState('');
-  const [requestNumber, setRequestNumber] = useState(`ADV-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`);
+  const [requestNumber, setRequestNumber] = useState('[PENDING]');
 
   // --- INITIALIZATION ---
   useEffect(() => {
@@ -127,6 +127,7 @@ const NewRequest = () => {
 
   const saveRequest = async () => {
     if (!accountName || !primaryService) return setError("Mandatory Fields Missing: Account Name or Service Domain.");
+    if (user?.role === 'admin' && !assignedTo) return setError("Governance Enforcement: Assigned Professional is required to save this record.");
 
     setSubmitting(true);
     setError(null);
@@ -179,15 +180,15 @@ const NewRequest = () => {
       };
 
       if (isAdmin) {
-        Object.assign(payload, { 
-          priority, 
-          status, 
+        Object.assign(payload, {
+          priority,
+          status,
           verification_status: verificationStatus,
           verification_remarks: verificationRemarks,
-          due_date: dueDate, 
-          assigned_to_id: assignedTo, // CORRECT: Send UUID
-          internal_notes: internalNotes, 
-          request_number: requestNumber 
+          due_date: dueDate || null,
+          assigned_to_id: assignedTo || null, // FIX: Send null instead of empty string for UUID columns
+          internal_notes: internalNotes,
+          request_number: requestNumber
         });
       }
 
@@ -197,13 +198,13 @@ const NewRequest = () => {
 
       // 5. Automatic Linkage for Clients
       if (user?.role === 'client' && !user.account_id && finalAccountId) {
-        await api.updateUser(user.id, { account_id: finalAccountId });
+        await api.updateProfile(user.id, { account_id: finalAccountId });
+        await refreshUser(); // Update context immediately
       }
 
       setSuccess(true);
       setTimeout(() => {
-        // Refresh the page to ensure AuthContext gets the new account_id
-        window.location.href = '/portal/dashboard/requests';
+        navigate('/dashboard/requests');
       }, 1500);
     } catch (err: any) {
       setError(err.message || "Failed to commit record.");
@@ -223,7 +224,7 @@ const NewRequest = () => {
   if (loading) return <div className="portal-loader-container"><div className="portal-loader" /></div>;
   if (success) return (
     <div className="portal-success-state">
-      <div className="success-icon">✓</div>
+      <div className="success-icon"></div>
       <h2>Request <em>Commited</em></h2>
       <p>The mandate has been successfully registered in the governance registry.</p>
     </div>
@@ -339,11 +340,11 @@ const NewRequest = () => {
                 <div className="portal-form-group" style={{ marginTop: 40 }}>
                   <label className="portal-form-label">Documentation Assets</label>
                   <div className="premium-upload-box">
-                    <input 
-                      type="file" 
-                      multiple 
-                      id="master-file-upload" 
-                      style={{ display: 'none' }} 
+                    <input
+                      type="file"
+                      multiple
+                      id="master-file-upload"
+                      style={{ display: 'none' }}
                       onChange={e => {
                         const files = Array.from(e.target.files || []);
                         if (attachedFiles.length + files.length > 3) {
@@ -353,10 +354,10 @@ const NewRequest = () => {
                           setAttachedFiles([...attachedFiles, ...files]);
                         }
                         e.target.value = ''; // Reset input to allow re-selection
-                      }} 
+                      }}
                     />
                     <div className="upload-content" onClick={() => document.getElementById('master-file-upload')?.click()}>
-                      <div className="upload-icon">↑</div>
+                      <div className="upload-icon"></div>
                       <p>Select Evidence or Scoping Documents (Max 3 Files)</p>
                       <button type="button" className="btn-portal-outline tiny">Browse Files</button>
                     </div>
@@ -392,7 +393,7 @@ const NewRequest = () => {
                         {staff.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}
                       </select>
                     </div>
-                    
+
                     <div className="portal-form-grid-2">
                       <div className="portal-form-group">
                         <label>Priority</label>

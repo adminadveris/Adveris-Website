@@ -130,10 +130,10 @@ const Timesheets = () => {
       for (const row of weeklyRows) {
         if (!row.accountId) continue;
         const account = accounts.find(a => a.id === row.accountId);
-        
+
         for (const [dateStr, dayData] of Object.entries(row.days)) {
           if (!dayData.hours || Number(dayData.hours) === 0) continue;
-          
+
           const payload = {
             record_id: row.recordId || null,
             account_id: row.accountId,
@@ -176,7 +176,7 @@ const Timesheets = () => {
   const initWeeklyGrid = () => {
     const weekStr = weekDays.map(d => d.toISOString().split('T')[0]);
     const weeklyLogs = logs.filter(l => weekStr.includes(l.date));
-    
+
     // Group logs by account + mandate
     const grouped: Record<string, any> = {};
     weeklyLogs.forEach(l => {
@@ -227,12 +227,12 @@ const Timesheets = () => {
 
   if (showForm) {
     const isFuture = (d: Date) => d > new Date();
-    
+
     return (
       <div className="portal-content" style={{ maxWidth: '100vw', padding: '40px 60px' }}>
         <div className="enterprise-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 40 }}>
           <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-            <button onClick={cancelForm} className="btn-portal-outline" style={{ padding: '10px 24px' }}>← Back to Ledger</button>
+            <button onClick={cancelForm} className="btn-portal-outline" style={{ padding: '10px 24px' }}>← Back to TimeSheet</button>
             <div style={{ height: 24, width: 1, background: 'rgba(255,255,255,0.1)' }} />
             <div>
               <div className="enterprise-eyebrow">Timesheet Entry</div>
@@ -243,32 +243,32 @@ const Timesheets = () => {
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <div className="portal-panel" style={{ display: 'flex', padding: 4, borderRadius: 10, gap: 4 }}>
-               <button 
-                 onClick={() => setWeekStart(new Date(weekStart.setDate(weekStart.getDate() - 7)))}
-                 className="btn-portal-record-dots" style={{ width: 36, height: 36 }}
-               >
-                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>
-               </button>
-               <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)' }}>
-                 {weekStart.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} — {weekDays[6].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
-               </div>
-               <button 
-                 onClick={() => {
-                   const next = new Date(weekStart);
-                   next.setDate(next.getDate() + 7);
-                   if (next <= new Date()) setWeekStart(next);
-                 }}
-                 disabled={new Date(new Date(weekStart).setDate(weekStart.getDate() + 7)) > new Date()}
-                 className="btn-portal-record-dots" style={{ width: 36, height: 36, opacity: new Date(new Date(weekStart).setDate(weekStart.getDate() + 7)) > new Date() ? 0.2 : 1 }}
-               >
-                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6"/></svg>
-               </button>
+              <button
+                onClick={() => setWeekStart(new Date(weekStart.setDate(weekStart.getDate() - 7)))}
+                className="btn-portal-record-dots" style={{ width: 36, height: 36 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+              <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)' }}>
+                {weekStart.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} — {weekDays[6].toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+              </div>
+              <button
+                onClick={() => {
+                  const next = new Date(weekStart);
+                  next.setDate(next.getDate() + 7);
+                  if (next <= new Date()) setWeekStart(next);
+                }}
+                disabled={new Date(new Date(weekStart).setDate(weekStart.getDate() + 7)) > new Date()}
+                className="btn-portal-record-dots" style={{ width: 36, height: 36, opacity: new Date(new Date(weekStart).setDate(weekStart.getDate() + 7)) > new Date() ? 0.2 : 1 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m9 18 6-6-6-6" /></svg>
+              </button>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleWeeklySave}
               disabled={loading}
-              className="btn-portal-primary" 
+              className="btn-portal-primary"
               style={{ padding: '12px 32px', minWidth: 160 }}
             >
               {loading ? 'Syncing...' : 'Save Weekly Ledger'}
@@ -277,10 +277,10 @@ const Timesheets = () => {
         </div>
 
         {submitStatus && (
-          <div style={{ 
-            marginBottom: 24, 
-            padding: '16px 24px', 
-            borderRadius: 12, 
+          <div style={{
+            marginBottom: 24,
+            padding: '16px 24px',
+            borderRadius: 12,
             background: submitStatus.type === 'success' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
             color: submitStatus.type === 'success' ? '#22c55e' : '#ef4444',
             border: `1px solid ${submitStatus.type === 'success' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
@@ -289,7 +289,7 @@ const Timesheets = () => {
             gap: 12,
             fontSize: '0.85rem'
           }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
             {submitStatus.msg}
           </div>
         )}
@@ -315,32 +315,32 @@ const Timesheets = () => {
                   <tr key={rowIndex} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                     <td style={{ padding: '20px 20px 20px 40px', verticalAlign: 'top' }}>
                       <div style={{ marginBottom: 8 }}>
-                        <SearchableSelect 
+                        <SearchableSelect
                           options={accountOptions}
                           value={row.accountId}
                           onChange={(id) => updateWeeklyRow(rowIndex, 'accountId', id)}
                           placeholder="Search Account..."
-                          style={{ 
-                            background: 'transparent', 
-                            border: 'none', 
-                            padding: 0, 
-                            color: 'var(--gold)', 
-                            fontWeight: 600, 
-                            fontSize: '0.85rem' 
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            padding: 0,
+                            color: 'var(--gold)',
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
                           }}
                         />
                       </div>
-                      <SearchableSelect 
+                      <SearchableSelect
                         options={records.filter(r => r.account_id === row.accountId).map(r => ({ id: r.id, label: r.title, sublabel: r.request_number }))}
                         value={row.recordId}
                         onChange={(id) => updateWeeklyRow(rowIndex, 'recordId', id)}
                         placeholder="Search Mandate..."
-                        style={{ 
-                          background: 'transparent', 
-                          border: 'none', 
-                          padding: 0, 
-                          opacity: 0.4, 
-                          fontSize: '0.75rem' 
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          opacity: 0.4,
+                          fontSize: '0.75rem'
                         }}
                       />
                     </td>
@@ -348,19 +348,19 @@ const Timesheets = () => {
                       const dateStr = d.toISOString().split('T')[0];
                       const dayData = row.days[dateStr] || { hours: '', desc: '' };
                       const isLocked = isFuture(d);
-                      
+
                       return (
                         <td key={i} style={{ padding: 8, verticalAlign: 'top', background: d.toDateString() === new Date().toDateString() ? 'rgba(255,153,51,0.02)' : 'transparent' }}>
-                          <input 
+                          <input
                             type="number"
                             step="0.5"
                             placeholder="0"
                             disabled={isLocked}
                             value={dayData.hours}
                             onChange={(e) => updateWeeklyDay(rowIndex, dateStr, 'hours', e.target.value)}
-                            style={{ 
-                              width: '100%', 
-                              background: isLocked ? 'transparent' : 'rgba(255,255,255,0.03)', 
+                            style={{
+                              width: '100%',
+                              background: isLocked ? 'transparent' : 'rgba(255,255,255,0.03)',
                               border: isLocked ? 'none' : '1px solid rgba(255,255,255,0.08)',
                               borderRadius: 6,
                               textAlign: 'center',
@@ -372,13 +372,13 @@ const Timesheets = () => {
                             }}
                           />
                           {!isLocked && (
-                            <textarea 
+                            <textarea
                               placeholder="Notes..."
                               value={dayData.desc}
                               onChange={(e) => updateWeeklyDay(rowIndex, dateStr, 'desc', e.target.value)}
-                              style={{ 
-                                width: '100%', 
-                                background: 'transparent', 
+                              style={{
+                                width: '100%',
+                                background: 'transparent',
                                 border: 'none',
                                 fontSize: '0.65rem',
                                 color: 'white',
@@ -401,26 +401,26 @@ const Timesheets = () => {
               })}
               <tr>
                 <td colSpan={9} style={{ padding: '16px 40px' }}>
-                  <button 
+                  <button
                     onClick={addWeeklyRow}
-                    style={{ 
-                      background: 'none', 
-                      border: '1px dashed rgba(255,255,255,0.1)', 
-                      color: 'var(--gold)', 
-                      padding: '8px 24px', 
-                      borderRadius: 8, 
-                      fontSize: '0.75rem', 
-                      cursor: 'pointer' 
+                    style={{
+                      background: 'none',
+                      border: '1px dashed rgba(255,255,255,0.1)',
+                      color: 'var(--gold)',
+                      padding: '8px 24px',
+                      borderRadius: 8,
+                      fontSize: '0.75rem',
+                      cursor: 'pointer'
                     }}
                   >
-                    + Add Mandate Row
+                    + Add New Row
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        
+
         <div style={{ marginTop: 40, textAlign: 'center', opacity: 0.2, fontSize: '0.7rem' }}>
           Restricted Governance Mode: Only current and past week logging permitted. Future dates are locked automatically.
         </div>
@@ -443,25 +443,25 @@ const Timesheets = () => {
       <div className="enterprise-filterbar" style={{ marginBottom: 40, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flex: 1, maxWidth: 800 }}>
           <div style={{ position: 'relative', flex: 1 }}>
-             <input 
-               type="text" 
-               placeholder="Search Time Logs (Ref, Staff, Account)..." 
-               value={searchQuery}
-               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-               style={{ 
-                 width: '100%', 
-                 background: 'rgba(255,255,255,0.03)', 
-                 border: '1px solid rgba(255,255,255,0.08)', 
-                 borderRadius: 8, 
-                 padding: '12px 16px 12px 40px',
-                 color: 'white',
-                 fontSize: '0.85rem',
-                 fontFamily: 'var(--font-ui)'
-               }} 
-             />
-             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
-               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-             </svg>
+            <input
+              type="text"
+              placeholder="Search Time Logs (Ref, Staff, Account)..."
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              style={{
+                width: '100%',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 8,
+                padding: '12px 16px 12px 40px',
+                color: 'white',
+                fontSize: '0.85rem',
+                fontFamily: 'var(--font-ui)'
+              }}
+            />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }}>
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+            </svg>
           </div>
         </div>
 

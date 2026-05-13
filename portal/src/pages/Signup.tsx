@@ -48,6 +48,18 @@ const Signup = () => {
       if (signupError) throw signupError;
 
       if (data.user) {
+        // Explicitly create the profile record in public.User table
+        await supabase.from('User').insert({
+          id: data.user.id,
+          email: cleanEmail,
+          full_name: `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          role: 'client',
+          status: 'pending',
+          created_at: new Date().toISOString()
+        });
+
         setSuccess(true);
         setTimeout(() => navigate('/'), 5000);
       }

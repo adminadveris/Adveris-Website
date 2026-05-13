@@ -240,15 +240,24 @@ export const api = {
     const { data, error } = await supabase
       .from(table)
       .select(colName)
+      .like(colName, `${prefix}-%`)
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(20); // Get more to find the latest SEQUENTIAL one
     
     if (error) {
       console.error(`Error getting sequence for ${table}:`, error);
       return `${prefix}-0001`;
     }
     
-    const lastNum = data?.[0]?.[colName];
+    // Filter for truly sequential ones (prefix-XXXX)
+    const sequentialRecords = data?.filter(r => {
+      const val = r[colName];
+      if (!val) return false;
+      const parts = val.split('-');
+      return parts.length === 2 && !isNaN(parseInt(parts[1])) && parts[1].length === 4;
+    });
+
+    const lastNum = sequentialRecords?.[0]?.[colName];
     if (!lastNum) return `${prefix}-0001`;
     
     const parts = lastNum.split('-');
@@ -802,5 +811,78 @@ export const api = {
       .getPublicUrl(filePath);
 
     return publicUrl;
+  },
+
+  // === ADMIN / GOVERNANCE ACTIONS ===
+  adminCreateUser: async (email: string, firstName: string, lastName: string, role: User['role']): Promise<void> => {
+    // Note: In a real production app, this would be an Edge Function using the Service Role Key.
+    // For this environment, we'll attempt a signup which creates the Auth user.
+    const { data, error: authError } = await supabase.auth.signUp({
+      email,
+      password: 'TemporaryPassword123!', // User will need to reset this
+      options: {
+        data: {
+          full_name: `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          role: role
+        }
+      }
+    });
+
+    if (authError) throw authError;
+
+    if (data.user) {
+      // Create the profile in public.User table
+      const { error: profileError } = await supabase
+        .from('User')
+        .insert({
+          id: data.user.id,
+          email,
+          full_name: `${firstName} ${lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          role,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        });
+
+      if (profileError) throw profileError;
+    }
+  },
+
+  adminDeleteUser: async (id: string): Promise<void> => {
+    // Delete from public.User (RLS should allow if admin)
+    const { error: profileError } = await supabase
+      .from('User')
+      .delete()
+      .eq('id', id);
+    
+    if (profileError) throw profileError;
+    
+    // Note: Auth user deletion usually requires service role. 
+    // We'll log the action.
+    await api.createAuditLog({
+      table_name: 'User',
+      record_id: id,
+      action: 'ADMIN_DELETE_USER',
+      field_name: 'id',
+      new_value: id
+    });
+  },
+
+  adminResetPassword: async (email: string): Promise<void> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/portal/reset-password`,
+    });
+    if (error) throw error;
+  },
+
+  adminSendInvite: async (email: string, firstName: string, lastName: string, role: string): Promise<void> => {
+    // In Supabase, this is usually done via admin.inviteUserByEmail.
+    // From client, we can trigger a password reset or similar if the user exists.
+    // For now, we'll re-trigger a password reset as a "re-invite".
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) throw error;
   }
 };

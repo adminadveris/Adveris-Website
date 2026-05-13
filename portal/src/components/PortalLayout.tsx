@@ -89,7 +89,7 @@ const PortalLayout = ({ children, user }: { children: React.ReactNode, user: Use
         {
             name: 'New Request',
             path: '/dashboard/new-request',
-            roles: ['client', 'admin'],
+            roles: ['client', 'admin', 'employee'],
             group: 'main',
             icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"></path></svg>
         },
