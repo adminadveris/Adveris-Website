@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -33,6 +33,7 @@ const Timesheets = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' });
 
   // Form State
   const [selectedAccountId, setSelectedAccountId] = useState('');
@@ -89,7 +90,43 @@ const Timesheets = () => {
     return (l.timesheet_number + (l.logged_by || '') + (l.account_name || '') + (l.task_details || '')).toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const paginatedLogs = filteredData.slice(
+  const sortedData = useMemo(() => {
+    let sortableItems = [...filteredData];
+    if (sortConfig !== null) {
+      sortableItems.sort((a: any, b: any) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        // Handling nested or special fields
+        if (sortConfig.key === 'created_by') aVal = a.created_by?.full_name || a.logged_by || 'Admin';
+        if (sortConfig.key === 'created_by') bVal = b.created_by?.full_name || b.logged_by || 'Admin';
+        if (sortConfig.key === 'record_id') {
+           aVal = records.find(r => r.id === a.record_id)?.request_number || '';
+           bVal = records.find(r => r.id === b.record_id)?.request_number || '';
+        }
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredData, sortConfig, records]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortConfig?.key !== column) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
+
+  const paginatedLogs = sortedData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -480,13 +517,45 @@ const Timesheets = () => {
           <table className="portal-table-v2">
             <thead>
               <tr>
-                <th style={{ width: 100, paddingLeft: 60, whiteSpace: 'nowrap' }}>Date</th>
-                <th style={{ width: 140 }}>Created By</th>
-                <th>Account Name</th>
-                <th style={{ width: 120 }}>Time Reference</th>
-                <th style={{ width: 150, whiteSpace: 'nowrap' }}>Request ID</th>
-                <th style={{ textAlign: 'right', width: 90 }}>Hours</th>
-                <th style={{ textAlign: 'right', width: 100, paddingRight: 60 }}>Actions</th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'date' ? 'active' : ''}`}
+                  onClick={() => requestSort('date')}
+                  style={{ paddingLeft: 60 }}
+                >
+                  Date <SortIcon column="date" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'created_by' ? 'active' : ''}`}
+                  onClick={() => requestSort('created_by')}
+                >
+                  Created By <SortIcon column="created_by" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'account_name' ? 'active' : ''}`}
+                  onClick={() => requestSort('account_name')}
+                >
+                  Account Name <SortIcon column="account_name" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'timesheet_number' ? 'active' : ''}`}
+                  onClick={() => requestSort('timesheet_number')}
+                >
+                  Time Reference <SortIcon column="timesheet_number" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'record_id' ? 'active' : ''}`}
+                  onClick={() => requestSort('record_id')}
+                >
+                  Request ID <SortIcon column="record_id" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'hours' ? 'active' : ''}`}
+                  onClick={() => requestSort('hours')}
+                  style={{ textAlign: 'right' }}
+                >
+                  Hours <SortIcon column="hours" />
+                </th>
+                <th style={{ textAlign: 'right', paddingRight: 60 }}>Actions</th>
               </tr>
             </thead>
             <tbody>

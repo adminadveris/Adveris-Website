@@ -25,12 +25,39 @@ const DataTable = <T extends { id?: string }>({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
   const filtered = useMemo(() => {
-    if (!q) return rows;
-    const lq = q.toLowerCase();
-    return rows.filter(row => Object.values(row).some(value => String(value ?? '').toLowerCase().includes(lq)));
-  }, [rows, q]);
+    let items = [...rows];
+    if (q) {
+      const lq = q.toLowerCase();
+      items = items.filter(row => Object.values(row).some(value => String(value ?? '').toLowerCase().includes(lq)));
+    }
+
+    if (sortConfig !== null) {
+      items.sort((a: any, b: any) => {
+        const aVal = String(a[sortConfig.key] ?? '').toLowerCase();
+        const bVal = String(b[sortConfig.key] ?? '').toLowerCase();
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return items;
+  }, [rows, q, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortConfig?.key !== column) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
 
   const paginated = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
@@ -41,7 +68,14 @@ const DataTable = <T extends { id?: string }>({
           <thead>
             <tr>
               {cols.map(col => (
-                <th key={col.key} style={{ width: col.width }}>{col.header}</th>
+                <th 
+                  key={col.key} 
+                  style={{ width: col.width }}
+                  className={`sortable ${sortConfig?.key === col.key ? 'active' : ''}`}
+                  onClick={() => requestSort(col.key)}
+                >
+                  {col.header} <SortIcon column={col.key} />
+                </th>
               ))}
             </tr>
           </thead>

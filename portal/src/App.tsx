@@ -38,29 +38,29 @@ const PageBackground = () => (
 
 const PendingApproval = () => {
   const { signOut } = useAuth() as any; // Cast as any if signOut is not in context yet
-  
+
   return (
     <div className="login-stage" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <PageBackground />
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="portal-panel" 
+        className="portal-panel"
         style={{ maxWidth: 600, padding: 80, textAlign: 'center' }}
       >
         <div className="firm-intel-tag" style={{ justifyContent: 'center', marginBottom: 32, color: 'var(--saffron)' }}>Governance Review Pending</div>
         <h2 className="serif-title" style={{ fontSize: '2.4rem', marginBottom: 24 }}>Identity Verification In Progress</h2>
         <p style={{ opacity: 0.6, lineHeight: 1.8, marginBottom: 48, fontSize: '1.1rem' }}>
-          Your Adveris Portal credentials have been successfully registered. 
-          For security and compliance, our administrative team is currently reviewing your application. 
+          Your Adveris Portal credentials have been successfully registered.
+          For security and compliance, our administrative team is currently reviewing your application.
           You will receive an email notification once your access is authorized.
         </p>
-        <button 
+        <button
           onClick={() => {
             localStorage.clear();
             window.location.href = '/portal/';
-          }} 
-          className="btn-portal-outline" 
+          }}
+          className="btn-portal-outline"
           style={{ padding: '14px 40px' }}
         >
           Log Out & Return
@@ -78,7 +78,7 @@ function App() {
       <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--navy)' }}>
         <PageBackground />
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontStyle: 'italic', color: 'var(--saffron)' }}>
-          Adveris...
+          Loading Adveris Advisors LLP Portal...
         </div>
       </div>
     );
@@ -96,11 +96,11 @@ function App() {
         <Route path="/" element={!isAuthenticated ? <Login /> : (isApproved ? <Navigate to="/dashboard" /> : <Navigate to="/pending" />)} />
         <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        
+
         {/* PROTECTED ROUTES */}
         <Route path="/pending" element={isAuthenticated && !isApproved ? <PendingApproval /> : <Navigate to="/" />} />
         <Route path="/dashboard/*" element={isAuthenticated && isApproved ? <Dashboard /> : <Navigate to="/" />} />
-        
+
         {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

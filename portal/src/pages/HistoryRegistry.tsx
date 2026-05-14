@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import Pagination from '../components/Pagination';
@@ -18,9 +18,9 @@ const HistoryRegistry = () => {
   const navigate = useNavigate();
   const [request, setRequest] = useState<Request | null>(null);
   const [history, setHistory] = useState<AuditLog[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'created_at', direction: 'desc' });
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,7 +40,34 @@ const HistoryRegistry = () => {
     loadData();
   }, [id, navigate]);
 
-  const paginatedHistory = history.slice(
+  const sortedHistory = useMemo(() => {
+    let sortableItems = [...history];
+    if (sortConfig !== null) {
+      sortableItems.sort((a: any, b: any) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [history, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortConfig?.key !== column) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
+
+  const paginatedHistory = sortedHistory.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -84,12 +111,48 @@ const HistoryRegistry = () => {
           <table className="portal-table-v2">
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
-                <th style={{ width: 160, fontSize: '0.75rem' }}>Timestamp</th>
-                <th style={{ width: 120, fontSize: '0.75rem' }}>Action</th>
-                <th style={{ fontSize: '0.75rem' }}>Event Type</th>
-                <th style={{ fontSize: '0.75rem' }}>Previous State</th>
-                <th style={{ fontSize: '0.75rem' }}>Refined State</th>
-                <th style={{ textAlign: 'right', fontSize: '0.75rem' }}>Executed By</th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'created_at' ? 'active' : ''}`}
+                  onClick={() => requestSort('created_at')}
+                  style={{ fontSize: '0.75rem' }}
+                >
+                  Timestamp <SortIcon column="created_at" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'action' ? 'active' : ''}`}
+                  onClick={() => requestSort('action')}
+                  style={{ fontSize: '0.75rem' }}
+                >
+                  Action <SortIcon column="action" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'field_name' ? 'active' : ''}`}
+                  onClick={() => requestSort('field_name')}
+                  style={{ fontSize: '0.75rem' }}
+                >
+                  Event Type <SortIcon column="field_name" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'old_value' ? 'active' : ''}`}
+                  onClick={() => requestSort('old_value')}
+                  style={{ fontSize: '0.75rem' }}
+                >
+                  Previous State <SortIcon column="old_value" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'new_value' ? 'active' : ''}`}
+                  onClick={() => requestSort('new_value')}
+                  style={{ fontSize: '0.75rem' }}
+                >
+                  Refined State <SortIcon column="new_value" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'changed_by_name' ? 'active' : ''}`}
+                  onClick={() => requestSort('changed_by_name')}
+                  style={{ textAlign: 'right', fontSize: '0.75rem' }}
+                >
+                  Executed By <SortIcon column="changed_by_name" />
+                </th>
               </tr>
             </thead>
             <tbody style={{ fontSize: '0.85rem' }}>

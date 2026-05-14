@@ -593,6 +593,38 @@ select.portal-form-control {
   background: rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(60px);
   -webkit-backdrop-filter: blur(60px);
+  white-space: nowrap;
+}
+
+.portal-table-v2 th.sortable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+.portal-table-v2 th.sortable:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.portal-table-v2 th.sortable .sort-indicator {
+  margin-left: 8px;
+  display: inline-block;
+  vertical-align: middle;
+  opacity: 0.1;
+  transition: opacity 0.2s ease;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.portal-table-v2 th.sortable:hover .sort-indicator,
+.portal-table-v2 th.sortable.active .sort-indicator {
+  opacity: 1;
+}
+
+.portal-table-v2 th.sortable.active {
+  color: var(--gold);
 }
 
 .portal-table-v2 td {

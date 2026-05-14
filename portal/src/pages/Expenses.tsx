@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -42,6 +42,7 @@ const Expenses = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'date', direction: 'desc' });
 
   const getInputStyle = (field: string) => ({
     border: validationErrors.includes(field) ? '1px solid var(--saffron)' : '1.5px solid rgba(255,255,255,0.1)',
@@ -90,7 +91,39 @@ const Expenses = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const paginatedEntries = filteredData.slice(
+  const sortedData = useMemo(() => {
+    let sortableItems = [...filteredData];
+    if (sortConfig !== null) {
+      sortableItems.sort((a: any, b: any) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        // Handling nested or special fields
+        if (sortConfig.key === 'created_by') aVal = a.created_by?.full_name || a.created_by_name || 'System';
+        if (sortConfig.key === 'created_by') bVal = b.created_by?.full_name || b.created_by_name || 'System';
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredData, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortConfig?.key !== column) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>;
+  };
+
+  const paginatedEntries = sortedData.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -558,14 +591,51 @@ const Expenses = () => {
                     />
                   </th>
                 )}
-                <th style={{ width: 100, paddingLeft: user?.role === 'admin' ? 0 : 60, whiteSpace: 'nowrap' }}>Date</th>
-                <th style={{ width: 140 }}>Created By</th>
-                <th style={{ width: 140 }}>Category</th>
-                <th style={{ width: 140 }}>Account Name</th>
-                <th style={{ width: 100 }}>Expense Ref</th>
-                <th style={{ width: 100 }}>Verification</th>
-                <th style={{ textAlign: 'right', width: 120 }}>Amount (Inr)</th>
-                <th style={{ textAlign: 'right', paddingRight: 60, width: 80 }}>Actions</th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'date' ? 'active' : ''}`}
+                  onClick={() => requestSort('date')}
+                  style={{ paddingLeft: user?.role === 'admin' ? 0 : 60 }}
+                >
+                  Date <SortIcon column="date" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'created_by' ? 'active' : ''}`}
+                  onClick={() => requestSort('created_by')}
+                >
+                  Created By <SortIcon column="created_by" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'category' ? 'active' : ''}`}
+                  onClick={() => requestSort('category')}
+                >
+                  Category <SortIcon column="category" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'account_name' ? 'active' : ''}`}
+                  onClick={() => requestSort('account_name')}
+                >
+                  Account Name <SortIcon column="account_name" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'expense_number' ? 'active' : ''}`}
+                  onClick={() => requestSort('expense_number')}
+                >
+                  Expense Ref <SortIcon column="expense_number" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'status' ? 'active' : ''}`}
+                  onClick={() => requestSort('status')}
+                >
+                  Verification <SortIcon column="status" />
+                </th>
+                <th 
+                  className={`sortable ${sortConfig?.key === 'amount' ? 'active' : ''}`}
+                  onClick={() => requestSort('amount')}
+                  style={{ textAlign: 'right' }}
+                >
+                  Amount (Inr) <SortIcon column="amount" />
+                </th>
+                <th style={{ textAlign: 'right', paddingRight: 60 }}>Actions</th>
               </tr>
             </thead>
             <tbody>

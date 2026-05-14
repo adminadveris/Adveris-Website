@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { User } from '../types';
@@ -14,6 +14,7 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [showExpertiseModal, setShowExpertiseModal] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'full_name', direction: 'asc' });
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -79,8 +80,30 @@ const UserManagement = () => {
     return roleMatch && searchMatch;
   });
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
-  const paginatedProfiles = filteredUsers.slice(
+  const sortedUsers = useMemo(() => {
+    let sortableItems = [...filteredUsers];
+    if (sortConfig !== null) {
+      sortableItems.sort((a: any, b: any) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredUsers, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const totalPages = Math.ceil(sortedUsers.length / pageSize);
+  const paginatedProfiles = sortedUsers.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -161,7 +184,7 @@ const UserManagement = () => {
               style={{ height: 48, fontSize: '0.85rem' }}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
             {['all', 'admin', 'employee', 'client', 'pending'].map(r => (
               <button
                 key={r}
@@ -176,6 +199,22 @@ const UserManagement = () => {
                 {r === 'all' ? 'Any' : r === 'employee' ? 'Staff' : r.charAt(0).toUpperCase() + r.slice(1)}
               </button>
             ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <span style={{ fontSize: '0.65rem', fontWeight: 600, opacity: 0.2, textTransform: 'uppercase' }}>Sort By:</span>
+            <button 
+              onClick={() => requestSort('full_name')}
+              style={{ background: 'none', border: 'none', color: sortConfig?.key === 'full_name' ? 'var(--gold)' : 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              Name {sortConfig?.key === 'full_name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+            </button>
+            <button 
+              onClick={() => requestSort('role')}
+              style={{ background: 'none', border: 'none', color: sortConfig?.key === 'role' ? 'var(--gold)' : 'rgba(255,255,255,0.3)', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              Role {sortConfig?.key === 'role' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+            </button>
           </div>
 
           <button
@@ -431,6 +470,56 @@ const UserManagement = () => {
                         />
                       ) : (
                         <p style={{ color: 'white', fontSize: '1.1rem', fontWeight: 400, fontFamily: 'monospace' }}>{selectedUser.phone || '—'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="portal-form-label">Professional Designation</label>
+                      {isEditing ? (
+                        <input
+                          className="portal-form-control"
+                          value={editData.designation || ''}
+                          onChange={e => setEditData({ ...editData, designation: e.target.value })}
+                          placeholder="e.g. Senior Associate, Director"
+                          style={{ background: 'rgba(255,255,255,0.03)', height: 48 }}
+                        />
+                      ) : (
+                        <p style={{ color: 'white', fontSize: '1rem', fontWeight: 400 }}>{selectedUser.designation || '—'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="portal-form-label">Organizational Department</label>
+                      {isEditing ? (
+                        <input
+                          className="portal-form-control"
+                          value={editData.department || ''}
+                          onChange={e => setEditData({ ...editData, department: e.target.value })}
+                          placeholder="e.g. Compliance, Audit, Legal"
+                          style={{ background: 'rgba(255,255,255,0.03)', height: 48 }}
+                        />
+                      ) : (
+                        <p style={{ color: 'white', fontSize: '1rem', fontWeight: 400 }}>{selectedUser.department || '—'}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="portal-form-label">Strategic Clearance Level</label>
+                      {isEditing ? (
+                        <select
+                          className="portal-form-control"
+                          value={editData.clearance_level || ''}
+                          onChange={e => setEditData({ ...editData, clearance_level: e.target.value })}
+                          style={{ background: 'rgba(255,255,255,0.03)', height: 48 }}
+                        >
+                          <option value="">Select Level...</option>
+                          <option value="L1 - Global Governance">L1 - Global Governance</option>
+                          <option value="L2 - Operational Authority">L2 - Operational Authority</option>
+                          <option value="L3 - Restricted Access">L3 - Restricted Access</option>
+                          <option value="Client - External">Client - External</option>
+                        </select>
+                      ) : (
+                        <p style={{ color: 'var(--gold)', fontSize: '1rem', fontWeight: 600 }}>{selectedUser.clearance_level || '—'}</p>
                       )}
                     </div>
 
@@ -737,6 +826,8 @@ const CreateUserForm = ({ onSuccess, onError }: { onSuccess: () => void; onError
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [department, setDepartment] = useState('');
   const [role, setRole] = useState<User['role']>('client');
   const [loading, setLoading] = useState(false);
 
@@ -744,7 +835,7 @@ const CreateUserForm = ({ onSuccess, onError }: { onSuccess: () => void; onError
     e.preventDefault();
     setLoading(true);
     try {
-      await api.adminCreateUser(email, firstName, lastName, role);
+      await api.adminCreateUser(email, firstName, lastName, role, { designation, department });
       onSuccess();
     } catch (err: any) {
       onError(err.message || "Failed To Create User.");
@@ -788,6 +879,28 @@ const CreateUserForm = ({ onSuccess, onError }: { onSuccess: () => void; onError
           placeholder="email@adveris.com"
         />
       </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div>
+          <label className="portal-form-label">Designation</label>
+          <input
+            className="portal-form-control"
+            value={designation}
+            onChange={e => setDesignation(e.target.value)}
+            placeholder="e.g. Lead Consultant"
+          />
+        </div>
+        <div>
+          <label className="portal-form-label">Department</label>
+          <input
+            className="portal-form-control"
+            value={department}
+            onChange={e => setDepartment(e.target.value)}
+            placeholder="e.g. Strategy"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="portal-form-label">Institutional Role</label>
         <select

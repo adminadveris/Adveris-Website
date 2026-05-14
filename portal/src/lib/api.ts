@@ -4,6 +4,16 @@ import type {
   TimesheetEntry, ExpenseEntry, AuditLog, UIHistoryItem 
 } from '../types';
 
+// Utility to strip joined relational objects and metadata before writing to Supabase
+const sanitize = (obj: any) => {
+  const { 
+    id, created_at, created_by, updated_by, 
+    assigned_user, changed_by_user, sender,
+    ...clean 
+  } = obj;
+  return clean;
+};
+
 export const api = {
   // --- AUTH/currentUser ---
   getProfile: async (): Promise<User | null> => {
@@ -60,7 +70,7 @@ export const api = {
     const { data, error } = await supabase
       .from('accounts')
       .insert({
-        ...account,
+        ...sanitize(account),
         created_by_id: user?.id,
         updated_by_id: user?.id,
         created_by_name: currentUser?.full_name || 'System',
@@ -91,7 +101,7 @@ export const api = {
     const { data: newAccount, error } = await supabase
       .from('accounts')
       .update({
-        ...account,
+        ...sanitize(account),
         updated_at: new Date().toISOString(),
         updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
@@ -168,7 +178,7 @@ export const api = {
     const { data, error } = await supabase
       .from('clients')
       .insert({
-        ...client,
+        ...sanitize(client),
         created_by_id: user?.id,
         updated_by_id: user?.id,
         created_by_name: currentUser?.full_name || 'System',
@@ -188,7 +198,7 @@ export const api = {
     const { data, error } = await supabase
       .from('clients')
       .update({
-        ...client,
+        ...sanitize(client),
         updated_at: new Date().toISOString(),
         updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
@@ -286,7 +296,7 @@ export const api = {
     const { data, error } = await supabase
       .from('Request')
       .insert({
-        ...record,
+        ...sanitize(record),
         request_number,
         submitted_by: user?.id,
         created_by_id: user?.id,
@@ -341,7 +351,7 @@ export const api = {
     const { data, error } = await supabase
       .from('Request')
       .update({
-        ...record,
+        ...sanitize(record),
         updated_at: new Date().toISOString(),
         updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
@@ -408,7 +418,7 @@ export const api = {
     const { data, error } = await supabase
       .from('timesheets')
       .insert({
-        ...entry,
+        ...sanitize(entry),
         timesheet_number,
         user_id: user?.id,
         created_by_id: user?.id,
@@ -440,7 +450,7 @@ export const api = {
     const { data, error } = await supabase
       .from('timesheets')
       .update({
-        ...entry,
+        ...sanitize(entry),
         updated_at: new Date().toISOString(),
         updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
@@ -523,7 +533,7 @@ export const api = {
     const { data, error } = await supabase
       .from('expenses')
       .insert({
-        ...entry,
+        ...sanitize(entry),
         expense_number,
         user_id: user?.id,
         created_by_id: user?.id,
@@ -572,7 +582,7 @@ export const api = {
     const { data, error } = await supabase
       .from('expenses')
       .update({
-        ...entry,
+        ...sanitize(entry),
         updated_at: new Date().toISOString(),
         updated_by_id: user?.id,
         updated_by_name: currentUser?.full_name || 'System'
