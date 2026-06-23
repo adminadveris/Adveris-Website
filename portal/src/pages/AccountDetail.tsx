@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import type {
   Account, Client, Request,
-  TimesheetEntry, ExpenseEntry, AuditLog
+  TimesheetEntry, ExpenseEntry, AuditLog, Invoice
 } from '../types';
 
 /* ── Inline editable field ── */
@@ -48,6 +48,7 @@ const AccountDetail = () => {
   const [timesheets, setTimesheets] = useState<TimesheetEntry[]>([]);
   const [expenses, setExpenses] = useState<ExpenseEntry[]>([]);
   const [mandates, setMandates] = useState<Request[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -78,6 +79,15 @@ const AccountDetail = () => {
     setTimesheets(allT.filter((t: TimesheetEntry) => t.account_id === id));
     setExpenses(allE.filter((e: ExpenseEntry) => e.account_id === id));
     setMandates(allM.filter((m: Request) => m.account_id === id));
+
+    // Load invoices for this account
+    try {
+      const invs = await api.getInvoicesByAccount(id);
+      setInvoices(invs);
+    } catch (err) {
+      console.warn('Could not load invoices for account (table may not exist)', err);
+    }
+
     setLoading(false);
   };
 
@@ -366,6 +376,67 @@ const AccountDetail = () => {
               <h2 className="serif-title" style={{ fontSize: '1.8rem', marginTop: 8, color: 'white', fontFamily: 'var(--font-sans)', fontWeight: 600 }}>
                 {stats.mandateCount}<em style={{ fontSize: '0.8rem', marginLeft: 6, opacity: 0.3 }}>Records</em>
               </h2>
+            </div>
+
+            {/* INVOICES PANEL */}
+            <div className="portal-panel" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                  Invoices Raised
+                </h3>
+                <button
+                  onClick={() => navigate(`/dashboard/invoices/new`)}
+                  className="btn-portal-primary"
+                  style={{ padding: '6px 14px', fontSize: '0.65rem', width: 'auto' }}
+                >
+                  + New
+                </button>
+              </div>
+              <div style={{ padding: 8 }}>
+                {invoices.length > 0 ? invoices.map(inv => {
+                  const sColor: Record<string, { bg: string; c: string }> = {
+                    draft: { bg: 'rgba(255,255,255,0.05)', c: 'rgba(255,255,255,0.4)' },
+                    sent: { bg: 'rgba(96,165,250,0.1)', c: '#60a5fa' },
+                    paid: { bg: 'rgba(74,222,128,0.1)', c: '#4ade80' },
+                    cancelled: { bg: 'rgba(239,68,68,0.1)', c: '#ef4444' },
+                  };
+                  const sc = sColor[inv.status] || sColor.draft;
+                  return (
+                    <div
+                      key={inv.id}
+                      onClick={() => navigate(`/dashboard/invoices/${inv.id}`)}
+                      style={{ padding: '16px 24px', borderRadius: 10, cursor: 'pointer' }}
+                      className="portal-list-item-elegant"
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <p style={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', fontFamily: 'monospace' }}>{inv.invoice_number}</p>
+                          <p style={{ fontSize: '0.7rem', opacity: 0.35, marginTop: 2 }}>
+                            {new Date(inv.invoice_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            {inv.contact_name ? ` · ${inv.contact_name}` : ''}
+                            {inv.sender_details?.name ? ` · From: ${inv.sender_details.name}` : ''}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', fontFamily: 'monospace' }}>
+                            ₹{Number(inv.total).toLocaleString('en-IN')}
+                          </span>
+                          <span style={{
+                            fontSize: '0.6rem', fontWeight: 700, padding: '3px 10px',
+                            borderRadius: 4, background: sc.bg, color: sc.c,
+                            textTransform: 'capitalize'
+                          }}>{inv.status}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }) : (
+                  <div style={{ padding: 40, textAlign: 'center', opacity: 0.2 }}>
+                    <p style={{ fontSize: '0.8rem', fontStyle: 'italic' }}>No invoices raised yet.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
           </div>

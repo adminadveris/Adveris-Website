@@ -1,7 +1,8 @@
 import { supabase } from './supabase';
 import type { 
   User, Account, Client, Request, 
-  TimesheetEntry, ExpenseEntry, AuditLog, UIHistoryItem 
+  TimesheetEntry, ExpenseEntry, AuditLog, UIHistoryItem,
+  RequestMessage, Invoice, PaymentMethod, InvoiceSender
 } from '../types';
 
 // Utility to strip joined relational objects and metadata before writing to Supabase
@@ -53,13 +54,36 @@ export const api = {
   },
 
   findAccountByPAN: async (pan: string): Promise<Account | null> => {
+    // First try exact ilike match
     const { data, error } = await supabase
       .from('accounts')
       .select('*')
       .ilike('pan_number', pan)
       .maybeSingle();
     
-    if (error) return null;
+    if (error) {
+      console.error('findAccountByPAN: Query error (possible RLS restriction):', error.message);
+      // Fallback: Try using the user's own account_id to check if their account matches
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: userRecord } = await supabase.from('User').select('account_id').eq('id', user.id).single();
+          if (userRecord?.account_id) {
+            const { data: ownAccount } = await supabase
+              .from('accounts')
+              .select('*')
+              .eq('id', userRecord.account_id)
+              .single();
+            if (ownAccount && ownAccount.pan_number?.toUpperCase() === pan.toUpperCase()) {
+              return ownAccount as Account;
+            }
+          }
+        }
+      } catch (fallbackErr) {
+        console.error('findAccountByPAN: Fallback also failed:', fallbackErr);
+      }
+      return null;
+    }
     return data as Account;
   },
 
@@ -255,7 +279,8 @@ export const api = {
 
     const colName = table === 'Request' ? 'request_number' : 
                     table === 'expenses' ? 'expense_number' : 
-                    table === 'timesheets' ? 'timesheet_number' : null;
+                    table === 'timesheets' ? 'timesheet_number' :
+                    table === 'invoices' ? 'invoice_number' : null;
     
     if (!colName) return `${prefix}-0001`;
 
@@ -899,11 +924,239 @@ export const api = {
     if (error) throw error;
   },
 
+  adminSetPassword: async (userId: string, newPassword: string): Promise<void> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated. Please log in again.');
+
+    const response = await fetch('/api/admin-set-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ userId, newPassword })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to set password.');
+    }
+  },
+
   adminSendInvite: async (email: string, firstName: string, lastName: string, role: string): Promise<void> => {
     // In Supabase, this is usually done via admin.inviteUserByEmail.
     // From client, we can trigger a password reset or similar if the user exists.
     // For now, we'll re-trigger a password reset as a "re-invite".
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) throw error;
+  },
+
+  // === REQUEST MESSAGES (CHATTER) ===
+  getRequestMessages: async (requestId: string): Promise<RequestMessage[]> => {
+    const { data, error } = await supabase
+      .from('request_messages')
+      .select('*')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: true });
+    
+    if (error) throw error;
+    return data as RequestMessage[];
+  },
+
+  sendRequestMessage: async (requestId: string, message: string): Promise<RequestMessage> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: currentUser } = await supabase.from('User').select('full_name, role').eq('id', user?.id).single();
+
+    const { data, error } = await supabase
+      .from('request_messages')
+      .insert({
+        request_id: requestId,
+        sender_id: user?.id,
+        sender_name: currentUser?.full_name || 'System',
+        sender_role: currentUser?.role || 'unknown',
+        message
+      })
+      .select('*')
+      .single();
+    
+    if (error) throw error;
+    return data as RequestMessage;
+  },
+
+  // === PAYMENT METHODS ===
+  getPaymentMethods: async (): Promise<PaymentMethod[]> => {
+    const { data, error } = await supabase
+      .from('payment_methods')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data as PaymentMethod[];
+  },
+
+  createPaymentMethod: async (pm: Partial<PaymentMethod>): Promise<PaymentMethod> => {
+    const { data, error } = await supabase
+      .from('payment_methods')
+      .insert({ ...sanitize(pm) })
+      .select('*')
+      .single();
+    if (error) throw error;
+    return data as PaymentMethod;
+  },
+
+  updatePaymentMethod: async (id: string, pm: Partial<PaymentMethod>): Promise<PaymentMethod> => {
+    const { data, error } = await supabase
+      .from('payment_methods')
+      .update({ ...sanitize(pm), updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return data as PaymentMethod;
+  },
+
+  deletePaymentMethod: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('payment_methods')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // === INVOICE SENDERS ===
+  getInvoiceSenders: async (): Promise<InvoiceSender[]> => {
+    const { data, error } = await supabase
+      .from('invoice_senders')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    return data as InvoiceSender[];
+  },
+
+  createInvoiceSender: async (sender: Partial<InvoiceSender>): Promise<InvoiceSender> => {
+    const { data, error } = await supabase
+      .from('invoice_senders')
+      .insert({ ...sanitize(sender) })
+      .select('*')
+      .single();
+    if (error) throw error;
+    return data as InvoiceSender;
+  },
+
+  updateInvoiceSender: async (id: string, sender: Partial<InvoiceSender>): Promise<InvoiceSender> => {
+    const { data, error } = await supabase
+      .from('invoice_senders')
+      .update({ ...sanitize(sender), updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('*')
+      .single();
+    if (error) throw error;
+    return data as InvoiceSender;
+  },
+
+  deleteInvoiceSender: async (id: string): Promise<void> => {
+    const { error } = await supabase
+      .from('invoice_senders')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+  },
+
+  // === INVOICES ===
+  getInvoices: async (): Promise<Invoice[]> => {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map((inv: any) => ({
+      ...inv,
+      line_items: Array.isArray(inv.line_items) ? inv.line_items : 
+        (typeof inv.line_items === 'string' ? JSON.parse(inv.line_items) : [])
+    })) as Invoice[];
+  },
+
+  getInvoicesByAccount: async (accountId: string): Promise<Invoice[]> => {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('account_id', accountId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map((inv: any) => ({
+      ...inv,
+      line_items: Array.isArray(inv.line_items) ? inv.line_items :
+        (typeof inv.line_items === 'string' ? JSON.parse(inv.line_items) : [])
+    })) as Invoice[];
+  },
+
+  getInvoiceById: async (id: string): Promise<Invoice | null> => {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) return null;
+    return {
+      ...data,
+      line_items: Array.isArray(data.line_items) ? data.line_items :
+        (typeof data.line_items === 'string' ? JSON.parse(data.line_items) : [])
+    } as Invoice;
+  },
+
+  createInvoice: async (invoice: Partial<Invoice>): Promise<Invoice> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: currentUser } = await supabase.from('User').select('full_name').eq('id', user?.id).single();
+
+    const invoice_number = await api.getNextSequenceNumber('invoices', 'INV');
+
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert({
+        ...sanitize(invoice),
+        invoice_number,
+        created_by_id: user?.id,
+        created_by_name: currentUser?.full_name || 'System'
+      })
+      .select('*')
+      .single();
+    
+    if (error) throw error;
+
+    await api.createAuditLog({
+      table_name: 'invoices',
+      record_id: data.id,
+      action: 'CREATE_INVOICE',
+      field_name: 'invoice_number',
+      new_value: invoice_number,
+    });
+
+    return {
+      ...data,
+      line_items: Array.isArray(data.line_items) ? data.line_items : []
+    } as Invoice;
+  },
+
+  updateInvoice: async (id: string, invoice: Partial<Invoice>): Promise<Invoice> => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+      .from('invoices')
+      .update({
+        ...sanitize(invoice),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select('*')
+      .single();
+    
+    if (error) throw error;
+    return {
+      ...data,
+      line_items: Array.isArray(data.line_items) ? data.line_items : []
+    } as Invoice;
   }
 };

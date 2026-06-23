@@ -1,14 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import type { Request, Account, AuditLog } from '../types';
+import type { Request, Account, AuditLog, RequestMessage } from '../types';
 
 const fmtDate = (iso?: string) =>
   iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
 const fmtDateTime = (iso?: string) =>
   iso ? new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+
+const fmtTime = (iso?: string) =>
+  iso ? new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
 
 const normalize = (value?: string) =>
   value ? value.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') : '-';
@@ -30,6 +34,15 @@ const statusMeta = (status?: string) => {
   return { label: 'Active', tone: 'success' };
 };
 
+const roleBadgeStyle = (role: string) => {
+  const styles: Record<string, { bg: string; color: string; label: string }> = {
+    admin: { bg: 'rgba(255,153,51,0.12)', color: '#ff9933', label: 'Admin' },
+    employee: { bg: 'rgba(96,165,250,0.12)', color: '#60a5fa', label: 'Staff' },
+    client: { bg: 'rgba(74,222,128,0.12)', color: '#4ade80', label: 'Client' },
+  };
+  return styles[role] || { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', label: role };
+};
+
 const MandateDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -40,6 +53,13 @@ const MandateDetail = () => {
   const [history, setHistory] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // --- CHATTER STATE ---
+  const [messages, setMessages] = useState<RequestMessage[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [chatterError, setChatterError] = useState<string | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = async (fileUrl: string, fileName: string) => {
     if (fileUrl.startsWith('data:')) {
@@ -96,6 +116,15 @@ const MandateDetail = () => {
         setRequest(rec);
         setAccount(acc);
         setHistory(hist);
+
+        // Load chatter messages
+        try {
+          const msgs = await api.getRequestMessages(rec.id);
+          setMessages(msgs);
+        } catch (err) {
+          console.warn('Chatter: Could not load messages (table may not exist yet)', err);
+          setChatterError('Chatter unavailable — database table not configured yet.');
+        }
       } catch (err: any) {
         console.error('MANDATE_DETAIL: Load failure', err);
         setError(err.message || 'Request could not be loaded.');
@@ -106,6 +135,58 @@ const MandateDetail = () => {
 
     loadData();
   }, [id, user]);
+
+  // --- REALTIME SUBSCRIPTION FOR CHATTER ---
+  useEffect(() => {
+    if (!request?.id) return;
+
+    const channel = supabase
+      .channel(`chatter-${request.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'request_messages',
+          filter: `request_id=eq.${request.id}`
+        },
+        (payload) => {
+          setMessages(prev => {
+            const newMsg = payload.new as RequestMessage;
+            // Avoid duplicates
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [request?.id]);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !request?.id || sendingMessage) return;
+
+    setSendingMessage(true);
+    try {
+      const msg = await api.sendRequestMessage(request.id, newMessage.trim());
+      // Optimistic add (realtime will also deliver it, but dedup handles this)
+      setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
+      setNewMessage('');
+      setChatterError(null);
+    } catch (err: any) {
+      setChatterError(err.message || 'Failed to send message.');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -220,6 +301,127 @@ const MandateDetail = () => {
               </div>
             </section>
           )}
+
+          {/* === CHATTER / MESSAGES SECTION === */}
+          <section className="portal-panel record-section" style={{ overflow: 'hidden' }}>
+            <div className="record-section__header">
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                Chatter
+              </h2>
+              <span style={{ fontSize: '0.7rem', opacity: 0.4 }}>{messages.length} message{messages.length !== 1 ? 's' : ''}</span>
+            </div>
+
+            {chatterError ? (
+              <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>{chatterError}</p>
+                <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.15)', marginTop: 8 }}>Run the SQL migration to enable chatter.</p>
+              </div>
+            ) : (
+              <>
+                {/* Messages List */}
+                <div style={{ maxHeight: 400, overflowY: 'auto', padding: '16px 24px' }} className="custom-scrollbar">
+                  {messages.length === 0 ? (
+                    <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" style={{ margin: '0 auto 16px', display: 'block' }}>
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      <p style={{ fontSize: '0.8rem', opacity: 0.15, fontStyle: 'italic' }}>No messages yet. Start a conversation.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {messages.map(msg => {
+                        const isOwn = msg.sender_id === user?.id;
+                        const badge = roleBadgeStyle(msg.sender_role);
+                        return (
+                          <div key={msg.id} style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: isOwn ? 'flex-end' : 'flex-start',
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                              <div style={{
+                                width: 28, height: 28, borderRadius: '50%',
+                                background: isOwn ? 'var(--gold)' : 'rgba(255,255,255,0.08)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: isOwn ? 'var(--navy)' : 'white',
+                                fontSize: '0.65rem', fontWeight: 700
+                              }}>
+                                {msg.sender_name?.charAt(0).toUpperCase()}
+                              </div>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'white' }}>{msg.sender_name}</span>
+                              <span style={{
+                                fontSize: '0.6rem', fontWeight: 700, padding: '2px 8px',
+                                borderRadius: 100, background: badge.bg, color: badge.color,
+                                textTransform: 'uppercase', letterSpacing: '0.05em'
+                              }}>{badge.label}</span>
+                              <span style={{ fontSize: '0.65rem', opacity: 0.3 }}>{fmtTime(msg.created_at)}</span>
+                            </div>
+                            <div style={{
+                              maxWidth: '80%', padding: '12px 18px', borderRadius: 14,
+                              background: isOwn ? 'rgba(255,153,51,0.08)' : 'rgba(255,255,255,0.03)',
+                              border: `1px solid ${isOwn ? 'rgba(255,153,51,0.12)' : 'rgba(255,255,255,0.05)'}`,
+                              borderTopLeftRadius: isOwn ? 14 : 4,
+                              borderTopRightRadius: isOwn ? 4 : 14,
+                            }}>
+                              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                {msg.message}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={chatEndRef} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Message Input */}
+                <div style={{
+                  padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.05)',
+                  display: 'flex', gap: 12, alignItems: 'flex-end',
+                  background: 'rgba(255,255,255,0.01)'
+                }}>
+                  <textarea
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Type a message... (Enter to send, Shift+Enter for new line)"
+                    rows={1}
+                    style={{
+                      flex: 1, resize: 'none', background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12,
+                      padding: '12px 16px', color: 'white', fontSize: '0.85rem',
+                      fontFamily: 'var(--font-ui)', minHeight: 44, maxHeight: 120,
+                      transition: 'border-color 0.3s'
+                    }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(255,153,51,0.3)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim() || sendingMessage}
+                    style={{
+                      background: newMessage.trim() ? 'var(--saffron)' : 'rgba(255,255,255,0.05)',
+                      border: 'none', borderRadius: 12, width: 44, height: 44,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
+                      transition: 'all 0.3s', flexShrink: 0
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={newMessage.trim() ? 'var(--navy)' : 'rgba(255,255,255,0.2)'} strokeWidth="2">
+                      <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                  </button>
+                </div>
+              </>
+            )}
+          </section>
         </main>
 
         <aside className="record-side">

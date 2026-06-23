@@ -103,13 +103,35 @@ const NewRequest = () => {
   }, [id, isAdmin]);
 
   // --- HANDLERS ---
+  // --- PAN VALIDATION HELPERS ---
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const [panVerified, setPanVerified] = useState(false);
+  const [panType, setPanType] = useState<string | null>(null);
+
+  const detectPanType = (pan: string): string => {
+    const typeMap: Record<string, string> = {
+      'A': 'Association of Persons (AOP)', 'B': 'Body of Individuals (BOI)',
+      'C': 'Company', 'F': 'Firm/Partnership', 'G': 'Government',
+      'H': 'Hindu Undivided Family (HUF)', 'J': 'Artificial Juridical Person',
+      'L': 'Local Authority', 'P': 'Individual', 'T': 'Trust'
+    };
+    return typeMap[pan.charAt(3)] || 'Unknown Entity';
+  };
+
   const handlePanVerification = async (e: FormEvent) => {
     e.preventDefault();
-    if (!pan || pan.length !== 10) return setError("Please enter a valid 10-digit PAN.");
+    if (!pan || pan.length !== 10) return setError("Please enter a valid 10-character PAN.");
+    if (!PAN_REGEX.test(pan)) return setError("Invalid PAN format. Expected: ABCDE1234F (5 letters, 4 digits, 1 letter).");
 
     setLoading(true);
     setError(null);
     try {
+      // Detect PAN entity type
+      const entityType = detectPanType(pan);
+      setPanType(entityType);
+      setPanVerified(true);
+
+      // Check existing account in database
       const match = await api.findAccountByPAN(pan);
       if (match) {
         setAccountId(match.id);
@@ -248,19 +270,59 @@ const NewRequest = () => {
         {step === 'pan_verify' && !isAdmin && (
           <div className="portal-panel center-align" style={{ padding: 60 }}>
             <SectionHeader title="Entity Identity" subtitle="Verify your legal entity via Permanent Account Number (PAN)." />
-            <form onSubmit={handlePanVerification} style={{ maxWidth: 400, margin: '0 auto' }}>
+            <form onSubmit={handlePanVerification} style={{ maxWidth: 460, margin: '0 auto' }}>
               <div className="portal-form-group">
                 <label className="portal-form-label">PAN Identifier</label>
                 <input
                   autoFocus
                   className="portal-form-control massive-input"
                   value={pan}
-                  onChange={e => setPan(e.target.value.toUpperCase())}
+                  onChange={e => {
+                    const val = e.target.value.toUpperCase().slice(0, 10);
+                    setPan(val);
+                    setPanVerified(false);
+                    setPanType(null);
+                    setError(null);
+                  }}
                   placeholder="ABCDE1234F"
+                  maxLength={10}
+                  style={{ letterSpacing: '0.15em', fontFamily: 'monospace', fontSize: '1.3rem', textAlign: 'center' }}
                 />
               </div>
-              <button type="submit" className="btn-portal-primary full-width">Verify & Proceed</button>
-              {error && <p className="error-text">{error}</p>}
+
+              {/* PAN Format Indicator */}
+              {pan.length > 0 && (
+                <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 10, background: PAN_REGEX.test(pan) ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.02)', border: `1px solid ${PAN_REGEX.test(pan) ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)'}`, transition: 'all 0.3s' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: PAN_REGEX.test(pan) ? '#4ade80' : pan.length === 10 ? '#ef4444' : 'rgba(255,255,255,0.2)', transition: 'background 0.3s' }} />
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: PAN_REGEX.test(pan) ? '#4ade80' : 'rgba(255,255,255,0.4)' }}>
+                        {PAN_REGEX.test(pan) ? 'Valid Format' : pan.length === 10 ? 'Invalid Format' : `${pan.length}/10 characters`}
+                      </span>
+                    </div>
+                    {PAN_REGEX.test(pan) && (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--gold)', fontWeight: 600 }}>
+                        {detectPanType(pan)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <button type="submit" disabled={!PAN_REGEX.test(pan)} className="btn-portal-primary full-width" style={{ opacity: PAN_REGEX.test(pan) ? 1 : 0.4, transition: 'opacity 0.3s' }}>Verify & Proceed</button>
+              {error && <p className="error-text" style={{ marginTop: 16 }}>{error}</p>}
+
+              {panVerified && panType && (
+                <div style={{ marginTop: 24, padding: '16px 20px', borderRadius: 12, background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.12)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <div>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4ade80', margin: 0 }}>PAN Format Verified</p>
+                      <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', margin: '4px 0 0' }}>Entity Type: {panType}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
         )}
@@ -357,9 +419,9 @@ const NewRequest = () => {
                       style={{ display: 'none' }}
                       onChange={e => {
                         const files = Array.from(e.target.files || []);
-                        if (attachedFiles.length + files.length > 3) {
-                          alert("Maximum 3 files allowed per request.");
-                          setAttachedFiles([...attachedFiles, ...files.slice(0, 3 - attachedFiles.length)]);
+                        if (attachedFiles.length + files.length > 10) {
+                          alert("Maximum 10 files allowed per request.");
+                          setAttachedFiles([...attachedFiles, ...files.slice(0, 10 - attachedFiles.length)]);
                         } else {
                           setAttachedFiles([...attachedFiles, ...files]);
                         }
@@ -368,7 +430,7 @@ const NewRequest = () => {
                     />
                     <div className="upload-content" onClick={() => document.getElementById('master-file-upload')?.click()}>
                       <div className="upload-icon"></div>
-                      <p>Select Evidence or Scoping Documents (Max 3 Files)</p>
+                      <p>Select Evidence or Scoping Documents (Max 10 Files)</p>
                       <button type="button" className="btn-portal-outline tiny">Browse Files</button>
                     </div>
                     {attachedFiles.length > 0 && (

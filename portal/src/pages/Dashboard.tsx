@@ -19,6 +19,9 @@ import ClientOverview from './ClientOverview';
 import Timesheets from './Timesheets';
 import Expenses from './Expenses';
 import UserProfile from './UserProfile';
+import Invoices from './Invoices';
+import InvoiceForm from './InvoiceForm';
+import InvoiceView from './InvoiceView';
 
 /* ——— DASHBOARD ROOT ——— */
 const Dashboard = () => {
@@ -47,6 +50,9 @@ const Dashboard = () => {
         <Route path="crm/clients/new" element={<ClientForm />} />
         <Route path="crm/clients/:id" element={<ClientDetail />} />
         <Route path="crm/clients/:id/edit" element={<ClientForm />} />
+        <Route path="invoices" element={<Invoices />} />
+        <Route path="invoices/new" element={<InvoiceForm />} />
+        <Route path="invoices/:id" element={<InvoiceView />} />
         {(user.role === 'admin' || user.role === 'employee') && <Route path="users" element={<UserManagement />} />}
         <Route path="*" element={
           <div className="portal-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>

@@ -19,6 +19,12 @@ const UserManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // --- Set Password Modal State ---
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [setPasswordValue, setSetPasswordValue] = useState('');
+  const [setPasswordConfirm, setSetPasswordConfirm] = useState('');
+  const [setPasswordLoading, setSetPasswordLoading] = useState(false);
+
   // --- Edit Mode State ---
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<Partial<User>>({});
@@ -635,8 +641,22 @@ const UserManagement = () => {
                   className="btn-portal-outline"
                   style={{ padding: '20px 40px', fontSize: '0.85rem', color: 'var(--gold)' }}
                 >
-                  Send Password Reset
+                  Email Password Reset
                 </button>
+
+                {currentUser?.role === 'admin' && selectedUser.id !== currentUser?.id && (
+                  <button
+                    onClick={() => {
+                      setSetPasswordValue('');
+                      setSetPasswordConfirm('');
+                      setShowSetPasswordModal(true);
+                    }}
+                    className="btn-portal-outline"
+                    style={{ padding: '20px 40px', fontSize: '0.85rem', color: '#38bdf8' }}
+                  >
+                    Set Password
+                  </button>
+                )}
 
                 <button
                   onClick={async () => {
@@ -814,6 +834,151 @@ const UserManagement = () => {
                   setTimeout(() => setError(null), 5000);
                 }}
               />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL: SET PASSWORD */}
+      <AnimatePresence>
+        {showSetPasswordModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="portal-modal-overlay"
+            onClick={() => setShowSetPasswordModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="portal-modal-card"
+              onClick={e => e.stopPropagation()}
+              style={{ padding: 60, maxWidth: 520 }}
+            >
+              <h2 className="serif-title" style={{ marginBottom: 12, fontWeight: 600 }}>Set Password</h2>
+              <p style={{ opacity: 0.4, marginBottom: 40, lineHeight: 1.6 }}>
+                Manually set a new password for <strong>{selectedUser.full_name}</strong> ({selectedUser.email}).
+                The user can then log in with this password immediately.
+              </p>
+
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                if (setPasswordValue.length < 8) {
+                  setError('Password Must Be At Least 8 Characters.');
+                  setTimeout(() => setError(null), 5000);
+                  return;
+                }
+                if (setPasswordValue !== setPasswordConfirm) {
+                  setError('Passwords Do Not Match.');
+                  setTimeout(() => setError(null), 5000);
+                  return;
+                }
+                setSetPasswordLoading(true);
+                try {
+                  await api.adminSetPassword(selectedUser.id, setPasswordValue);
+                  setShowSetPasswordModal(false);
+                  setSuccess(`Password Successfully Set For ${selectedUser.full_name}.`);
+                  setTimeout(() => setSuccess(null), 5000);
+                } catch (err: any) {
+                  setError(`Set Password Failed: ${err.message}`);
+                  setTimeout(() => setError(null), 5000);
+                } finally {
+                  setSetPasswordLoading(false);
+                }
+              }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                <div>
+                  <label className="portal-form-label">New Password</label>
+                  <input
+                    type="password"
+                    className="portal-form-control"
+                    value={setPasswordValue}
+                    onChange={e => setSetPasswordValue(e.target.value)}
+                    required
+                    minLength={8}
+                    placeholder="Minimum 8 Characters"
+                    autoComplete="new-password"
+                    style={{ height: 48 }}
+                  />
+                </div>
+
+                <div>
+                  <label className="portal-form-label">Confirm Password</label>
+                  <input
+                    type="password"
+                    className="portal-form-control"
+                    value={setPasswordConfirm}
+                    onChange={e => setSetPasswordConfirm(e.target.value)}
+                    required
+                    minLength={8}
+                    placeholder="Re-Enter Password"
+                    autoComplete="new-password"
+                    style={{ height: 48 }}
+                  />
+                </div>
+
+                {/* Password strength indicator */}
+                {setPasswordValue.length > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+                      {[1, 2, 3, 4].map(level => {
+                        const strength =
+                          (setPasswordValue.length >= 8 ? 1 : 0) +
+                          (/[A-Z]/.test(setPasswordValue) ? 1 : 0) +
+                          (/[0-9]/.test(setPasswordValue) ? 1 : 0) +
+                          (/[^A-Za-z0-9]/.test(setPasswordValue) ? 1 : 0);
+                        const colors = ['#ef4444', '#f59e0b', '#eab308', '#22c55e'];
+                        return (
+                          <div key={level} style={{
+                            flex: 1, height: 3, borderRadius: 2,
+                            background: level <= strength ? colors[strength - 1] : 'rgba(255,255,255,0.05)',
+                            transition: 'background 0.3s'
+                          }} />
+                        );
+                      })}
+                    </div>
+                    <p style={{ fontSize: '0.65rem', opacity: 0.3, fontWeight: 500 }}>
+                      Use Uppercase, Numbers & Special Characters For Maximum Security
+                    </p>
+                  </div>
+                )}
+
+                {/* Match indicator */}
+                {setPasswordConfirm.length > 0 && (
+                  <div style={{
+                    fontSize: '0.7rem', fontWeight: 500,
+                    color: setPasswordValue === setPasswordConfirm ? '#4ade80' : '#f87171'
+                  }}>
+                    {setPasswordValue === setPasswordConfirm ? '✓ Passwords Match' : '✗ Passwords Do Not Match'}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+                  <button
+                    type="submit"
+                    className="btn-portal-primary"
+                    disabled={setPasswordLoading || setPasswordValue.length < 8 || setPasswordValue !== setPasswordConfirm}
+                    style={{ flex: 1, height: 56 }}
+                  >
+                    {setPasswordLoading ? 'Setting Password...' : 'Set Password'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-portal-outline"
+                    onClick={() => setShowSetPasswordModal(false)}
+                    style={{ flex: 1, height: 56 }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                <div style={{
+                  padding: '16px 20px', borderRadius: 8, marginTop: 8,
+                  background: 'rgba(255,153,51,0.05)', border: '1px solid rgba(255,153,51,0.1)'
+                }}>
+                  <p style={{ fontSize: '0.7rem', color: 'var(--saffron)', opacity: 0.8, lineHeight: 1.6 }}>
+                    ⚠ Security Notice: This action bypasses email verification. The user will be able to log in
+                    immediately with the new password. Please communicate the credentials securely.
+                  </p>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

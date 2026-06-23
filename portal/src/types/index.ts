@@ -190,3 +190,82 @@ export interface Notification {
   sender?: { full_name: string };
   sender_avatar?: string;
 }
+
+export interface RequestMessage {
+  id: string;
+  request_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_role: string;
+  message: string;
+  created_at: string;
+}
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  rate: number;
+  amount: number;
+}
+
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  account_number: string;
+  bank_name_branch: string;
+  ifsc_code: string;
+  pan?: string;
+  swift_code?: string;
+  routing_number?: string;
+  bank_address?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceSender {
+  id: string;
+  name: string;
+  address_line_1: string;
+  address_line_2?: string;
+  city: string;
+  state_province: string;
+  zip_postal_code: string;
+  country: string;
+  logo_key?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  invoice_number: string;
+  account_id?: string;
+  account_name: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  contact_designation?: string;
+  billing_address?: string;
+  gstin?: string;
+  gst_type: 'gst' | 'non_gst';
+  invoice_date: string;
+  due_date?: string;
+  payment_terms: string;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  total: number;
+  notes?: string;
+  line_items: InvoiceLineItem[];
+  status: 'draft' | 'sent' | 'paid' | 'cancelled';
+  payment_method_id?: string;
+  payment_details?: Partial<PaymentMethod> | null;
+  sender_id?: string;
+  sender_details?: Partial<InvoiceSender> | null;
+  created_by_id?: string;
+  created_by_name: string;
+  created_at: string;
+  updated_at: string;
+}

@@ -6,6 +6,7 @@ import './animations.css';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Dashboard from './pages/Dashboard';
 import { useAuth } from './contexts/AuthContext';
 
@@ -71,7 +72,7 @@ const PendingApproval = () => {
 };
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, isPasswordRecovery } = useAuth();
 
   if (loading) {
     return (
@@ -93,9 +94,13 @@ function App() {
       <PageBackground />
       <Routes>
         {/* PUBLIC ROUTES */}
-        <Route path="/" element={!isAuthenticated ? <Login /> : (isApproved ? <Navigate to="/dashboard" /> : <Navigate to="/pending" />)} />
+        <Route path="/" element={
+          isPasswordRecovery ? <Navigate to="/reset-password" replace /> :
+          !isAuthenticated ? <Login /> : (isApproved ? <Navigate to="/dashboard" /> : <Navigate to="/pending" />)
+        } />
         <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/dashboard" />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* PROTECTED ROUTES */}
         <Route path="/pending" element={isAuthenticated && !isApproved ? <PendingApproval /> : <Navigate to="/" />} />

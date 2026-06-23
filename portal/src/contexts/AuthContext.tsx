@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '../types';
@@ -6,6 +6,7 @@ import type { User } from '../types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  isPasswordRecovery: boolean;
   refreshUser: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -13,6 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isPasswordRecovery: false,
   refreshUser: async () => {},
   signOut: async () => {}
 });
@@ -20,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -67,7 +70,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchUser();
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+      if (event === 'PASSWORD_RECOVERY') {
+        // User clicked the recovery link — flag it so the app can route to the reset form
+        setIsPasswordRecovery(true);
+        fetchUser();
+      } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        if (event === 'SIGNED_OUT') {
+          setIsPasswordRecovery(false);
+        }
         fetchUser();
       }
     });
@@ -77,27 +87,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // --- IMPROVED INACTIVITY GOVERNANCE ---
+  // --- INACTIVITY AUTO-LOGOUT (1 HOUR) ---
   const [showWarning, setShowWarning] = useState(false);
+  const showWarningRef = useRef(false);
+
+  // Keep the ref in sync with state so interval/callbacks always read current value
+  useEffect(() => {
+    showWarningRef.current = showWarning;
+  }, [showWarning]);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setShowWarning(false);
+    showWarningRef.current = false;
+    localStorage.removeItem('adveris_portal_last_active');
+  }, []);
 
   useEffect(() => {
     if (!user) {
       setShowWarning(false);
+      showWarningRef.current = false;
       return;
     }
 
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
-    const WARNING_THRESHOLD = 28 * 60 * 1000; // 28 minutes
+    const INACTIVITY_LIMIT = 60 * 60 * 1000;  // 1 hour
+    const WARNING_THRESHOLD = 57 * 60 * 1000;  // 57 minutes — warn 3 minutes before logout
     const STORAGE_KEY = 'adveris_portal_last_active';
     let lastResetTime = Date.now();
 
-    const resetTimer = (force = false) => {
+    // Named function so we can properly remove the listener later
+    const handleActivity = () => {
       const now = Date.now();
-      // Throttle storage writes to every 30 seconds unless forced
-      if (force || now - lastResetTime > 30000) {
+      // Throttle storage writes to every 30 seconds
+      if (now - lastResetTime > 30000) {
         localStorage.setItem(STORAGE_KEY, now.toString());
         lastResetTime = now;
-        if (showWarning) setShowWarning(false);
+        if (showWarningRef.current) {
+          setShowWarning(false);
+          showWarningRef.current = false;
+        }
       }
     };
 
@@ -105,19 +134,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) {
         lastResetTime = parseInt(e.newValue || '0');
-        setShowWarning(false);
+        if (showWarningRef.current) {
+          setShowWarning(false);
+          showWarningRef.current = false;
+        }
       }
     };
 
-    // Events to track activity
-    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
-    activityEvents.forEach(e => window.addEventListener(e, () => resetTimer()));
+    // Events to track activity — use the SAME named function reference
+    const activityEvents: Array<keyof WindowEventMap> = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    activityEvents.forEach(evt => window.addEventListener(evt, handleActivity));
     window.addEventListener('storage', handleStorageChange);
 
     // Initialize timer
-    resetTimer(true);
+    localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    lastResetTime = Date.now();
 
-    // Check interval
+    // Check interval — reads from localStorage so it's always accurate across tabs
     const interval = setInterval(() => {
       const lastActive = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
       const now = Date.now();
@@ -127,34 +160,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         clearInterval(interval);
         signOut();
       } else if (diff > WARNING_THRESHOLD) {
-        setShowWarning(true);
+        if (!showWarningRef.current) {
+          setShowWarning(true);
+          showWarningRef.current = true;
+        }
       } else {
-        if (showWarning) setShowWarning(false);
+        if (showWarningRef.current) {
+          setShowWarning(false);
+          showWarningRef.current = false;
+        }
       }
     }, 10000); // Check every 10 seconds
 
     return () => {
-      activityEvents.forEach(e => window.removeEventListener(e, () => resetTimer()));
+      activityEvents.forEach(evt => window.removeEventListener(evt, handleActivity));
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, [user, showWarning]);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setShowWarning(false);
-    localStorage.removeItem('adveris_portal_last_active');
-  };
+  }, [user, signOut]); // Only re-run when user changes (login/logout), NOT on showWarning
 
   const stayLoggedIn = () => {
     const STORAGE_KEY = 'adveris_portal_last_active';
     localStorage.setItem(STORAGE_KEY, Date.now().toString());
     setShowWarning(false);
+    showWarningRef.current = false;
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, refreshUser: fetchUser, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isPasswordRecovery, refreshUser: fetchUser, signOut }}>
       {children}
       
       {/* SESSION EXPIRY WARNING MODAL */}
