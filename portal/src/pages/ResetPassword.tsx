@@ -56,6 +56,10 @@ const ResetPassword = () => {
       });
 
       if (updateError) throw updateError;
+      
+      // Sign the user out to clear the recovery session and force them to use the new password
+      await supabase.auth.signOut();
+      
       setSuccess(true);
 
       // Redirect to login after a short delay
