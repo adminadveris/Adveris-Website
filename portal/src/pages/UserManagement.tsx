@@ -983,6 +983,26 @@ const UserManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* GLOBAL TOAST NOTIFICATIONS */}
+      <div style={{ position: 'fixed', bottom: 40, right: 40, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <AnimatePresence>
+          {error && (
+            <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#f87171', padding: '16px 24px', borderRadius: 8, backdropFilter: 'blur(10px)', fontSize: '0.85rem', fontWeight: 500, maxWidth: 400 }}
+            >
+              ⚠ {error}
+            </motion.div>
+          )}
+          {success && (
+            <motion.div initial={{ opacity: 0, y: 20, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              style={{ background: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '16px 24px', borderRadius: 8, backdropFilter: 'blur(10px)', fontSize: '0.85rem', fontWeight: 500, maxWidth: 400 }}
+            >
+              ✓ {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
