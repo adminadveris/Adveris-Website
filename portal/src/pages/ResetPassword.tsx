@@ -250,9 +250,20 @@ const ResetPassword = () => {
             </button>
             
             <div style={{ marginTop: 20 }}>
-              <Link to="/" style={{ fontSize: '0.75rem', opacity: 0.4, color: 'white', textDecoration: 'none' }}>
+              <button 
+                type="button"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  navigate('/', { replace: true });
+                }}
+                style={{ 
+                  background: 'none', border: 'none', cursor: 'pointer', 
+                  fontSize: '0.75rem', opacity: 0.4, color: 'white', 
+                  textDecoration: 'none', padding: 0 
+                }}
+              >
                 ← Back To Login
-              </Link>
+              </button>
             </div>
           </form>
         )}
