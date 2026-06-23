@@ -6,5 +6,8 @@
     "build": "rm -rf dist && mkdir -p dist && cp *.html *.png robots.txt sitemap.xml dist/ && cp -r assets css js data dist/ && (cd portal && npm install && npm run build) && mv portal-dist dist/portal",
     "dev": "npx http-server .",
     "portal-dev": "cd portal && npm run dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2"
   }
 }
