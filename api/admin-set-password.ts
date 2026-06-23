@@ -52,9 +52,15 @@ export default async function handler(req: any, res: any) {
 
   try {
     // Step 1: Verify the caller is an admin using their JWT
-    const anonClient = createClient(supabaseUrl, supabaseAnonKey);
+    const anonClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    });
 
-    const { data: { user: callerAuth }, error: authError } = await anonClient.auth.getUser(token);
+    const { data: { user: callerAuth }, error: authError } = await anonClient.auth.getUser();
 
     if (authError || !callerAuth) {
       return res.status(401).json({ error: 'Invalid or expired authentication token.' });
