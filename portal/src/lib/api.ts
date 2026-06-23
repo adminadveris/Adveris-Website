@@ -937,10 +937,18 @@ export const api = {
       body: JSON.stringify({ userId, newPassword })
     });
 
-    const result = await response.json();
+    const responseText = await response.text();
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (err) {
+      // If Vercel crashes heavily (e.g. 504 timeout), it returns an HTML page instead of JSON.
+      console.error("Non-JSON response from server:", responseText);
+      throw new Error("Server communication failed. The endpoint returned an invalid format.");
+    }
 
     if (!response.ok) {
-      throw new Error(result.error || 'Failed to set password.');
+      throw new Error(result?.error || 'Failed to set password due to a server error.');
     }
   },
 
