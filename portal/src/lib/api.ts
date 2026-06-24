@@ -1121,17 +1121,39 @@ export const api = {
 
     const invoice_number = await api.getNextSequenceNumber('invoices', 'INV');
 
-    const { data, error } = await supabase
+    const payload: any = {
+      ...sanitize(invoice),
+      invoice_number,
+      created_by_id: user?.id,
+      created_by_name: currentUser?.full_name || 'System'
+    };
+
+    let data: any;
+    let error: any;
+
+    const res = await supabase
       .from('invoices')
-      .insert({
-        ...sanitize(invoice),
-        invoice_number,
-        created_by_id: user?.id,
-        created_by_name: currentUser?.full_name || 'System'
-      })
+      .insert(payload)
       .select('*')
       .single();
     
+    data = res.data;
+    error = res.error;
+
+    if (error) {
+      if (error.message && error.message.includes('invoice_type')) {
+        console.warn("Database missing 'invoice_type' column. Retrying without it.");
+        const { invoice_type, ...fallbackPayload } = payload;
+        const retryRes = await supabase
+          .from('invoices')
+          .insert(fallbackPayload)
+          .select('*')
+          .single();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
+    }
+
     if (error) throw error;
 
     await api.createAuditLog({
@@ -1149,19 +1171,41 @@ export const api = {
   },
 
   updateInvoice: async (id: string, invoice: Partial<Invoice>): Promise<Invoice> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const payload: any = {
+      ...sanitize(invoice),
+      updated_at: new Date().toISOString()
+    };
 
-    const { data, error } = await supabase
+    let data: any;
+    let error: any;
+
+    const res = await supabase
       .from('invoices')
-      .update({
-        ...sanitize(invoice),
-        updated_at: new Date().toISOString()
-      })
+      .update(payload)
       .eq('id', id)
       .select('*')
       .single();
-    
+
+    data = res.data;
+    error = res.error;
+
+    if (error) {
+      if (error.message && error.message.includes('invoice_type')) {
+        console.warn("Database missing 'invoice_type' column. Retrying update without it.");
+        const { invoice_type, ...fallbackPayload } = payload;
+        const retryRes = await supabase
+          .from('invoices')
+          .update(fallbackPayload)
+          .eq('id', id)
+          .select('*')
+          .single();
+        data = retryRes.data;
+        error = retryRes.error;
+      }
+    }
+
     if (error) throw error;
+
     return {
       ...data,
       line_items: Array.isArray(data.line_items) ? data.line_items : []

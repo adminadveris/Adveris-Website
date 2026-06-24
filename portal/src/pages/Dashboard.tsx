@@ -52,6 +52,7 @@ const Dashboard = () => {
         <Route path="crm/clients/:id/edit" element={<ClientForm />} />
         <Route path="invoices" element={<Invoices />} />
         <Route path="invoices/new" element={<InvoiceForm />} />
+        <Route path="invoices/:id/edit" element={<InvoiceForm />} />
         <Route path="invoices/:id" element={<InvoiceView />} />
         {(user.role === 'admin' || user.role === 'employee') && <Route path="users" element={<UserManagement />} />}
         <Route path="*" element={

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
@@ -9,6 +9,9 @@ const emptyLine = (): InvoiceLineItem => ({ description: '', quantity: 1, rate: 
 
 const InvoiceForm = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEdit = !!id;
+  const isInitialLoadRef = useRef(true);
   const { user } = useAuth();
 
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -35,6 +38,7 @@ const InvoiceForm = () => {
   const [taxRate, setTaxRate] = useState(18);
   const [notes, setNotes] = useState('');
   const [lineItems, setLineItems] = useState<InvoiceLineItem[]>([emptyLine()]);
+  const [invoiceType, setInvoiceType] = useState('Tax Invoice');
 
   // Payment Method States
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -51,30 +55,72 @@ const InvoiceForm = () => {
   useEffect(() => {
     const init = async () => {
       try {
-        const [accs, pms, sndrs] = await Promise.all([
+        const [accs, pms, sndrs, inv] = await Promise.all([
           api.getAccounts(),
           api.getPaymentMethods(),
-          api.getInvoiceSenders()
+          api.getInvoiceSenders(),
+          id ? api.getInvoiceById(id) : Promise.resolve(null)
         ]);
         setAccounts(accs);
+        
         const activePms = pms.filter(p => p.is_active);
         setPaymentMethods(activePms);
-        if (activePms.length > 0) {
-          setSelectedPmId(activePms[0].id);
-        }
+
         const activeSndrs = sndrs.filter(s => s.is_active);
         setSenders(activeSndrs);
-        if (activeSndrs.length > 0) {
-          setSelectedSenderId(activeSndrs[0].id);
+
+        if (inv) {
+          // Editing mode
+          setAccountId(inv.account_id || '');
+          setAccountName(inv.account_name || '');
+          setContactName(inv.contact_name || '');
+          setContactEmail(inv.contact_email || '');
+          setContactPhone(inv.contact_phone || '');
+          setContactDesignation(inv.contact_designation || '');
+          setBillingAddress(inv.billing_address || '');
+          setGstin(inv.gstin || '');
+          setGstType(inv.gst_type || 'gst');
+          setInvoiceType(inv.invoice_type || 'Tax Invoice');
+          setInvoiceDate(inv.invoice_date || '');
+          setDueDate(inv.due_date || '');
+          setPaymentTerms(inv.payment_terms || 'Net 30');
+          setTaxRate(inv.tax_rate ?? 18);
+          setNotes(inv.notes || '');
+          setLineItems(inv.line_items?.length ? inv.line_items : [emptyLine()]);
+          setSelectedPmId(inv.payment_method_id || '');
+          setSelectedSenderId(inv.sender_id || '');
+          if (inv.payment_details) {
+            setSwiftCode(inv.payment_details.swift_code || '');
+            setRoutingNumber(inv.payment_details.routing_number || '');
+            setBankAddress(inv.payment_details.bank_address || '');
+            if (inv.payment_details.swift_code || inv.payment_details.routing_number || inv.payment_details.bank_address) {
+              setShowForeignTransfer(true);
+            }
+          }
+        } else {
+          // Creating mode, set defaults
+          if (activePms.length > 0) {
+            setSelectedPmId(activePms[0].id);
+          }
+          if (activeSndrs.length > 0) {
+            setSelectedSenderId(activeSndrs[0].id);
+          }
         }
       } catch (err) {
-        console.error('Failed to load accounts, banks, and senders', err);
+        console.error('Failed to load initial data', err);
+        setError('Failed to load form data.');
       } finally {
         setLoading(false);
       }
     };
     init();
-  }, []);
+  }, [id]);
+
+  useEffect(() => {
+    if (!loading) {
+      isInitialLoadRef.current = false;
+    }
+  }, [loading]);
 
   const selectedSender = useMemo(() => senders.find(s => s.id === selectedSenderId) || null, [selectedSenderId, senders]);
 
@@ -109,7 +155,7 @@ const InvoiceForm = () => {
     setSelectedAccount(acc || null);
 
     // Auto-fill from account
-    if (acc) {
+    if (acc && !isInitialLoadRef.current) {
       setAccountName(acc.account_name);
       setGstin(acc.gstin_number || '');
       // Build address from account fields
@@ -118,6 +164,7 @@ const InvoiceForm = () => {
       // Auto-detect GST type
       if (acc.gstin_number) {
         setGstType('gst');
+        if (invoiceType === 'Invoice' || !invoiceType) setInvoiceType('Tax Invoice');
       }
     }
 
@@ -181,7 +228,7 @@ const InvoiceForm = () => {
         logo_key: selectedSender.logo_key
       } : null;
 
-      const invoice = await api.createInvoice({
+      const invoiceData = {
         account_id: accountId || undefined,
         account_name: accountName,
         contact_name: contactName,
@@ -191,6 +238,7 @@ const InvoiceForm = () => {
         billing_address: billingAddress,
         gstin: gstin,
         gst_type: gstType,
+        invoice_type: invoiceType,
         invoice_date: invoiceDate,
         due_date: dueDate || undefined,
         payment_terms: paymentTerms,
@@ -200,17 +248,26 @@ const InvoiceForm = () => {
         total,
         notes,
         line_items: lineItems.filter(li => li.description.trim()),
-        status: 'draft',
         payment_method_id: selectedPmId || undefined,
         payment_details: paymentDetails,
         sender_id: selectedSenderId || undefined,
         sender_details: senderDetails
-      });
+      };
+
+      let savedInvoice;
+      if (isEdit) {
+        savedInvoice = await api.updateInvoice(id!, invoiceData);
+      } else {
+        savedInvoice = await api.createInvoice({
+          ...invoiceData,
+          status: 'draft'
+        });
+      }
 
       setSuccess(true);
-      setTimeout(() => navigate(`/dashboard/invoices/${invoice.id}`), 1200);
+      setTimeout(() => navigate(`/dashboard/invoices/${savedInvoice.id}`), 1200);
     } catch (err: any) {
-      setError(err.message || 'Failed to create invoice.');
+      setError(err.message || 'Failed to save invoice.');
     } finally {
       setSubmitting(false);
     }
@@ -221,8 +278,8 @@ const InvoiceForm = () => {
   if (success) return (
     <div className="portal-success-state">
       <div className="success-icon"></div>
-      <h2>Invoice <em>Created</em></h2>
-      <p>The invoice has been saved to your finance registry.</p>
+      <h2>Invoice {isEdit ? <em>Updated</em> : <em>Created</em>}</h2>
+      <p>{isEdit ? 'The invoice has been updated in your finance registry.' : 'The invoice has been saved to your finance registry.'}</p>
     </div>
   );
 
@@ -232,35 +289,55 @@ const InvoiceForm = () => {
 
         <div className="portal-layout-split">
           <div className="portal-main-column">
-            {/* GST TYPE TOGGLE */}
+            {/* GST TYPE TOGGLE & CUSTOM INVOICE TYPE */}
             <div className="portal-panel" style={{ padding: '24px 40px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Invoice Type:</span>
-                <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <button
-                    type="button"
-                    onClick={() => setGstType('gst')}
-                    style={{
-                      padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                      fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.3s',
-                      background: gstType === 'gst' ? 'var(--saffron)' : 'transparent',
-                      color: gstType === 'gst' ? 'var(--navy)' : 'rgba(255,255,255,0.4)',
-                    }}
-                  >
-                    GST Invoice
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGstType('non_gst')}
-                    style={{
-                      padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                      fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.3s',
-                      background: gstType === 'non_gst' ? 'var(--saffron)' : 'transparent',
-                      color: gstType === 'non_gst' ? 'var(--navy)' : 'rgba(255,255,255,0.4)',
-                    }}
-                  >
-                    Non-GST Invoice
-                  </button>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Tax Treatment:</span>
+                  <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGstType('gst');
+                        if (invoiceType === 'Invoice' || !invoiceType) setInvoiceType('Tax Invoice');
+                      }}
+                      style={{
+                        padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                        fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.3s',
+                        background: gstType === 'gst' ? 'var(--saffron)' : 'transparent',
+                        color: gstType === 'gst' ? 'var(--navy)' : 'rgba(255,255,255,0.4)',
+                      }}
+                    >
+                      GST Invoice
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGstType('non_gst');
+                        if (invoiceType === 'Tax Invoice' || !invoiceType) setInvoiceType('Invoice');
+                      }}
+                      style={{
+                        padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                        fontSize: '0.78rem', fontWeight: 600, transition: 'all 0.3s',
+                        background: gstType === 'non_gst' ? 'var(--saffron)' : 'transparent',
+                        color: gstType === 'non_gst' ? 'var(--navy)' : 'rgba(255,255,255,0.4)',
+                      }}
+                    >
+                      Non-GST Invoice
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 260 }}>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(255,255,255,0.5)' }}>Invoice Type Name:</span>
+                  <input
+                    type="text"
+                    className="portal-form-control"
+                    style={{ flex: 1, minHeight: 38, height: 38, fontSize: '0.85rem' }}
+                    value={invoiceType}
+                    onChange={e => setInvoiceType(e.target.value)}
+                    placeholder="e.g. Proforma Invoice, Tax Invoice, etc."
+                  />
                 </div>
               </div>
             </div>
@@ -321,7 +398,7 @@ const InvoiceForm = () => {
             {/* ACCOUNT & CONTACT */}
             <div className="portal-panel" style={{ padding: 40, marginBottom: 20 }}>
               <div className="section-header" style={{ marginBottom: 32 }}>
-                <h2 className="serif-title" style={{ fontSize: '1.8rem', fontWeight: 600 }}>New Invoice</h2>
+                <h2 className="serif-title" style={{ fontSize: '1.8rem', fontWeight: 600 }}>{isEdit ? 'Edit Invoice' : 'New Invoice'}</h2>
                 <p style={{ opacity: 0.4, fontSize: '0.85rem' }}>Select an account and configure invoice details.</p>
               </div>
 
@@ -571,12 +648,13 @@ const InvoiceForm = () => {
                     {lineItems.map((item, i) => (
                       <tr key={i}>
                         <td style={{ padding: '8px' }}>
-                          <input
+                          <textarea
                             className="portal-form-control"
                             value={item.description}
                             onChange={e => updateLineItem(i, 'description', e.target.value)}
                             placeholder="Service description..."
-                            style={{ fontSize: '0.85rem', padding: '10px 12px' }}
+                            style={{ fontSize: '0.85rem', padding: '10px 12px', minHeight: '60px', resize: 'vertical' }}
+                            rows={2}
                           />
                         </td>
                         <td style={{ padding: '8px' }}>
@@ -693,7 +771,7 @@ const InvoiceForm = () => {
 
               <div className="form-actions" style={{ marginTop: 40, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 24 }}>
                 <button onClick={handleSubmit} disabled={submitting} className="btn-portal-primary full-width">
-                  {submitting ? 'Creating...' : 'Create Invoice'}
+                  {submitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Invoice')}
                 </button>
                 <button onClick={() => navigate('/dashboard/invoices')} className="btn-portal-outline full-width" style={{ marginTop: 12 }}>Cancel</button>
                 {error && <p className="error-text" style={{ marginTop: 16 }}>{error}</p>}

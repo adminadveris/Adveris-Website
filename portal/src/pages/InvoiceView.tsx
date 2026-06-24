@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import type { Invoice } from '../types';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const fmtDate = (iso?: string) =>
   iso ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
@@ -14,6 +16,7 @@ const InvoiceView = () => {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   // Send email state
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -34,8 +37,101 @@ const InvoiceView = () => {
     }).catch(() => setLoading(false));
   }, [id]);
 
-  const handlePrint = () => {
-    window.print();
+  const drawFooter = (pdf: jsPDF, pageNum: number) => {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(150, 150, 150);
+    
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const marginLeft = 40;
+    
+    // Draw the "This is a computer-generated invoice." text centered
+    const text = 'This is a computer-generated invoice.';
+    pdf.text(text, pdfWidth / 2, pdfHeight - 35, { align: 'center' });
+    
+    // Draw page number
+    const pageText = `Page ${pageNum}`;
+    pdf.text(pageText, pdfWidth - marginLeft, pdfHeight - 35, { align: 'right' });
+  };
+
+  const handleDownloadPDF = async () => {
+    const element = document.getElementById('invoice-print');
+    if (!element) return;
+
+    setDownloadingPDF(true);
+    try {
+      const innerCard = element.firstElementChild as HTMLElement;
+      if (!innerCard) return;
+
+      // Add temporary class for styling (resets shadows/margins/padding)
+      innerCard.classList.add('pdf-capture');
+
+      // Render the entire invoice card as a single canvas
+      const canvas = await html2canvas(innerCard, {
+        scale: 2, // High resolution
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      // Clean up class immediately
+      innerCard.classList.remove('pdf-capture');
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const marginLeft = 40;
+      const marginRight = 40;
+      const marginTop = 50;
+      const marginBottom = 60;
+      const printableWidth = pdfWidth - marginLeft - marginRight;
+      const printableHeight = pdfHeight - marginTop - marginBottom;
+
+      // Calculate how tall the image will be in the PDF coordinate system
+      const totalPdfHeight = (imgHeight * printableWidth) / imgWidth;
+
+      let remainingHeight = totalPdfHeight;
+      let currentPageNum = 1;
+      let sourceY = 0; // Offset in PDF points
+
+      while (remainingHeight > 0) {
+        if (currentPageNum > 1) {
+          pdf.addPage();
+        }
+
+        // Draw the segment of the canvas corresponding to the current page.
+        // We use a negative Y offset (marginTop - sourceY) to draw the next segment of the canvas.
+        pdf.addImage(imgData, 'JPEG', marginLeft, marginTop - sourceY, printableWidth, totalPdfHeight);
+
+        // Draw a white rectangle over the top margin to cover any overflow
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pdfWidth, marginTop, 'F');
+
+        // Draw a white rectangle over the bottom margin to cover any overflow
+        pdf.rect(0, pdfHeight - marginBottom, pdfWidth, marginBottom, 'F');
+
+        // Draw footer (this is a computer-generated invoice + page number) on each page
+        drawFooter(pdf, currentPageNum);
+
+        sourceY += printableHeight;
+        remainingHeight -= printableHeight;
+        currentPageNum++;
+      }
+
+      // Trigger browser save dialog
+      pdf.save(`Invoice_${invoice?.invoice_number || 'download'}.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      alert('Failed to save PDF. Please try again.');
+    } finally {
+      setDownloadingPDF(false);
+    }
   };
 
   const handleStatusChange = async (newStatus: Invoice['status']) => {
@@ -132,14 +228,33 @@ const InvoiceView = () => {
               </button>
             )}
 
-            <button onClick={handlePrint} className="btn-portal-primary" style={{ width: 'auto' }}>
+            {isStaff && invoice.status === 'draft' && (
+              <button
+                onClick={() => navigate(`/dashboard/invoices/${invoice.id}/edit`)}
+                className="btn-portal-outline"
+                style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                ✏️ Edit
+              </button>
+            )}
+
+            <button 
+              onClick={handleDownloadPDF} 
+              disabled={downloadingPDF} 
+              className="btn-portal-primary" 
+              style={{ width: 'auto' }}
+            >
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="6 9 6 2 18 2 18 9" />
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
-                  <rect x="6" y="14" width="12" height="8" />
-                </svg>
-                Save as PDF
+                {downloadingPDF ? (
+                  <div className="portal-loader" style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: 'white' }} />
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                )}
+                {downloadingPDF ? 'Saving PDF...' : 'Save as PDF'}
               </span>
             </button>
           </div>
@@ -153,6 +268,13 @@ const InvoiceView = () => {
           padding: '60px 64px', color: '#111', fontFamily: 'var(--font-sans)',
           boxShadow: '0 4px 60px rgba(0,0,0,0.3)'
         }}>
+
+          {/* Document Title (Center Top) */}
+          <div className="invoice-title-wrapper" style={{ textAlign: 'center', marginBottom: 32, borderBottom: '1px solid #f0f0f0', paddingBottom: 16 }}>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#d97706', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              {invoice.invoice_type || (isGst ? 'Tax Invoice' : 'Invoice')}
+            </h2>
+          </div>
 
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 48 }}>
@@ -178,12 +300,9 @@ const InvoiceView = () => {
               )}
             </div>
             <div style={{ textAlign: 'right' }}>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#d97706', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {isGst ? 'Tax Invoice' : 'Invoice'}
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: '#555', margin: '0 0 4px' }}>{invoice.invoice_number}</p>
-              <p style={{ fontSize: '0.78rem', color: '#999' }}>Date: {fmtDate(invoice.invoice_date)}</p>
-              {invoice.due_date && <p style={{ fontSize: '0.78rem', color: '#999' }}>Due: {fmtDate(invoice.due_date)}</p>}
+              <p style={{ fontSize: '1rem', color: '#111', fontWeight: 600, margin: '0 0 6px', fontFamily: 'monospace' }}>{invoice.invoice_number}</p>
+              <p style={{ fontSize: '0.78rem', color: '#555', margin: '0 0 4px' }}>Date: {fmtDate(invoice.invoice_date)}</p>
+              {invoice.due_date && <p style={{ fontSize: '0.78rem', color: '#555' }}>Due: {fmtDate(invoice.due_date)}</p>}
             </div>
           </div>
 
@@ -226,21 +345,21 @@ const InvoiceView = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 32 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                <th style={{ textAlign: 'left', padding: '12px 0', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
-                <th style={{ textAlign: 'left', padding: '12px 0', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
-                <th style={{ textAlign: 'center', padding: '12px 0', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</th>
-                <th style={{ textAlign: 'right', padding: '12px 0', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rate</th>
-                <th style={{ textAlign: 'right', padding: '12px 0', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Amount</th>
+                <th style={{ width: '6%', textAlign: 'left', padding: '12px 8px', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>#</th>
+                <th style={{ width: '54%', textAlign: 'left', padding: '12px 8px', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
+                <th style={{ width: '10%', textAlign: 'center', padding: '12px 8px', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Qty</th>
+                <th style={{ width: '15%', textAlign: 'right', padding: '12px 8px', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Rate</th>
+                <th style={{ width: '15%', textAlign: 'right', padding: '12px 8px', fontSize: '0.72rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
               {(invoice.line_items || []).map((item, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={{ padding: '14px 0', fontSize: '0.82rem', color: '#bbb' }}>{i + 1}</td>
-                  <td style={{ padding: '14px 0', fontSize: '0.88rem', color: '#333', fontWeight: 500 }}>{item.description}</td>
-                  <td style={{ padding: '14px 0', fontSize: '0.85rem', color: '#555', textAlign: 'center' }}>{item.quantity}</td>
-                  <td style={{ padding: '14px 0', fontSize: '0.85rem', color: '#555', textAlign: 'right', fontFamily: 'monospace' }}>₹{Number(item.rate).toLocaleString('en-IN')}</td>
-                  <td style={{ padding: '14px 0', fontSize: '0.88rem', color: '#111', textAlign: 'right', fontWeight: 600, fontFamily: 'monospace' }}>₹{Number(item.amount).toLocaleString('en-IN')}</td>
+                  <td style={{ padding: '14px 8px', fontSize: '0.82rem', color: '#bbb' }}>{i + 1}</td>
+                  <td style={{ padding: '14px 8px', fontSize: '0.88rem', color: '#333', fontWeight: 500, whiteSpace: 'pre-wrap' }}>{item.description}</td>
+                  <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#555', textAlign: 'center' }}>{item.quantity}</td>
+                  <td style={{ padding: '14px 8px', fontSize: '0.85rem', color: '#555', textAlign: 'right', fontFamily: 'monospace' }}>₹{Number(item.rate).toLocaleString('en-IN')}</td>
+                  <td style={{ padding: '14px 8px', fontSize: '0.88rem', color: '#111', textAlign: 'right', fontWeight: 600, fontFamily: 'monospace' }}>₹{Number(item.amount).toLocaleString('en-IN')}</td>
                 </tr>
               ))}
             </tbody>
@@ -343,11 +462,12 @@ const InvoiceView = () => {
 
           {/* Footer */}
           <div style={{ marginTop: 60, paddingTop: 24, borderTop: '1px solid #e5e7eb', textAlign: 'center' }}>
-            <p style={{ fontSize: '0.7rem', color: '#bbb', letterSpacing: '0.1em' }}>ADVERIS ADVISORS LLP — PROFESSIONAL ADVISORY SERVICES</p>
-            <p style={{ fontSize: '0.72rem', color: '#d97706', fontWeight: 600, marginTop: 4, letterSpacing: '0.05em' }}>
-              www.adverisadvisors.in
-            </p>
             <p style={{ fontSize: '0.62rem', color: '#bbb', marginTop: 4 }}>This is a computer-generated invoice.</p>
+          </div>
+
+          {/* Page Number for Printout */}
+          <div className="print-page-number-footer" style={{ display: 'none' }}>
+            Page&nbsp;
           </div>
         </div>
       </div>

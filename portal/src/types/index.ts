@@ -250,6 +250,7 @@ export interface Invoice {
   billing_address?: string;
   gstin?: string;
   gst_type: 'gst' | 'non_gst';
+  invoice_type?: string;
   invoice_date: string;
   due_date?: string;
   payment_terms: string;
