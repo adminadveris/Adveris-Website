@@ -64,6 +64,16 @@ const InvoiceView = () => {
       const innerCard = element.firstElementChild as HTMLElement;
       if (!innerCard) return;
 
+      // Save original styles to restore later
+      const originalWidth = innerCard.style.width;
+      const originalMaxWidth = innerCard.style.maxWidth;
+      const originalMinWidth = innerCard.style.minWidth;
+
+      // Force a fixed width of 800px for consistent layout across all screen resolutions
+      innerCard.style.width = '800px';
+      innerCard.style.maxWidth = '800px';
+      innerCard.style.minWidth = '800px';
+
       // Add temporary class for styling (resets shadows/margins/padding)
       innerCard.classList.add('pdf-capture');
 
@@ -72,11 +82,16 @@ const InvoiceView = () => {
         scale: 2, // High resolution
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        width: 800,
+        windowWidth: 800
       });
 
-      // Clean up class immediately
+      // Clean up class and styles immediately
       innerCard.classList.remove('pdf-capture');
+      innerCard.style.width = originalWidth;
+      innerCard.style.maxWidth = originalMaxWidth;
+      innerCard.style.minWidth = originalMinWidth;
 
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
       const imgWidth = canvas.width;
